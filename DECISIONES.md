@@ -236,6 +236,137 @@ Migrar las pruebas del backend de `node:test` a **Vitest** para:
 
 ---
 
+## ADR-013: Estrategia de migración limpia sin alias ni compatibilidad
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+**Decisión tomada por**: Cliente/Product Owner
+
+### Contexto
+
+Al renumerar módulos y renombrar entidades (Parcela→Lote, Siembra→Campaña, roles), se planteó mantener alias de compatibilidad (ej: `ADMIN: 'PROPIETARIO'`, rutas `/api/parcelas` redirigiendo a `/api/lotes`).
+
+### Decisión
+
+**Cambio limpio sin alias**:
+- NO mantener constantes antiguas (`ADMIN`, `TECNICO`, etc.)
+- NO crear rutas de compatibilidad (`/api/parcelas`)
+- Actualizar todo en un solo paso: backend, frontend, pruebas, Swagger, documentación
+- Reiniciar la BD (`npx prisma db push --force-reset`) en lugar de migrar datos (son ficticios)
+
+### Consecuencias
+
+- ✅ Código más limpio sin deuda técnica
+- ✅ No hay confusión sobre qué nombres usar
+- ✅ Más fácil de entender para nuevos desarrolladores
+- ⚠️ Requiere más cuidado en la migración (todo debe cambiar al mismo tiempo)
+- ⚠️ No hay rollback fácil (aceptable porque es proyecto académico con datos ficticios)
+
+---
+
+## ADR-014: Funciones puras en utils/permisos.js sin dependencia de Prisma
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La tabla `ModuloFinca` requiere lectura de BD. Se planteó poner funciones async con Prisma en `utils/permisos.js`.
+
+### Decisión
+
+**Mantener `utils/permisos.js` como funciones puras**:
+- `modulosDe(finca)` recibe el objeto finca con sus módulos ya cargados
+- `tieneModulo(finca, codigo)` es función pura
+- La lectura de `ModuloFinca` se hace en:
+  - Middleware `requiereModulo()` (con `include` en Prisma)
+  - Rutas que necesiten verificar módulos
+  - El objeto finca incluye `finca.modulos` poblado
+
+Ventajas:
+- Las pruebas unitarias no requieren BD
+- Más rápido (funciones síncronas)
+- Separación de responsabilidades clara
+
+### Consecuencias
+
+- ✅ Pruebas unitarias sin BD (más rápidas)
+- ✅ Funciones testables sin mocks
+- ⚠️ Los controladores deben hacer `include: { modulos: true }` al cargar finca
+- ⚠️ Documentar claramente el contrato de las funciones
+
+---
+
+## ADR-015: Permisos del rol TRABAJADOR en el agente
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+El nuevo rol TRABAJADOR debe poder usar el agente por WhatsApp, pero con permisos limitados.
+
+### Decisión
+
+**TRABAJADOR puede usar el agente** (`'agente:usar'` incluye TRABAJADOR) pero con restricciones:
+
+**Permitido**:
+- Marcar sus tareas asignadas como completadas
+- Registrar labores simples (riego, deshierbe) en lotes asignados
+- Registrar observaciones fitosanitarias (plagas/enfermedades)
+- Registrar su propia asistencia
+- Consultar sus pendientes y tareas
+
+**Prohibido**:
+- Registrar aplicaciones fitosanitarias (solo ENCARGADO/PROPIETARIO)
+- Crear/modificar campañas
+- Acceder a datos de ventas o finanzas
+- Ver pagos de otros trabajadores
+- Modificar inventarios (solo consultar stock)
+
+La validación se hace en `src/agente/repositorio.js` verificando el rol antes de ejecutar acciones.
+
+### Consecuencias
+
+- ✅ Trabajadores de campo pueden reportar desde su celular
+- ✅ Control granular de qué puede hacer cada rol
+- ⚠️ Requiere agregar validación de rol en cada función del repositorio
+- ⚠️ Pruebas de RBAC del agente más complejas
+
+---
+
+## ADR-016: Distinción clara "Lote" vs "Lote de cosecha (QR)" en UI
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+Renombrar `Parcela` → `Lote` puede generar confusión con `LoteCosecha` (código QR de trazabilidad).
+
+### Decisión
+
+**En la interfaz de usuario**:
+- **"Lote"** o **"Lote de campo"**: división física donde se cultiva (menú, vistas, formularios)
+- **"Lote de cosecha"** o **"QR"**: código de trazabilidad de producto cosechado
+
+**En el código**:
+- Tabla `Lote` (antes `Parcela`)
+- Tabla `LoteCosecha` (sin cambios)
+
+**En URLs y rutas**:
+- `/lotes` → gestión de lotes de campo
+- `/trazabilidad` → lotes de cosecha con QR
+
+### Consecuencias
+
+- ✅ Claridad en la UI para el usuario final
+- ✅ No hay ambigüedad en formularios ni mensajes
+- ⚠️ Requiere revisar todos los textos de la UI
+- ⚠️ Documentar en el glosario del informe
+
+---
+
 ## ADR-009: Abstracción de proveedores de WhatsApp
 
 **Fecha**: 2026-11-25
