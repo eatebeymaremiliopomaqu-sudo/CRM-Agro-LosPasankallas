@@ -93,6 +93,7 @@ model Lote {
   labores       Labor[]
   observaciones Observacion[]
   asistencias   Asistencia[]
+  laboresProgramadas LaborProgramada[]
 
   @@unique([fincaId, codigo])
 }
@@ -109,6 +110,22 @@ model Campania {
 
   labores Labor[]
   lotesCosecha LoteCosecha[]
+}
+
+// Labor programada (calendario)
+model LaborProgramada {
+  id               Int        @id @default(autoincrement())
+  loteId           Int
+  lote             Lote       @relation(fields: [loteId], references: [id])
+  tipo             String     // RIEGO | FERTILIZACION | FUMIGACION | DESHIERBE | PODA | MONITOREO | OTRA
+  fechaProgramada  DateTime
+  responsableId    Int?
+  responsable      Trabajador? @relation(fields: [responsableId], references: [id])
+  estado           String     @default("PENDIENTE") // PENDIENTE | HECHA | CANCELADA
+  descripcion      String?
+  laborRealizadaId Int?       @unique
+  laborRealizada   Labor?     @relation(fields: [laborRealizadaId], references: [id])
+  creadoEn         DateTime   @default(now())
 }
 
 // ───────────── M1 · Control técnico de campo ─────────────
@@ -131,6 +148,7 @@ model Labor {
   registradoPor  Usuario?   @relation(fields: [registradoPorId], references: [id])
 
   aplicacion     Aplicacion?
+  programacion LaborProgramada?
 }
 
 // Registro (no recomendación) de una aplicación de agroquímico,
@@ -140,6 +158,8 @@ model Aplicacion {
   laborId           Int     @unique
   labor             Labor   @relation(fields: [laborId], references: [id], onDelete: Cascade)
   producto          String
+  motivo            String?  // plaga/enfermedad objetivo
+  dosisEtiqueta     String?  // dosis registrada de la etiqueta (texto)
   ingredienteActivo String?
   cantidadUsada     Float?
   unidad            String?
@@ -202,6 +222,7 @@ model Trabajador {
   asistencias Asistencia[]
   pagos       Pago[]
   labores     Labor[]
+  laboresProgramadas LaborProgramada[]
 }
 
 model Asistencia {

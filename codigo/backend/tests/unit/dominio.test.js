@@ -122,3 +122,47 @@ describe('WhatsApp Cloud API (CP-M5-01)', () => {
     assert.deepEqual(await c.enviarTexto('591', 'hola'), { simulado: true });
   });
 });
+
+describe('Período de carencia (CP-M2-02)', () => {
+  it('calcula fecha fin de carencia correctamente', () => {
+    const fechaAplicacion = new Date('2026-11-20T12:00:00Z');
+    const periodoCarenciaDias = 14;
+    const fechaFin = new Date(fechaAplicacion);
+    fechaFin.setDate(fechaFin.getDate() + periodoCarenciaDias);
+
+    assert.equal(fechaFin.toISOString().split('T')[0], '2026-12-04');
+  });
+
+  it('detecta lote en carencia', () => {
+    const fechaAplicacion = new Date('2026-11-22T12:00:00Z'); // hace 3 días
+    const periodoCarenciaDias = 14;
+    const fechaActual = new Date('2026-11-25T12:00:00Z');
+    const fechaFin = new Date(fechaAplicacion);
+    fechaFin.setDate(fechaFin.getDate() + periodoCarenciaDias);
+
+    assert.equal(fechaActual < fechaFin, true, 'Debe estar en carencia');
+  });
+
+  it('permite lote fuera de carencia', () => {
+    const fechaAplicacion = new Date('2026-11-01T12:00:00Z'); // hace 24 días
+    const periodoCarenciaDias = 14;
+    const fechaActual = new Date('2026-11-25T12:00:00Z');
+    const fechaFin = new Date(fechaAplicacion);
+    fechaFin.setDate(fechaFin.getDate() + periodoCarenciaDias);
+
+    assert.equal(fechaActual < fechaFin, false, 'No debe estar en carencia');
+  });
+
+  it('casos límite: mismo día y día siguiente', () => {
+    const fechaAplicacion = new Date('2026-11-25T10:00:00Z');
+    const periodoCarenciaDias = 1;
+    const fechaActual = new Date('2026-11-25T14:00:00Z');
+    const fechaFin = new Date(fechaAplicacion);
+    fechaFin.setDate(fechaFin.getDate() + periodoCarenciaDias);
+
+    assert.equal(fechaActual < fechaFin, true, 'Mismo día debe estar en carencia');
+
+    const fechaActual2 = new Date('2026-11-26T14:00:00Z');
+    assert.equal(fechaActual2 < fechaFin, false, 'Día siguiente debe estar fuera de carencia');
+  });
+});

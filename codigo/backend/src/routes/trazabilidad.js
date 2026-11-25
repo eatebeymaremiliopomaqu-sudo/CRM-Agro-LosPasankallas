@@ -8,6 +8,7 @@ import { asyncH, noEncontrado } from '../utils/errores.js';
 import { auditar } from '../utils/auditoria.js';
 import { crearLote, qrDeLote, urlPublicaLote } from '../services/lotes.js';
 import { TIPOS_EVENTO } from '../constantes.js';
+import { validarCarenciaParaCosecha, CarenciaError } from '../utils/carencia.js';
 
 export const privado = Router();
 export const publico = Router();
@@ -41,9 +42,44 @@ const esquemaLoteCosecha = z.object({
 });
 
 privado.post('/lotes', autorizar('trazabilidad:escribir'), validar(esquemaLoteCosecha), asyncH(async (req, res) => {
-  const loteCosecha = await crearLote({ fincaId: req.usuario.fincaId, ...req.body });
-  await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'LoteCosecha', entidadId: loteCosecha.id, detalle: loteCosecha.codigo });
-  res.status(201).json({ ...loteCosecha, urlPublica: urlPublicaLote(loteCosecha.tokenPublico) });
+  // Verificar que la campaña existe y obtener el loteId
+  const campania = await prisma.campania.findFirst({
+    where: { id: req.body.campaniaId, lote: { fincaId: req.usuario.fincaId } },
+    include: { lote: true }
+  });
+  if (!campania) throw noEncontrado('Campaña');
+
+  // Verificar período de carencia
+  try {
+    const forzar = req.query.forzar === 'true';
+    const justificacion = req.body.justificacion;
+    const validacion = await validarCarenciaParaCosecha(campania.loteId, req.usuario, forzar, justificacion);
+
+    // Crear el lote de cosecha
+    const loteCosecha = await crearLote({ fincaId: req.usuario.fincaId, ...req.body });
+    await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'LoteCosecha', entidadId: loteCosecha.id, detalle: loteCosecha.codigo });
+
+    const respuesta = { ...loteCosecha, urlPublica: urlPublicaLote(loteCosecha.tokenPublico) };
+    if (validacion.advertencia) {
+      respuesta.advertencia = validacion.advertencia;
+    }
+
+    res.status(201).json(respuesta);
+  } catch (error) {
+    if (error instanceof CarenciaError) {
+      return res.status(409).json({
+        error: 'CARENCIA_VIGENTE',
+        mensaje: error.message,
+        detalles: {
+          lote: campania.lote,
+          aplicacion: error.detalles.aplicacion,
+          fechaFinCarencia: error.detalles.fechaFinCarencia,
+          puedeForrzar: req.usuario.rol === 'PROPIETARIO'
+        }
+      });
+    }
+    throw error;
+  }
 }));
 
 privado.get('/lotes/:id', autorizar('trazabilidad:leer'), asyncH(async (req, res) => {

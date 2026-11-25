@@ -16,6 +16,7 @@ const modal = ref(null);
 const f = reactive({});
 const ev = reactive({ tipo: 'DESPACHO', detalle: '' });
 const busqueda = ref('');
+const errorCarencia = ref(null);
 
 const campaniasActivas = computed(() => lotesCampo.value.filter((l) => l.campaniaActual).map((l) => ({ id: l.campaniaActual.id, texto: `${l.codigo} · ${l.campaniaActual.cultivo} ${l.campaniaActual.variedad ? `(${l.campaniaActual.variedad})` : ''}` })));
 const filtrados = computed(() => {
@@ -39,19 +40,47 @@ async function abrir(l) {
   }
 }
 function nuevoLote() {
-  Object.assign(f, { campaniaId: campaniasActivas.value[0]?.id, fechaCosecha: hoyISO(), cantidadKg: '', calidad: 'PRIMERA', destino: '' });
+  Object.assign(f, { campaniaId: campaniasActivas.value[0]?.id, fechaCosecha: hoyISO(), cantidadKg: '', calidad: 'PRIMERA', destino: '', justificacion: '' });
+  errorCarencia.value = null;
   modal.value = 'lote';
 }
-async function crearLote() {
+async function crearLote(forzar = false) {
+  errorCarencia.value = null;
   try {
-    const l = await api.post('/trazabilidad/lotes', { campaniaId: Number(f.campaniaId), fechaCosecha: f.fechaCosecha, cantidadKg: Number(f.cantidadKg), calidad: f.calidad, destino: f.destino || null });
-    ui.avisar(`Lote de cosecha ${l.codigo} creado con su código QR`);
+    const url = forzar ? '/trazabilidad/lotes?forzar=true' : '/trazabilidad/lotes';
+    const cuerpo = {
+      campaniaId: Number(f.campaniaId),
+      fechaCosecha: f.fechaCosecha,
+      cantidadKg: Number(f.cantidadKg),
+      calidad: f.calidad,
+      destino: f.destino || null
+    };
+    if (forzar && f.justificacion) {
+      cuerpo.justificacion = f.justificacion;
+    }
+    const l = await api.post(url, cuerpo);
+    if (l.advertencia) {
+      ui.avisar(`⚠️ ${l.advertencia}`, 'alerta', 10000);
+    } else {
+      ui.avisar(`Lote de cosecha ${l.codigo} creado con su código QR`);
+    }
     modal.value = null;
     await cargar();
     abrir(l);
   } catch (e) {
+    if (e.response?.status === 409 && e.response?.data?.error === 'CARENCIA_VIGENTE') {
+      errorCarencia.value = e.response.data;
+      return;
+    }
     ui.error(e);
   }
+}
+async function forzarCosecha() {
+  if (!f.justificacion || f.justificacion.trim().length < 10) {
+    ui.avisar('La justificación debe tener al menos 10 caracteres', 'alerta');
+    return;
+  }
+  await crearLote(true);
 }
 async function agregarEvento() {
   try {
@@ -119,7 +148,27 @@ onMounted(cargar);
   </div>
 
   <Modal v-if="modal === 'lote'" titulo="Nuevo lote de cosecha" @cerrar="modal = null">
-    <form @submit.prevent="crearLote">
+    <div v-if="errorCarencia" class="tarjeta" style="background: #fff3cd; border-color: #ffc107; padding: 16px; margin-bottom: 16px">
+      <h3 style="color: #856404; margin-top: 0; display: flex; align-items: center; gap: 8px"><Icono nombre="alerta" :tam="20" /> Período de carencia vigente</h3>
+      <p style="color: #856404; margin: 8px 0">{{ errorCarencia.mensaje }}</p>
+      <div v-if="errorCarencia.detalles" style="background: white; padding: 12px; border-radius: 6px; margin-top: 12px">
+        <p style="margin: 4px 0"><strong>Lote:</strong> {{ errorCarencia.detalles.lote.codigo }} - {{ errorCarencia.detalles.lote.nombre }}</p>
+        <p style="margin: 4px 0"><strong>Producto aplicado:</strong> {{ errorCarencia.detalles.aplicacion.producto }}</p>
+        <p style="margin: 4px 0"><strong>Fecha de aplicación:</strong> {{ fecha(errorCarencia.detalles.aplicacion.fechaAplicacion) }}</p>
+        <p style="margin: 4px 0"><strong>Período de carencia:</strong> {{ errorCarencia.detalles.aplicacion.periodoCarenciaDias }} días</p>
+        <p style="margin: 4px 0"><strong>Fecha fin de carencia:</strong> {{ fecha(errorCarencia.detalles.fechaFinCarencia) }}</p>
+      </div>
+      <div v-if="errorCarencia.detalles?.puedeForrzar && sesion.usuario?.rol === 'PROPIETARIO'" style="margin-top: 16px">
+        <p style="color: #856404; font-weight: bold">Como propietario, puede forzar la cosecha bajo su responsabilidad:</p>
+        <div class="campo"><label>Justificación (obligatoria)</label><textarea v-model="f.justificacion" rows="3" required minlength="10" placeholder="Ej: Urgencia de mercado - cliente importante esperando entrega..." /></div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="btn secundario" @click="errorCarencia = null">Cancelar</button>
+          <button type="button" class="btn" style="background: #ffc107; border-color: #ffc107" @click="forzarCosecha">Forzar de todos modos</button>
+        </div>
+      </div>
+      <button v-else type="button" class="btn secundario" style="margin-top: 12px" @click="errorCarencia = null">Volver</button>
+    </div>
+    <form v-else @submit.prevent="crearLote">
       <div class="campo"><label>Campaña (lote de campo y cultivo)</label><select v-model="f.campaniaId" required><option v-for="c in campaniasActivas" :key="c.id" :value="c.id">{{ c.texto }}</option></select></div>
       <div class="fila-campos">
         <div class="campo"><label>Fecha de cosecha</label><input v-model="f.fechaCosecha" type="date" required :max="hoyISO()" /></div>

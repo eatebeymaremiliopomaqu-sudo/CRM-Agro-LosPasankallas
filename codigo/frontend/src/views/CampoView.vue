@@ -14,6 +14,7 @@ const ruta = useRoute();
 const pestana = ref('labores');
 const labores = ref([]);
 const observaciones = ref([]);
+const laboresProgramadas = ref([]);
 const lotes = ref([]);
 const trabajadores = ref([]);
 const filtro = reactive({ loteId: '', tipo: '' });
@@ -26,10 +27,16 @@ const ORIGEN = { WEB: ['gris', 'Web'], WHATSAPP: ['', 'WhatsApp'], AGENTE: ['azu
 
 async function cargar() {
   try {
-    const [l, o, p] = await Promise.all([api.get('/campo/labores'), api.get('/campo/observaciones'), api.get('/lotes')]);
+    const [l, o, p, lp] = await Promise.all([
+      api.get('/campo/labores'),
+      api.get('/campo/observaciones'),
+      api.get('/lotes'),
+      api.get('/campo/programadas')
+    ]);
     labores.value = l;
     observaciones.value = o;
     lotes.value = p.filter((x) => x.activo);
+    laboresProgramadas.value = lp;
     if (sesion.tieneModulo('M3') && sesion.puede('trabajadores:leer')) trabajadores.value = await api.get('/trabajadores').catch(() => []);
   } catch (e) {
     ui.error(e);
@@ -38,13 +45,18 @@ async function cargar() {
 
 function nuevaLabor() {
   Object.keys(f).forEach((k) => delete f[k]);
-  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '' });
+  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', motivo: '', dosisEtiqueta: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '' });
   modal.value = 'labor';
 }
 function nuevaObs() {
   Object.keys(f).forEach((k) => delete f[k]);
   Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'PLAGA', severidad: 2, nota: '', fecha: hoyISO() });
   modal.value = 'obs';
+}
+function nuevaProgramada() {
+  Object.keys(f).forEach((k) => delete f[k]);
+  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fechaProgramada: hoyISO(), responsableId: '', descripcion: '' });
+  modal.value = 'programada';
 }
 
 async function guardarLabor() {
@@ -54,7 +66,10 @@ async function guardarLabor() {
   };
   if (conAplicacion.value && f.producto) {
     cuerpo.aplicacion = {
-      producto: f.producto, ingredienteActivo: f.ingredienteActivo || null,
+      producto: f.producto,
+      motivo: f.motivo || null,
+      dosisEtiqueta: f.dosisEtiqueta || null,
+      ingredienteActivo: f.ingredienteActivo || null,
       cantidadUsada: f.cantidadUsada === '' ? null : Number(f.cantidadUsada), unidad: f.unidad || null,
       periodoCarenciaDias: f.periodoCarenciaDias === '' ? null : Number(f.periodoCarenciaDias), responsableTecnico: f.responsableTecnico,
     };
@@ -74,6 +89,43 @@ async function guardarObs() {
     ui.avisar(r?.encolado ? '📴 Observación guardada sin conexión' : 'Observación registrada ✔');
     modal.value = null;
     if (!r?.encolado) cargar();
+  } catch (e) {
+    ui.error(e);
+  }
+}
+
+async function guardarProgramada() {
+  try {
+    await api.post('/campo/programadas', {
+      loteId: Number(f.loteId),
+      tipo: f.tipo,
+      fechaProgramada: f.fechaProgramada,
+      responsableId: f.responsableId ? Number(f.responsableId) : null,
+      descripcion: f.descripcion || null
+    });
+    ui.avisar('Labor programada creada ✔');
+    modal.value = null;
+    cargar();
+  } catch (e) {
+    ui.error(e);
+  }
+}
+
+async function marcarComoHecha(programada) {
+  try {
+    await api.put(`/campo/programadas/${programada.id}`, { estado: 'HECHA', crearLabor: true, laborData: {} });
+    ui.avisar('Labor marcada como hecha ✔');
+    cargar();
+  } catch (e) {
+    ui.error(e);
+  }
+}
+
+async function cambiarEstadoProgramada(id, estado) {
+  try {
+    await api.put(`/campo/programadas/${id}`, { estado });
+    ui.avisar(`Labor ${estado === 'CANCELADA' ? 'cancelada' : 'actualizada'} ✔`);
+    cargar();
   } catch (e) {
     ui.error(e);
   }
@@ -101,6 +153,7 @@ onMounted(async () => {
     <div class="pestanas">
       <button :class="{ activa: pestana === 'labores' }" @click="pestana = 'labores'">Labores ({{ labores.length }})</button>
       <button :class="{ activa: pestana === 'obs' }" @click="pestana = 'obs'">Observaciones ({{ observaciones.length }})</button>
+      <button :class="{ activa: pestana === 'calendario' }" @click="pestana = 'calendario'">Calendario ({{ laboresProgramadas.length }})</button>
     </div>
 
     <template v-if="pestana === 'labores'">
@@ -134,7 +187,7 @@ onMounted(async () => {
       </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="pestana === 'obs'">
       <div class="tabla-envoltura">
         <table>
           <thead><tr><th>Fecha</th><th>Lote</th><th>Tipo</th><th>Severidad</th><th>Nota</th></tr></thead>
@@ -148,6 +201,38 @@ onMounted(async () => {
             </tr>
           </tbody>
         </table>
+      </div>
+    </template>
+
+    <template v-else-if="pestana === 'calendario'">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #e1e1e1">
+        <h3 style="margin: 0">Labores programadas</h3>
+        <button v-if="sesion.puede('labores:escribir')" class="btn" @click="nuevaProgramada"><Icono nombre="mas" /> Programar labor</button>
+      </div>
+      <div class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Fecha programada</th><th>Labor</th><th>Lote</th><th>Responsable</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr v-for="lp in laboresProgramadas" :key="lp.id">
+              <td style="white-space: nowrap">{{ fecha(lp.fechaProgramada) }}</td>
+              <td><span class="punto" :style="{ color: COLORES_LABOR[lp.tipo] }" /> <strong>{{ ETIQUETAS_LABOR[lp.tipo] }}</strong><br /><small>{{ lp.descripcion || '—' }}</small></td>
+              <td>{{ lp.lote.codigo }}</td>
+              <td>{{ lp.responsable?.nombre || '—' }}</td>
+              <td>
+                <span v-if="lp.estado === 'PENDIENTE'" class="insignia naranja">Pendiente</span>
+                <span v-else-if="lp.estado === 'HECHA'" class="insignia verde">Hecha</span>
+                <span v-else class="insignia gris">Cancelada</span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 4px">
+                  <button v-if="lp.estado === 'PENDIENTE' && sesion.puede('labores:escribir')" class="btn-icono" title="Marcar como hecha" @click="marcarComoHecha(lp)"><Icono nombre="check" /></button>
+                  <button v-if="lp.estado === 'PENDIENTE' && sesion.puede('labores:escribir')" class="btn-icono" title="Cancelar" @click="cambiarEstadoProgramada(lp.id, 'CANCELADA')"><Icono nombre="x" /></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-if="!laboresProgramadas.length" class="vacio">No hay labores programadas.</div>
       </div>
     </template>
   </div>
@@ -171,14 +256,20 @@ onMounted(async () => {
         <p style="font-size: 0.85rem; margin-top: 0; color: #7a4e1d">
           Anota lo que <strong>efectivamente se aplicó</strong> por indicación del técnico responsable. El sistema no sugiere productos ni dosis.
         </p>
+        <div class="campo"><label>Producto comercial</label><input v-model="f.producto" :required="f.tipo === 'FUMIGACION'" /></div>
         <div class="fila-campos">
-          <div class="campo"><label>Producto comercial</label><input v-model="f.producto" :required="f.tipo === 'FUMIGACION'" /></div>
+          <div class="campo"><label>Motivo (plaga/enfermedad)</label><input v-model="f.motivo" placeholder="Ej: Pulgón, Tizón tardío..." /></div>
           <div class="campo"><label>Ingrediente activo</label><input v-model="f.ingredienteActivo" /></div>
         </div>
+        <div class="campo"><label>Dosis de etiqueta</label><textarea v-model="f.dosisEtiqueta" rows="2" placeholder="Ej: 2.5 L/ha según etiqueta del producto" /></div>
         <div class="fila-campos">
           <div class="campo"><label>Cantidad usada</label><input v-model="f.cantidadUsada" type="number" min="0" step="any" /></div>
           <div class="campo"><label>Unidad</label><select v-model="f.unidad"><option>L</option><option>ml</option><option>kg</option><option>g</option><option>saco</option><option>bolsa</option></select></div>
           <div class="campo"><label>Carencia (días)</label><input v-model="f.periodoCarenciaDias" type="number" min="0" max="365" /></div>
+        </div>
+        <div v-if="f.periodoCarenciaDias > 0" class="tarjeta" style="background: #fff3cd; border-color: #ffc107; padding: 12px; margin-top: 8px">
+          <strong style="color: #856404">Período de carencia: {{ f.periodoCarenciaDias }} días</strong><br />
+          <small v-if="f.fecha" style="color: #856404">Fecha fin estimada: {{ new Date(new Date(f.fecha).getTime() + f.periodoCarenciaDias * 86400000).toISOString().split('T')[0] }}</small>
         </div>
         <div class="campo" style="margin-bottom: 0"><label>Responsable técnico</label><input v-model="f.responsableTecnico" required minlength="3" /></div>
       </div>
@@ -200,6 +291,21 @@ onMounted(async () => {
       </div>
       <div class="campo"><label>¿Qué se observó?</label><textarea v-model="f.nota" rows="3" required minlength="3" maxlength="500" placeholder="Presencia de pulgón en el envés de las hojas…" /></div>
       <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn">Guardar</button></div>
+    </form>
+  </Modal>
+
+  <Modal v-if="modal === 'programada'" titulo="Programar labor" @cerrar="modal = null">
+    <form @submit.prevent="guardarProgramada">
+      <div class="fila-campos">
+        <div class="campo"><label>Lote</label><select v-model="f.loteId" required><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }} · {{ l.nombre }}</option></select></div>
+        <div class="campo"><label>Tipo de labor</label><select v-model="f.tipo" required><option value="RIEGO">Riego</option><option value="FERTILIZACION">Fertilización</option><option value="FUMIGACION">Fumigación</option><option value="DESHIERBE">Deshierbe</option><option value="PODA">Poda</option><option value="MONITOREO">Monitoreo</option><option value="OTRA">Otra</option></select></div>
+      </div>
+      <div class="fila-campos">
+        <div class="campo"><label>Fecha programada</label><input v-model="f.fechaProgramada" type="date" required /></div>
+        <div v-if="trabajadores.length" class="campo"><label>Responsable</label><select v-model="f.responsableId"><option value="">—</option><option v-for="t in trabajadores" :key="t.id" :value="t.id">{{ t.nombre }}</option></select></div>
+      </div>
+      <div class="campo"><label>Descripción</label><textarea v-model="f.descripcion" rows="2" maxlength="500" placeholder="Notas adicionales..." /></div>
+      <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn">Programar</button></div>
     </form>
   </Modal>
 </template>

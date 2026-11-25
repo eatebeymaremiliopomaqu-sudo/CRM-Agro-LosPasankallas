@@ -19,7 +19,7 @@ const dia = (offset) => {
 async function main() {
   console.log('🌱 Limpiando datos…');
   // Eliminar en orden inverso a las dependencias
-  for (const m of ['movimientoInsumo', 'insumo', 'cliente', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'labor', 'observacion', 'pago', 'asistencia', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
+  for (const m of ['movimientoInsumo', 'insumo', 'cliente', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
     await prisma[m].deleteMany();
   }
 
@@ -137,12 +137,14 @@ async function main() {
     ['FitoVerde SC (ficticio)', 'Ingrediente B', 7],
     ['NutriSuelo 15-15-15 (ficticio)', null, null]
   ];
+  const motivosPlagas = ['Pulgón', 'Mosca blanca', 'Gusano cogollero', 'Ácaros', 'Trips', null];
+  const laboresRealizadas = [];
   for (let k = 0; k < 70; k++) {
     const l = elegir(lotes);
     const tipo = elegir(tipos);
     const conAplicacion = tipo === 'FUMIGACION' || tipo === 'FERTILIZACION';
     const prod = tipo === 'FERTILIZACION' ? productosFicticios[2] : elegir(productosFicticios.slice(0, 2));
-    await prisma.labor.create({
+    const labor = await prisma.labor.create({
       data: {
         loteId: l.id,
         campaniaId: l.campania.id,
@@ -158,6 +160,8 @@ async function main() {
           aplicacion: {
             create: {
               producto: prod[0],
+              motivo: tipo === 'FUMIGACION' ? elegir(motivosPlagas) : null,
+              dosisEtiqueta: tipo === 'FUMIGACION' ? (azar() > 0.5 ? '2.5 L/ha según etiqueta del producto' : null) : null,
               ingredienteActivo: prod[1],
               cantidadUsada: Math.round(azar() * 40) / 10 + 0.5,
               unidad: tipo === 'FERTILIZACION' ? 'kg' : 'L',
@@ -166,6 +170,84 @@ async function main() {
             }
           }
         } : {}),
+      },
+    });
+    laboresRealizadas.push(labor);
+  }
+
+  // Aplicación reciente con carencia vigente en el primer lote (hace 3 días, carencia 14 días)
+  const aplicacionCarencia = await prisma.labor.create({
+    data: {
+      loteId: lotes[0].id,
+      campaniaId: lotes[0].campania.id,
+      tipo: 'FUMIGACION',
+      fecha: dia(-3),
+      horas: 4,
+      costoBs: 180,
+      trabajadorId: trabajadores[0].id,
+      descripcion: 'Aplicación de fungicida contra tizón',
+      origen: 'WEB',
+      registradoPorId: usuarios.encargado.id,
+      aplicacion: {
+        create: {
+          producto: 'FungiProtect Ultra (ficticio)',
+          motivo: 'Tizón tardío',
+          dosisEtiqueta: '3.0 L/ha según etiqueta del producto',
+          ingredienteActivo: 'Ingrediente C',
+          cantidadUsada: 3.0,
+          unidad: 'L',
+          periodoCarenciaDias: 14,
+          responsableTecnico: usuarios.encargado.nombre
+        }
+      }
+    },
+  });
+  laboresRealizadas.push(aplicacionCarencia);
+
+  // Labores programadas (calendario)
+  const tiposProgramadas = ['RIEGO', 'FERTILIZACION', 'FUMIGACION', 'DESHIERBE', 'PODA', 'MONITOREO'];
+  const estadosProgramadas = ['PENDIENTE', 'HECHA', 'CANCELADA'];
+
+  // Labores programadas pendientes
+  for (let k = 0; k < 8; k++) {
+    await prisma.laborProgramada.create({
+      data: {
+        loteId: elegir(lotes).id,
+        tipo: elegir(tiposProgramadas),
+        fechaProgramada: dia(Math.floor(azar() * 20) + 1), // futuras
+        responsableId: azar() > 0.3 ? elegir(trabajadores).id : null,
+        estado: 'PENDIENTE',
+        descripcion: `${elegir(tiposProgramadas).toLowerCase()} programado`,
+      },
+    });
+  }
+
+  // Labores programadas ya realizadas (con laborRealizadaId)
+  for (let k = 0; k < 4; k++) {
+    const labor = laboresRealizadas[k];
+    await prisma.laborProgramada.create({
+      data: {
+        loteId: labor.loteId,
+        tipo: labor.tipo,
+        fechaProgramada: new Date(labor.fecha.getTime() - 24 * 3600000), // programada 1 día antes
+        responsableId: labor.trabajadorId,
+        estado: 'HECHA',
+        descripcion: labor.descripcion,
+        laborRealizadaId: labor.id,
+      },
+    });
+  }
+
+  // Labores programadas canceladas
+  for (let k = 0; k < 3; k++) {
+    await prisma.laborProgramada.create({
+      data: {
+        loteId: elegir(lotes).id,
+        tipo: elegir(tiposProgramadas),
+        fechaProgramada: dia(-Math.floor(azar() * 10) - 1), // pasadas
+        responsableId: azar() > 0.5 ? elegir(trabajadores).id : null,
+        estado: 'CANCELADA',
+        descripcion: 'Cancelada por condiciones climáticas',
       },
     });
   }
