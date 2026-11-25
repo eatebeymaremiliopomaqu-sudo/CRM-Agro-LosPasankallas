@@ -28,6 +28,7 @@ model Finca {
   lotes          Lote[]
   trabajadores   Trabajador[]
   insumos        Insumo[]
+  productos      ProductoCosechado[]
   clientes       Cliente[]
   mensajes       MensajeWhatsApp[]
   acciones       AccionPendiente[]
@@ -192,6 +193,7 @@ model LoteCosecha {
   creadoEn    DateTime  @default(now())
 
   eventos     EventoTrazabilidad[]
+  detallesVenta DetalleVenta[]
 }
 
 model EventoTrazabilidad {
@@ -276,6 +278,33 @@ model MovimientoInsumo {
   fecha    DateTime @default(now())
 }
 
+// ───────────── M4 · Inventario de productos cosechados ─────────────
+model ProductoCosechado {
+  id               Int      @id @default(autoincrement())
+  fincaId          Int
+  finca            Finca    @relation(fields: [fincaId], references: [id])
+  nombre           String   // Tomate Cherry, Lechuga Crespa, etc.
+  cultivo          String   // TOMATE, LECHUGA, etc.
+  unidad           String   // kg, unidad, bandeja
+  stock            Float    @default(0)
+  stockMinimo      Float    @default(0)
+  precioVentaBs    Float    @default(0)
+  creadoEn         DateTime @default(now())
+
+  movimientos MovimientoProducto[]
+}
+
+model MovimientoProducto {
+  id          Int                @id @default(autoincrement())
+  productoId  Int
+  producto    ProductoCosechado  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  tipo        String             // ENTRADA | SALIDA
+  cantidad    Float
+  motivo      String?            // COSECHA | VENTA | MERMA | AJUSTE
+  referencia  String?            // ID del lote de cosecha o venta
+  fecha       DateTime           @default(now())
+}
+
 // ───────────── M5 · Ventas y clientes ─────────────
 model Cliente {
   id                     Int      @id @default(autoincrement())
@@ -287,8 +316,76 @@ model Cliente {
   consentimientoWhatsapp Boolean  @default(false)
   fechaConsentimiento    DateTime?
   nit                    String?
+  direccion              String?
   activo                 Boolean  @default(true)
   creadoEn               DateTime @default(now())
+
+  pedidos Pedido[]
+  ventas  Venta[]
+}
+
+model Pedido {
+  id         Int      @id @default(autoincrement())
+  clienteId  Int
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  fecha      DateTime @default(now())
+  fechaEntrega DateTime?
+  estado     String   @default("PENDIENTE") // PENDIENTE | CONFIRMADO | ENTREGADO | CANCELADO
+  total      Float    @default(0)
+  notas      String?
+  creadoEn   DateTime @default(now())
+
+  detalles DetallePedido[]
+}
+
+model DetallePedido {
+  id         Int     @id @default(autoincrement())
+  pedidoId   Int
+  pedido     Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  producto   String  // nombre del producto
+  cantidad   Float
+  unidad     String
+  precioBs   Float
+  subtotal   Float
+}
+
+model Venta {
+  id         Int      @id @default(autoincrement())
+  clienteId  Int
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  fecha      DateTime @default(now())
+  total      Float
+  pagado     Float    @default(0)
+  saldo      Float    @default(0)
+  estado     String   @default("PENDIENTE") // PENDIENTE | PAGADO | VENCIDO
+  notas      String?
+  creadoEn   DateTime @default(now())
+
+  detalles DetalleVenta[]
+  cobros   Cobro[]
+}
+
+model DetalleVenta {
+  id             Int          @id @default(autoincrement())
+  ventaId        Int
+  venta          Venta        @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  producto       String       // nombre del producto
+  cantidad       Float
+  unidad         String
+  precioBs       Float
+  subtotal       Float
+  loteCosechaId  Int?
+  loteCosecha    LoteCosecha? @relation(fields: [loteCosechaId], references: [id])
+}
+
+model Cobro {
+  id       Int      @id @default(autoincrement())
+  ventaId  Int
+  venta    Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  fecha    DateTime @default(now())
+  montoBs  Float
+  metodo   String   @default("EFECTIVO") // EFECTIVO | TRANSFERENCIA | QR
+  recibo   String?
 }
 
 // ───────────── Capacidad transversal · WhatsApp + agente de IA ─────────────

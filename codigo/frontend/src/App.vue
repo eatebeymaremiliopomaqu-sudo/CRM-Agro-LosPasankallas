@@ -21,8 +21,8 @@ const enlaces = computed(() =>
     { a: '/trazabilidad', texto: 'Trazabilidad', corto: 'Cosecha', icono: 'qr', modulo: 'M2' },
     { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M3', permiso: 'trabajadores:leer' },
     { a: '/insumos', texto: 'Insumos', icono: 'caja', modulo: 'M4' },
-    // M5, M6, M7 pendientes de implementar en bloques posteriores
-    // { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
+    { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
+    // M6, M7 pendientes de implementar en bloques posteriores
     // { a: '/vivero', texto: 'Vivero', icono: 'planta', modulo: 'M6' },
     // { a: '/reportes', texto: 'Reportes', icono: 'grafico', modulo: 'M7' },
     { a: '/agente', texto: 'Agente y WhatsApp', corto: 'Agente', icono: 'chat', permiso: 'agente:usar' },

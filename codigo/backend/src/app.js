@@ -17,6 +17,10 @@ import { privado as trazaPrivado, publico as trazaPublico } from './routes/traza
 import trabajadores from './routes/trabajadores.js';
 import { agenteRouter, webhookRouter } from './routes/agente.js';
 import insumos from './routes/insumos.js';
+import productos from './routes/productos.js';
+import clientes from './routes/clientes.js';
+import pedidos from './routes/pedidos.js';
+import ventas from './routes/ventas.js';
 import dashboard from './routes/dashboard.js';
 
 export function crearApp() {
@@ -59,6 +63,10 @@ export function crearApp() {
   app.use('/api/trabajadores', requiereModulo('M3'), trabajadores);
   app.use('/api/agente', requiereModulo('M1'), agenteRouter);
   app.use('/api/insumos', requiereModulo('M4'), insumos);
+  app.use('/api/productos', requiereModulo('M5'), productos);
+  app.use('/api/clientes', requiereModulo('M5'), clientes);
+  app.use('/api/pedidos', requiereModulo('M5'), pedidos);
+  app.use('/api/ventas', requiereModulo('M5'), ventas);
 
   app.use(noEncontradoRuta);
   app.use(manejadorErrores);
