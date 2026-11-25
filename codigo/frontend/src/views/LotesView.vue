@@ -5,21 +5,21 @@ import { useSesion } from '../stores/sesion.js';
 import { useUi } from '../stores/ui.js';
 import Icono from '../components/Icono.vue';
 import Modal from '../components/Modal.vue';
-import MapaParcelas from '../components/MapaParcelas.vue';
+import MapaLotes from '../components/MapaLotes.vue';
 import { ETIQUETAS_LABOR, fecha, hoyISO } from '../utils/formato.js';
 
 const sesion = useSesion();
 const ui = useUi();
-const parcelas = ref([]);
+const lotes = ref([]);
 const cargando = ref(true);
 const detalle = ref(null);
-const modal = ref(null); // 'parcela' | 'siembra'
+const modal = ref(null); // 'lote' | 'campania'
 const form = reactive({});
 
 async function cargar() {
   cargando.value = true;
   try {
-    parcelas.value = await api.get('/parcelas');
+    lotes.value = await api.get('/lotes');
   } catch (e) {
     ui.error(e);
   } finally {
@@ -27,26 +27,26 @@ async function cargar() {
   }
 }
 
-async function verDetalle(p) {
+async function verDetalle(l) {
   try {
-    detalle.value = await api.get(`/parcelas/${p.id}`);
+    detalle.value = await api.get(`/lotes/${l.id}`);
   } catch (e) {
     ui.error(e);
   }
 }
 
-function nuevaParcela() {
-  const n = parcelas.value.length + 1;
-  Object.assign(form, { id: null, codigo: `P-${String(n).padStart(2, '0')}`, nombre: '', areaHa: 1, tipoSuelo: '', riego: 'GOTEO', lat: sesion.finca?.lat ?? null, lng: sesion.finca?.lng ?? null });
-  modal.value = 'parcela';
+function nuevoLote() {
+  const n = lotes.value.length + 1;
+  Object.assign(form, { id: null, codigo: `L-${String(n).padStart(2, '0')}`, nombre: '', areaHa: 1, tipoSuelo: '', riego: 'GOTEO', lat: sesion.finca?.lat ?? null, lng: sesion.finca?.lng ?? null });
+  modal.value = 'lote';
 }
-function editarParcela(p) {
-  Object.assign(form, { id: p.id, codigo: p.codigo, nombre: p.nombre, areaHa: p.areaHa, tipoSuelo: p.tipoSuelo, riego: p.riego, lat: p.lat, lng: p.lng });
-  modal.value = 'parcela';
+function editarLote(l) {
+  Object.assign(form, { id: l.id, codigo: l.codigo, nombre: l.nombre, areaHa: l.areaHa, tipoSuelo: l.tipoSuelo, riego: l.riego, lat: l.lat, lng: l.lng });
+  modal.value = 'lote';
 }
-function nuevaSiembra(p) {
-  Object.assign(form, { parcelaId: p.id, codigo: p.codigo, cultivo: '', variedad: '', fechaSiembra: hoyISO(), fechaCosechaEst: '' });
-  modal.value = 'siembra';
+function nuevaCampania(l) {
+  Object.assign(form, { loteId: l.id, codigo: l.codigo, cultivo: '', variedad: '', fechaSiembra: hoyISO(), fechaCosechaEst: '' });
+  modal.value = 'campania';
 }
 function usarUbicacion() {
   navigator.geolocation?.getCurrentPosition(
@@ -55,23 +55,23 @@ function usarUbicacion() {
   );
 }
 
-async function guardarParcela() {
+async function guardarLote() {
   const { id, ...datos } = form;
   const cuerpo = { codigo: datos.codigo, nombre: datos.nombre, areaHa: Number(datos.areaHa), tipoSuelo: datos.tipoSuelo || null, riego: datos.riego || null, lat: datos.lat === '' || datos.lat == null ? null : Number(datos.lat), lng: datos.lng === '' || datos.lng == null ? null : Number(datos.lng) };
   try {
-    if (id) await api.patch(`/parcelas/${id}`, cuerpo);
-    else await api.post('/parcelas', cuerpo);
-    ui.avisar(id ? 'Parcela actualizada' : 'Parcela creada');
+    if (id) await api.patch(`/lotes/${id}`, cuerpo);
+    else await api.post('/lotes', cuerpo);
+    ui.avisar(id ? 'Lote actualizado' : 'Lote creado');
     modal.value = null;
     cargar();
   } catch (e) {
     ui.error(e);
   }
 }
-async function guardarSiembra() {
+async function guardarCampania() {
   try {
-    await api.post(`/parcelas/${form.parcelaId}/siembras`, { cultivo: form.cultivo, variedad: form.variedad || null, fechaSiembra: form.fechaSiembra, fechaCosechaEst: form.fechaCosechaEst || null });
-    ui.avisar('Siembra registrada 🌱');
+    await api.post(`/lotes/${form.loteId}/campanias`, { cultivo: form.cultivo, variedad: form.variedad || null, fechaSiembra: form.fechaSiembra, fechaCosechaEst: form.fechaCosechaEst || null });
+    ui.avisar('Campaña registrada');
     modal.value = null;
     cargar();
   } catch (e) {
@@ -86,41 +86,41 @@ onMounted(cargar);
 <template>
   <div class="encabezado">
     <div>
-      <h1>Parcelas y cultivos</h1>
-      <p>Mapa de la finca y ciclo de cultivo de cada parcela. <span class="insignia tierra">M1</span></p>
+      <h1>Lotes de campo</h1>
+      <p>Mapa de la finca y ciclo de cultivo de cada lote. <span class="insignia tierra">M0</span></p>
     </div>
-    <button v-if="sesion.puede('parcelas:escribir')" class="btn" @click="nuevaParcela"><Icono nombre="mas" /> Nueva parcela</button>
+    <button v-if="sesion.puede('lotes:escribir')" class="btn" @click="nuevoLote"><Icono nombre="mas" /> Nuevo lote</button>
   </div>
 
   <div class="tarjeta">
-    <MapaParcelas :parcelas="parcelas.filter((p) => p.activa)" :centro="[sesion.finca?.lat ?? -17.9135, sesion.finca?.lng ?? -64.5312]" @seleccionar="verDetalle" />
+    <MapaLotes :lotes="lotes.filter((l) => l.activo)" :centro="[sesion.finca?.lat ?? -17.9135, sesion.finca?.lng ?? -64.5312]" @seleccionar="verDetalle" />
   </div>
 
   <div class="tarjeta">
     <div v-if="cargando" class="esqueleto" style="height: 120px" />
-    <div v-else-if="!parcelas.length" class="vacio"><Icono nombre="parcela" :tam="40" /><p>Todavía no hay parcelas. Crea la primera.</p></div>
+    <div v-else-if="!lotes.length" class="vacio"><Icono nombre="parcela" :tam="40" /><p>Todavía no hay lotes. Crea el primero.</p></div>
     <div v-else class="tabla-envoltura">
       <table>
         <thead><tr><th>Código</th><th>Nombre</th><th class="num">Área</th><th>Cultivo actual</th><th>Riego</th><th class="num">Labores</th><th /></tr></thead>
         <tbody>
-          <tr v-for="p in parcelas" :key="p.id" :style="{ opacity: p.activa ? 1 : 0.5 }">
-            <td><strong>{{ p.codigo }}</strong></td>
-            <td>{{ p.nombre }}</td>
-            <td class="num">{{ p.areaHa }} ha</td>
+          <tr v-for="l in lotes" :key="l.id" :style="{ opacity: l.activo ? 1 : 0.5 }">
+            <td><strong>{{ l.codigo }}</strong></td>
+            <td>{{ l.nombre }}</td>
+            <td class="num">{{ l.areaHa }} ha</td>
             <td>
-              <template v-if="p.siembraActual">
-                <span class="insignia">{{ p.siembraActual.cultivo }}</span>
-                <small> · día {{ diasDesde(p.siembraActual.fechaSiembra) }}</small>
+              <template v-if="l.campaniaActual">
+                <span class="insignia">{{ l.campaniaActual.cultivo }}</span>
+                <small> · día {{ diasDesde(l.campaniaActual.fechaSiembra) }}</small>
               </template>
-              <span v-else class="insignia gris">Sin siembra</span>
+              <span v-else class="insignia gris">Sin campaña</span>
             </td>
-            <td>{{ p.riego || '—' }}</td>
-            <td class="num">{{ p._count?.labores ?? 0 }}</td>
+            <td>{{ l.riego || '—' }}</td>
+            <td class="num">{{ l._count?.labores ?? 0 }}</td>
             <td style="white-space: nowrap; text-align: right">
-              <button class="btn fantasma chico" @click="verDetalle(p)">Ver</button>
-              <template v-if="sesion.puede('parcelas:escribir')">
-                <button class="btn fantasma chico" @click="nuevaSiembra(p)">+ Siembra</button>
-                <button class="btn fantasma chico" @click="editarParcela(p)">Editar</button>
+              <button class="btn fantasma chico" @click="verDetalle(l)">Ver</button>
+              <template v-if="sesion.puede('lotes:escribir')">
+                <button class="btn fantasma chico" @click="nuevaCampania(l)">+ Campaña</button>
+                <button class="btn fantasma chico" @click="editarLote(l)">Editar</button>
               </template>
             </td>
           </tr>
@@ -129,10 +129,10 @@ onMounted(cargar);
     </div>
   </div>
 
-  <Modal v-if="modal === 'parcela'" :titulo="form.id ? 'Editar parcela' : 'Nueva parcela'" @cerrar="modal = null">
-    <form @submit.prevent="guardarParcela">
+  <Modal v-if="modal === 'lote'" :titulo="form.id ? 'Editar lote' : 'Nuevo lote'" @cerrar="modal = null">
+    <form @submit.prevent="guardarLote">
       <div class="fila-campos">
-        <div class="campo"><label>Código</label><input v-model="form.codigo" required pattern="P-\d{2,3}" title="Formato P-01" /></div>
+        <div class="campo"><label>Código</label><input v-model="form.codigo" required pattern="L-\d{2,3}" title="Formato L-01" /></div>
         <div class="campo"><label>Nombre</label><input v-model="form.nombre" required minlength="2" /></div>
         <div class="campo"><label>Área (ha)</label><input v-model.number="form.areaHa" type="number" step="0.01" min="0.01" required /></div>
       </div>
@@ -151,8 +151,8 @@ onMounted(cargar);
     </form>
   </Modal>
 
-  <Modal v-if="modal === 'siembra'" :titulo="`Nueva siembra en ${form.codigo}`" @cerrar="modal = null">
-    <form @submit.prevent="guardarSiembra">
+  <Modal v-if="modal === 'campania'" :titulo="`Nueva campaña en ${form.codigo}`" @cerrar="modal = null">
+    <form @submit.prevent="guardarCampania">
       <div class="fila-campos">
         <div class="campo"><label>Cultivo</label><input v-model="form.cultivo" required placeholder="Tomate" /></div>
         <div class="campo"><label>Variedad</label><input v-model="form.variedad" placeholder="Santa Cruz Kada" /></div>
@@ -161,7 +161,7 @@ onMounted(cargar);
         <div class="campo"><label>Fecha de siembra</label><input v-model="form.fechaSiembra" type="date" required /></div>
         <div class="campo"><label>Cosecha estimada</label><input v-model="form.fechaCosechaEst" type="date" /></div>
       </div>
-      <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn">Registrar siembra</button></div>
+      <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn">Registrar campaña</button></div>
     </form>
   </Modal>
 
@@ -172,9 +172,9 @@ onMounted(cargar);
       <div><small>Riego</small><div><strong>{{ detalle.riego || '—' }}</strong></div></div>
     </div>
     <h3>Ciclos de cultivo</h3>
-    <div v-for="s in detalle.siembras" :key="s.id" style="display: flex; justify-content: space-between; padding: 6px 0">
-      <span>{{ s.cultivo }} <small>{{ s.variedad }}</small></span>
-      <span><small>{{ fecha(s.fechaSiembra) }}</small> <span class="insignia" :class="s.estado === 'EN_CURSO' ? '' : 'gris'">{{ s.estado.replace('_', ' ') }}</span></span>
+    <div v-for="c in detalle.campanias" :key="c.id" style="display: flex; justify-content: space-between; padding: 6px 0">
+      <span>{{ c.cultivo }} <small>{{ c.variedad }}</small></span>
+      <span><small>{{ fecha(c.fechaSiembra) }}</small> <span class="insignia" :class="c.estado === 'EN_CURSO' ? '' : 'gris'">{{ c.estado.replace('_', ' ') }}</span></span>
     </div>
     <h3 style="margin-top: 14px">Últimas labores</h3>
     <div v-if="!detalle.labores.length" class="apagado">Sin labores.</div>

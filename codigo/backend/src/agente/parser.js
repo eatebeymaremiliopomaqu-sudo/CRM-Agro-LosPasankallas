@@ -35,16 +35,16 @@ const PALABRAS_ENFERMEDAD = /\b(hongo\w*|roya|tizon|mildiu|oidio|pudricion|virus
 const PALABRAS_CLIMA = /\b(helada|granizo|sequia|lluvia\w*|viento\w*|inundaci\w*|tormenta)\b/;
 const PALABRAS_SUELO = /\b(erosion|encharc\w*|compact\w*|salin\w*)\b/;
 
-export function normalizarCodigoParcela(valor) {
+export function normalizarCodigoLote(valor) {
   if (valor === null || valor === undefined) return null;
   const s = String(valor).toUpperCase().replace(/\s+/g, '');
   const m = s.match(/(\d{1,3})$/);
-  return m ? `P-${m[1].padStart(2, '0')}` : s;
+  return m ? `L-${m[1].padStart(2, '0')}` : s;
 }
 
-export function extraerParcela(t) {
-  const m = t.match(/\b(?:parcela|lote|potrero|p)\s*(?:n(?:ro|o|um)?\.?|#|-|°|º)?\s*(\d{1,3})\b/);
-  if (m) return `P-${m[1].padStart(2, '0')}`;
+export function extraerLote(t) {
+  const m = t.match(/\b(?:lote|parcela|potrero|l|p)\s*(?:n(?:ro|o|um)?\.?|#|-|°|º)?\s*(\d{1,3})\b/);
+  if (m) return `L-${m[1].padStart(2, '0')}`;
   return null;
 }
 
@@ -147,28 +147,28 @@ export function interpretarPorReglas(texto, ahora = new Date()) {
   }
 
   const fecha = extraerFecha(t, ahora);
-  const parcela = extraerParcela(t);
+  const lote = extraerLote(t);
 
   // Cosecha
   if (/\b(cosech\w*|recolect\w*)\b/.test(t) && extraerKg(t) !== null) {
     const cultivo = (t.match(/(?:kg|kilos?|qq|quintales?|arrobas?)\s+de\s+([a-z]+)/) || [])[1];
     const calidad = /\bsegunda\b/.test(t) ? 'SEGUNDA' : /\bdescarte\b/.test(t) ? 'DESCARTE' : 'PRIMERA';
-    const datos = { parcela, cantidadKg: extraerKg(t), cultivo: cultivo ? titulo(cultivo) : null, calidad, fecha };
-    return r(INTENCIONES.REGISTRAR_COSECHA, datos, parcela ? [] : ['parcela']);
+    const datos = { lote, cantidadKg: extraerKg(t), cultivo: cultivo ? titulo(cultivo) : null, calidad, fecha };
+    return r(INTENCIONES.REGISTRAR_COSECHA, datos, lote ? [] : ['lote']);
   }
 
   // Asistencia
   if (/\b(asistencia|asistio|trabajo|trabajaron|vino|vinieron|estuvo)\b/.test(t)) {
     const trabajador = extraerTrabajador(t);
-    const datos = { trabajador, horas: extraerHoras(t) ?? 8, parcela, fecha, tarea: tipoLabor(t) };
+    const datos = { trabajador, horas: extraerHoras(t) ?? 8, lote, fecha, tarea: tipoLabor(t) };
     return r(INTENCIONES.REGISTRAR_ASISTENCIA, datos, trabajador ? [] : ['trabajador']);
   }
 
   // Labor de campo
   const labor = tipoLabor(t);
   if (labor) {
-    const datos = { tipo: labor, parcela, horas: extraerHoras(t), fecha, descripcion: String(texto).trim().slice(0, 300) };
-    const faltantes = parcela ? [] : ['parcela'];
+    const datos = { tipo: labor, lote, horas: extraerHoras(t), fecha, descripcion: String(texto).trim().slice(0, 300) };
+    const faltantes = lote ? [] : ['lote'];
     if (labor === 'FUMIGACION' || labor === 'FERTILIZACION') {
       datos.producto = extraerProducto(t);
       const c = extraerCantidadUsada(t.replace(/\b\d+(?:[.,]\d+)?\s*(?:h|hr|hrs|horas?)\b/g, ''));
@@ -181,8 +181,8 @@ export function interpretarPorReglas(texto, ahora = new Date()) {
   // Observación fitosanitaria o de clima
   const tipoObs = tipoObservacion(t);
   if (tipoObs) {
-    const datos = { tipo: tipoObs, parcela, severidad: extraerSeveridad(t), nota: String(texto).trim().slice(0, 300), fecha };
-    return r(INTENCIONES.REGISTRAR_OBSERVACION, datos, parcela ? [] : ['parcela']);
+    const datos = { tipo: tipoObs, lote, severidad: extraerSeveridad(t), nota: String(texto).trim().slice(0, 300), fecha };
+    return r(INTENCIONES.REGISTRAR_OBSERVACION, datos, lote ? [] : ['lote']);
   }
 
   if (/\b(resumen|reporte|informe|cuantos|cuantas|estado|como va|como vamos|pendientes)\b/.test(t)) {

@@ -1,9 +1,9 @@
 <script setup>
-// Mapa de parcelas con Leaflet + OpenStreetMap (gratuito, sin API key).
+// Mapa de lotes con Leaflet + OpenStreetMap (gratuito, sin API key).
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import L from 'leaflet';
 
-const props = defineProps({ parcelas: { type: Array, default: () => [] }, centro: { type: Array, default: () => [-17.9135, -64.5312] }, alto: { type: Number, default: 380 } });
+const props = defineProps({ lotes: { type: Array, default: () => [] }, centro: { type: Array, default: () => [-17.9135, -64.5312] }, alto: { type: Number, default: 380 } });
 const emit = defineEmits(['seleccionar']);
 const contenedor = ref(null);
 let mapa;
@@ -23,19 +23,19 @@ function pintar() {
   if (!mapa) return;
   capa.clearLayers();
   const puntos = [];
-  for (const p of props.parcelas) {
-    if (p.lat == null || p.lng == null) continue;
-    const color = colorPorCultivo(p.siembraActual?.cultivo);
+  for (const l of props.lotes) {
+    if (l.lat == null || l.lng == null) continue;
+    const color = colorPorCultivo(l.campaniaActual?.cultivo);
     // Radio aproximado según el área (círculo equivalente en metros)
-    const radio = Math.sqrt((p.areaHa * 10000) / Math.PI);
-    L.circle([p.lat, p.lng], { radius: radio, color, weight: 2, fillColor: color, fillOpacity: 0.25 })
+    const radio = Math.sqrt((l.areaHa * 10000) / Math.PI);
+    L.circle([l.lat, l.lng], { radius: radio, color, weight: 2, fillColor: color, fillOpacity: 0.25 })
       .addTo(capa)
-      .bindPopup(`<strong>${esc(p.codigo)} · ${esc(p.nombre)}</strong><br>${p.siembraActual ? `${esc(p.siembraActual.cultivo)} (${esc(p.siembraActual.variedad || 's/v')})` : 'Sin siembra activa'}<br>${esc(p.areaHa)} ha · ${esc(p.riego || 'sin riego')}`)
-      .on('click', () => emit('seleccionar', p));
-    L.marker([p.lat, p.lng], {
-      icon: L.divIcon({ className: '', html: `<div style="background:${color};color:#fff;font:700 11px Inter,sans-serif;padding:2px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap">${esc(p.codigo)}</div>`, iconAnchor: [18, 10] }),
+      .bindPopup(`<strong>${esc(l.codigo)} · ${esc(l.nombre)}</strong><br>${l.campaniaActual ? `${esc(l.campaniaActual.cultivo)} (${esc(l.campaniaActual.variedad || 's/v')})` : 'Sin campaña activa'}<br>${esc(l.areaHa)} ha · ${esc(l.riego || 'sin riego')}`)
+      .on('click', () => emit('seleccionar', l));
+    L.marker([l.lat, l.lng], {
+      icon: L.divIcon({ className: '', html: `<div style="background:${color};color:#fff;font:700 11px Inter,sans-serif;padding:2px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap">${esc(l.codigo)}</div>`, iconAnchor: [18, 10] }),
     }).addTo(capa);
-    puntos.push([p.lat, p.lng]);
+    puntos.push([l.lat, l.lng]);
   }
   if (puntos.length) mapa.fitBounds(puntos, { padding: [50, 50], maxZoom: 17 });
 }
@@ -46,7 +46,7 @@ onMounted(() => {
   capa = L.layerGroup().addTo(mapa);
   pintar();
 });
-watch(() => props.parcelas, pintar, { deep: true });
+watch(() => props.lotes, pintar, { deep: true });
 onBeforeUnmount(() => mapa?.remove());
 </script>
 

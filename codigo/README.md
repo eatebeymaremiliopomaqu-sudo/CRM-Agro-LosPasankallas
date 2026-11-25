@@ -8,13 +8,16 @@ CRM web modular y de bajo costo para fincas pequeñas: **control técnico de cam
 
 | Código | Módulo | Qué hace |
 |---|---|---|
-| M0 | Núcleo | Login JWT, roles (ADMIN, TECNICO, SUPERVISOR, CONSULTA), finca, **módulos activables**, auditoría |
-| M1 | Parcelas y cultivos | Parcelas en mapa (Leaflet/OSM), ciclos de siembra |
+| M0 | Núcleo | Login JWT, roles (PROPIETARIO, ENCARGADO, TRABAJADOR), finca, **módulos activables** (tabla ModuloFinca), auditoría |
+| M1 | Lotes y cultivos | Lotes (campos) en mapa (Leaflet/OSM), campañas agrícolas |
 | M2 | Control técnico de campo | Labores, registro de aplicaciones (sin recomendaciones), observaciones fitosanitarias |
 | M3 | Trazabilidad | Lotes de cosecha con código correlativo, **QR** y página pública del lote |
 | M4 | Trabajadores | Personal, pasar lista, planilla de jornales y pagos |
-| M5 | WhatsApp + agente IA | Webhook de WhatsApp Cloud API, agente (Claude / Groq / reglas) con confirmación SI/NO |
-| M6 | Inventario (opcional) | Insumos con alertas de stock mínimo |
+| M5 | Ventas | **(En desarrollo)** Registro de ventas y clientes con consentimiento WhatsApp |
+| M6 | Vivero | **(En desarrollo)** Control de almácigos y producción de plantines |
+| M7 | Reportes | **(En desarrollo)** Dashboards y reportes de producción |
+
+> **Nota sobre terminología**: "Lote" se refiere a un campo/parcela de la finca. "Lote de cosecha" se refiere al producto cosechado con código QR para trazabilidad (M3).
 
 ## Estructura
 
@@ -43,8 +46,12 @@ Requisitos: Node.js 20+.
 cd backend
 cp .env.example .env
 npm install
+
+# Si hay problemas con scripts de instalación, ejecutar:
+# npm install-scripts approve
+
 npx prisma db push        # crea dev.db (SQLite)
-npm run db:seed           # carga datos ficticios
+npm run db:seed           # carga datos ficticios (incluye clientes con consentimiento WhatsApp)
 npm run dev               # http://localhost:3000  ·  Swagger: /api/docs
 
 # 2) Frontend (otra terminal)
@@ -53,7 +60,14 @@ npm install
 npm run dev               # http://localhost:5173
 ```
 
-Usuarios de prueba (clave `Agro2026!`): `admin@finca.test`, `tecnico@finca.test`, `supervisor@finca.test`, `consulta@finca.test`.
+**Usuarios de prueba** (clave `Agro2026!`):
+- `propietario@finca.test` - Rol PROPIETARIO (acceso total)
+- `encargado@finca.test` - Rol ENCARGADO (gestión operativa)
+- `trabajador@finca.test` - Rol TRABAJADOR (registro de labores)
+
+**Rutas actualizadas**:
+- `/api/parcelas` → `/api/lotes` (gestión de campos/parcelas)
+- Siembras ahora se llaman "campañas" en la BD
 
 ## Pruebas
 

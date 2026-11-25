@@ -18,7 +18,10 @@ const esquemaLogin = z.object({ email: z.string().email().toLowerCase(), passwor
 
 r.post('/login', limiteLogin, validar(esquemaLogin), asyncH(async (req, res) => {
   const { email, password } = req.body;
-  const usuario = await prisma.usuario.findUnique({ where: { email }, include: { finca: true } });
+  const usuario = await prisma.usuario.findUnique({
+    where: { email },
+    include: { finca: { include: { modulos: true } } }
+  });
   // Mismo mensaje para usuario inexistente o contraseña incorrecta (no revela cuentas)
   const ok = usuario && usuario.activo && (await bcrypt.compare(password, usuario.passwordHash));
   if (!ok) throw new ErrorHttp(401, 'Credenciales incorrectas');
@@ -31,7 +34,10 @@ r.post('/login', limiteLogin, validar(esquemaLogin), asyncH(async (req, res) => 
 }));
 
 r.get('/yo', autenticar, asyncH(async (req, res) => {
-  const u = await prisma.usuario.findUnique({ where: { id: req.usuario.id }, include: { finca: true } });
+  const u = await prisma.usuario.findUnique({
+    where: { id: req.usuario.id },
+    include: { finca: { include: { modulos: true } } }
+  });
   if (!u || !u.activo) throw new ErrorHttp(401, 'Usuario inactivo');
   res.json({
     usuario: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, telefono: u.telefono },

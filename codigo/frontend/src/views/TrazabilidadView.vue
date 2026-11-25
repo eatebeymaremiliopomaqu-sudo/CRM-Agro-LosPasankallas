@@ -9,24 +9,24 @@ import { ETIQUETAS_EVENTO, fecha, fechaHora, hoyISO, numero } from '../utils/for
 
 const sesion = useSesion();
 const ui = useUi();
-const lotes = ref([]);
-const parcelas = ref([]);
+const lotesCosecha = ref([]);
+const lotesCampo = ref([]);
 const detalle = ref(null);
 const modal = ref(null);
 const f = reactive({});
 const ev = reactive({ tipo: 'DESPACHO', detalle: '' });
 const busqueda = ref('');
 
-const siembrasActivas = computed(() => parcelas.value.filter((p) => p.siembraActual).map((p) => ({ id: p.siembraActual.id, texto: `${p.codigo} · ${p.siembraActual.cultivo} ${p.siembraActual.variedad ? `(${p.siembraActual.variedad})` : ''}` })));
+const campaniasActivas = computed(() => lotesCampo.value.filter((l) => l.campaniaActual).map((l) => ({ id: l.campaniaActual.id, texto: `${l.codigo} · ${l.campaniaActual.cultivo} ${l.campaniaActual.variedad ? `(${l.campaniaActual.variedad})` : ''}` })));
 const filtrados = computed(() => {
   const q = busqueda.value.toLowerCase();
-  return lotes.value.filter((l) => !q || l.codigo.toLowerCase().includes(q) || l.siembra.cultivo.toLowerCase().includes(q) || (l.destino || '').toLowerCase().includes(q));
+  return lotesCosecha.value.filter((l) => !q || l.codigo.toLowerCase().includes(q) || l.campania.cultivo.toLowerCase().includes(q) || (l.destino || '').toLowerCase().includes(q));
 });
 const ultimoEvento = (l) => l.eventos[l.eventos.length - 1]?.tipo;
 
 async function cargar() {
   try {
-    [lotes.value, parcelas.value] = await Promise.all([api.get('/trazabilidad/lotes'), api.get('/parcelas')]);
+    [lotesCosecha.value, lotesCampo.value] = await Promise.all([api.get('/trazabilidad/lotes'), api.get('/lotes')]);
   } catch (e) {
     ui.error(e);
   }
@@ -39,13 +39,13 @@ async function abrir(l) {
   }
 }
 function nuevoLote() {
-  Object.assign(f, { siembraId: siembrasActivas.value[0]?.id, fechaCosecha: hoyISO(), cantidadKg: '', calidad: 'PRIMERA', destino: '' });
+  Object.assign(f, { campaniaId: campaniasActivas.value[0]?.id, fechaCosecha: hoyISO(), cantidadKg: '', calidad: 'PRIMERA', destino: '' });
   modal.value = 'lote';
 }
 async function crearLote() {
   try {
-    const l = await api.post('/trazabilidad/lotes', { siembraId: Number(f.siembraId), fechaCosecha: f.fechaCosecha, cantidadKg: Number(f.cantidadKg), calidad: f.calidad, destino: f.destino || null });
-    ui.avisar(`Lote ${l.codigo} creado con su código QR`);
+    const l = await api.post('/trazabilidad/lotes', { campaniaId: Number(f.campaniaId), fechaCosecha: f.fechaCosecha, cantidadKg: Number(f.cantidadKg), calidad: f.calidad, destino: f.destino || null });
+    ui.avisar(`Lote de cosecha ${l.codigo} creado con su código QR`);
     modal.value = null;
     await cargar();
     abrir(l);
@@ -91,25 +91,25 @@ onMounted(cargar);
   <div class="encabezado">
     <div>
       <h1>Trazabilidad</h1>
-      <p>Cada lote de cosecha con su código QR: del surco al consumidor. <span class="insignia tierra">M3</span></p>
+      <p>Lotes de cosecha con código QR: del surco al consumidor. <span class="insignia tierra">M2</span></p>
     </div>
-    <button v-if="sesion.puede('trazabilidad:escribir')" class="btn tierra" :disabled="!siembrasActivas.length" @click="nuevoLote"><Icono nombre="mas" /> Nuevo lote de cosecha</button>
+    <button v-if="sesion.puede('trazabilidad:escribir')" class="btn tierra" :disabled="!campaniasActivas.length" @click="nuevoLote"><Icono nombre="mas" /> Nuevo lote de cosecha</button>
   </div>
 
   <div class="filtros"><input v-model="busqueda" class="entrada" placeholder="Buscar por código, cultivo o destino…" style="max-width: 360px" /></div>
 
-  <div v-if="!lotes.length" class="tarjeta vacio"><Icono nombre="qr" :tam="44" /><p>Aún no hay lotes. Registra una cosecha para generar su QR.</p></div>
+  <div v-if="!lotesCosecha.length" class="tarjeta vacio"><Icono nombre="qr" :tam="44" /><p>Aún no hay lotes de cosecha. Registra una cosecha para generar su QR.</p></div>
   <div class="rejilla r-3">
     <button v-for="l in filtrados" :key="l.id" class="tarjeta" style="text-align: left; cursor: pointer; font: inherit; margin: 0" @click="abrir(l)">
       <div style="display: flex; justify-content: space-between; align-items: start">
         <div>
           <div style="font-family: var(--titulo); font-size: 1.15rem; color: var(--bosque); font-weight: 700">{{ l.codigo }}</div>
-          <small>{{ fecha(l.fechaCosecha) }} · {{ l.siembra.parcela.codigo }}</small>
+          <small>{{ fecha(l.fechaCosecha) }} · {{ l.campania.lote.codigo }}</small>
         </div>
         <span class="insignia" :class="l.calidad === 'PRIMERA' ? '' : 'ambar'">{{ l.calidad }}</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px; margin: 12px 0 6px">
-        <strong style="font-size: 1.5rem">{{ numero(l.cantidadKg) }}</strong><span>kg de {{ l.siembra.cultivo }}</span>
+        <strong style="font-size: 1.5rem">{{ numero(l.cantidadKg) }}</strong><span>kg de {{ l.campania.cultivo }}</span>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center">
         <small>{{ l.destino || 'Sin destino' }}</small>
@@ -120,14 +120,14 @@ onMounted(cargar);
 
   <Modal v-if="modal === 'lote'" titulo="Nuevo lote de cosecha" @cerrar="modal = null">
     <form @submit.prevent="crearLote">
-      <div class="campo"><label>Siembra (parcela y cultivo)</label><select v-model="f.siembraId" required><option v-for="s in siembrasActivas" :key="s.id" :value="s.id">{{ s.texto }}</option></select></div>
+      <div class="campo"><label>Campaña (lote de campo y cultivo)</label><select v-model="f.campaniaId" required><option v-for="c in campaniasActivas" :key="c.id" :value="c.id">{{ c.texto }}</option></select></div>
       <div class="fila-campos">
         <div class="campo"><label>Fecha de cosecha</label><input v-model="f.fechaCosecha" type="date" required :max="hoyISO()" /></div>
         <div class="campo"><label>Cantidad (kg)</label><input v-model="f.cantidadKg" type="number" min="0.1" step="0.1" required /><small>1 quintal = 46 kg</small></div>
         <div class="campo"><label>Calidad</label><select v-model="f.calidad"><option>PRIMERA</option><option>SEGUNDA</option><option>DESCARTE</option></select></div>
       </div>
       <div class="campo"><label>Destino</label><input v-model="f.destino" placeholder="Mercado Abasto, feria local…" /></div>
-      <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn tierra">Crear lote y QR</button></div>
+      <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn tierra">Crear lote de cosecha y QR</button></div>
     </form>
   </Modal>
 
@@ -143,8 +143,8 @@ onMounted(cargar);
       </div>
       <div>
         <p style="margin-top: 0">
-          <strong>{{ numero(detalle.cantidadKg) }} kg</strong> de {{ detalle.siembra.cultivo }} <small>{{ detalle.siembra.variedad }}</small><br />
-          Parcela {{ detalle.siembra.parcela.codigo }} · {{ detalle.siembra.parcela.nombre }}<br />
+          <strong>{{ numero(detalle.cantidadKg) }} kg</strong> de {{ detalle.campania.cultivo }} <small>{{ detalle.campania.variedad }}</small><br />
+          Lote de campo {{ detalle.campania.lote.codigo }} · {{ detalle.campania.lote.nombre }}<br />
           Calidad {{ detalle.calidad }} · {{ detalle.destino || 'sin destino' }}
         </p>
         <h3>Cadena del lote</h3>

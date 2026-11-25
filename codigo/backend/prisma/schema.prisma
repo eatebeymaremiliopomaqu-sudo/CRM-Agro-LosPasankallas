@@ -19,17 +19,29 @@ model Finca {
   lat            Float?
   lng            Float?
   hectareas      Float     @default(0)
-  // JSON con los módulos activos, p. ej. ["M1","M2","M3","M4","M5"]
-  modulosActivos String    @default("[\"M1\",\"M2\",\"M3\",\"M4\",\"M5\"]")
+  whatsappActivo Boolean   @default(false)
   telefonoWa     String?
   creadoEn       DateTime  @default(now())
 
   usuarios       Usuario[]
-  parcelas       Parcela[]
+  modulos        ModuloFinca[]
+  lotes          Lote[]
   trabajadores   Trabajador[]
   insumos        Insumo[]
+  clientes       Cliente[]
   mensajes       MensajeWhatsApp[]
   acciones       AccionPendiente[]
+}
+
+model ModuloFinca {
+  id        Int      @id @default(autoincrement())
+  fincaId   Int
+  finca     Finca    @relation(fields: [fincaId], references: [id])
+  codigo    String   // M1, M2, M3, M4, M5, M6, M7
+  activo    Boolean  @default(true)
+  creadoEn  DateTime @default(now())
+
+  @@unique([fincaId, codigo])
 }
 
 model Usuario {
@@ -37,9 +49,11 @@ model Usuario {
   nombre       String
   email        String    @unique
   passwordHash String
-  // ADMIN | TECNICO | SUPERVISOR | CONSULTA
-  rol          String    @default("CONSULTA")
+  // PROPIETARIO | ENCARGADO | TRABAJADOR
+  rol          String    @default("TRABAJADOR")
   telefono     String?
+  trabajadorId Int?
+  trabajador   Trabajador? @relation(fields: [trabajadorId], references: [id])
   activo       Boolean   @default(true)
   fincaId      Int
   finca        Finca     @relation(fields: [fincaId], references: [id])
@@ -61,8 +75,8 @@ model Auditoria {
   fecha     DateTime @default(now())
 }
 
-// ───────────── M1 · Parcelas y cultivos ─────────────
-model Parcela {
+// ───────────── M0 · Lotes y cultivos (antes M1) ─────────────
+model Lote {
   id        Int       @id @default(autoincrement())
   fincaId   Int
   finca     Finca     @relation(fields: [fincaId], references: [id])
@@ -75,7 +89,7 @@ model Parcela {
   riego     String?   // GOTEO | ASPERSION | GRAVEDAD | SECANO
   activa    Boolean   @default(true)
 
-  siembras      Siembra[]
+  campanias     Campania[]
   labores       Labor[]
   observaciones Observacion[]
   asistencias   Asistencia[]
@@ -83,10 +97,10 @@ model Parcela {
   @@unique([fincaId, codigo])
 }
 
-model Siembra {
+model Campania {
   id               Int       @id @default(autoincrement())
-  parcelaId        Int
-  parcela          Parcela   @relation(fields: [parcelaId], references: [id])
+  loteId           Int
+  lote             Lote      @relation(fields: [loteId], references: [id])
   cultivo          String
   variedad         String?
   fechaSiembra     DateTime
@@ -94,16 +108,16 @@ model Siembra {
   estado           String    @default("EN_CURSO") // EN_CURSO | COSECHADA | PERDIDA
 
   labores Labor[]
-  lotes   LoteCosecha[]
+  lotesCosecha LoteCosecha[]
 }
 
-// ───────────── M2 · Control técnico de campo ─────────────
+// ───────────── M1 · Control técnico de campo ─────────────
 model Labor {
   id             Int        @id @default(autoincrement())
-  parcelaId      Int
-  parcela        Parcela    @relation(fields: [parcelaId], references: [id])
-  siembraId      Int?
-  siembra        Siembra?   @relation(fields: [siembraId], references: [id])
+  loteId         Int
+  lote           Lote       @relation(fields: [loteId], references: [id])
+  campaniaId     Int?
+  campania       Campania?  @relation(fields: [campaniaId], references: [id])
   // SIEMBRA | RIEGO | FERTILIZACION | FUMIGACION | DESHIERBE | PODA | COSECHA | MONITOREO | OTRA
   tipo           String
   fecha          DateTime   @default(now())
@@ -135,8 +149,8 @@ model Aplicacion {
 
 model Observacion {
   id        Int      @id @default(autoincrement())
-  parcelaId Int
-  parcela   Parcela  @relation(fields: [parcelaId], references: [id])
+  loteId    Int
+  lote      Lote     @relation(fields: [loteId], references: [id])
   tipo      String   // PLAGA | ENFERMEDAD | CLIMA | SUELO | OTRO
   severidad Int      @default(1) // 1 a 5
   nota      String
@@ -144,12 +158,12 @@ model Observacion {
   origen    String   @default("WEB")
 }
 
-// ───────────── M3 · Trazabilidad ─────────────
+// ───────────── M2 · Trazabilidad ─────────────
 model LoteCosecha {
   id          Int       @id @default(autoincrement())
   codigo      String    @unique // p. ej. FSR-2026-0007
-  siembraId   Int
-  siembra     Siembra   @relation(fields: [siembraId], references: [id])
+  campaniaId  Int
+  campania    Campania  @relation(fields: [campaniaId], references: [id])
   fechaCosecha DateTime
   cantidadKg  Float
   calidad     String    @default("PRIMERA") // PRIMERA | SEGUNDA | DESCARTE
@@ -169,7 +183,7 @@ model EventoTrazabilidad {
   detalle String?
 }
 
-// ───────────── M4 · Trabajadores ─────────────
+// ───────────── M3 · Trabajadores ─────────────
 model Trabajador {
   id        Int       @id @default(autoincrement())
   fincaId   Int
@@ -179,9 +193,12 @@ model Trabajador {
   telefono  String?
   cargo     String    @default("JORNALERO")
   jornalBs  Float     @default(100)
+  consentimientoWhatsapp Boolean @default(false)
+  fechaConsentimiento    DateTime?
   activo    Boolean   @default(true)
   creadoEn  DateTime  @default(now())
 
+  usuarios    Usuario[]
   asistencias Asistencia[]
   pagos       Pago[]
   labores     Labor[]
@@ -194,8 +211,8 @@ model Asistencia {
   fecha        DateTime
   horas        Float      @default(8)
   tarea        String?
-  parcelaId    Int?
-  parcela      Parcela?   @relation(fields: [parcelaId], references: [id])
+  loteId       Int?
+  lote         Lote?      @relation(fields: [loteId], references: [id])
   origen       String     @default("WEB")
 
   @@unique([trabajadorId, fecha])
@@ -213,32 +230,7 @@ model Pago {
   creadoEn     DateTime   @default(now())
 }
 
-// ───────────── M5 · WhatsApp + agente de IA ─────────────
-model MensajeWhatsApp {
-  id        Int      @id @default(autoincrement())
-  fincaId   Int
-  finca     Finca    @relation(fields: [fincaId], references: [id])
-  telefono  String
-  direccion String   // ENTRANTE | SALIENTE
-  texto     String
-  fecha     DateTime @default(now())
-}
-
-model AccionPendiente {
-  id        Int      @id @default(autoincrement())
-  fincaId   Int
-  finca     Finca    @relation(fields: [fincaId], references: [id])
-  canal     String   // WHATSAPP | WEB
-  remitente String   // teléfono o "usuario:<id>"
-  tipo      String   // REGISTRAR_LABOR | REGISTRAR_ASISTENCIA | REGISTRAR_OBSERVACION | REGISTRAR_COSECHA
-  payload   String   // JSON
-  resumen   String
-  estado    String   @default("PENDIENTE") // PENDIENTE | CONFIRMADA | CANCELADA | EXPIRADA
-  expiraEn  DateTime
-  creadoEn  DateTime @default(now())
-}
-
-// ───────────── M6 (opcional) · Inventario de insumos ─────────────
+// ───────────── M4 · Inventario de insumos ─────────────
 model Insumo {
   id         Int      @id @default(autoincrement())
   fincaId    Int
@@ -261,4 +253,44 @@ model MovimientoInsumo {
   cantidad Float
   motivo   String?
   fecha    DateTime @default(now())
+}
+
+// ───────────── M5 · Ventas y clientes ─────────────
+model Cliente {
+  id                     Int      @id @default(autoincrement())
+  fincaId                Int
+  finca                  Finca    @relation(fields: [fincaId], references: [id])
+  nombre                 String
+  tipo                   String   @default("MINORISTA") // MINORISTA | MAYORISTA | RESTAURANTE | MERCADO
+  telefono               String?
+  consentimientoWhatsapp Boolean  @default(false)
+  fechaConsentimiento    DateTime?
+  nit                    String?
+  activo                 Boolean  @default(true)
+  creadoEn               DateTime @default(now())
+}
+
+// ───────────── Capacidad transversal · WhatsApp + agente de IA ─────────────
+model MensajeWhatsApp {
+  id        Int      @id @default(autoincrement())
+  fincaId   Int
+  finca     Finca    @relation(fields: [fincaId], references: [id])
+  telefono  String
+  direccion String   // ENTRANTE | SALIENTE
+  texto     String
+  fecha     DateTime @default(now())
+}
+
+model AccionPendiente {
+  id        Int      @id @default(autoincrement())
+  fincaId   Int
+  finca     Finca    @relation(fields: [fincaId], references: [id])
+  canal     String   // WHATSAPP | WEB
+  remitente String   // teléfono o "usuario:<id>"
+  tipo      String   // REGISTRAR_LABOR | REGISTRAR_ASISTENCIA | REGISTRAR_OBSERVACION | REGISTRAR_COSECHA
+  payload   String   // JSON
+  resumen   String
+  estado    String   @default("PENDIENTE") // PENDIENTE | CONFIRMADA | CANCELADA | EXPIRADA
+  expiraEn  DateTime
+  creadoEn  DateTime @default(now())
 }

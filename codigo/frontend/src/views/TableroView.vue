@@ -19,10 +19,10 @@ const saludo = computed(() => {
 const kpis = computed(() => {
   const i = d.value?.indicadores || {};
   return [
-    { rotulo: 'Parcelas activas', valor: numero(i.parcelas), sub: `${numero(i.hectareas, 1)} ha`, icono: 'parcela', modulo: 'M1' },
-    { rotulo: 'Labores (30 días)', valor: numero(i.laboresMes), icono: 'campo', modulo: 'M2' },
-    { rotulo: 'Lotes trazables', valor: numero(i.lotes), sub: `${numero(i.kgCosechados)} kg`, icono: 'qr', modulo: 'M3' },
-    { rotulo: 'Trabajadores', valor: numero(i.trabajadores), icono: 'personas', modulo: 'M4' },
+    { rotulo: 'Lotes activos', valor: numero(i.lotes), sub: `${numero(i.hectareas, 1)} ha`, icono: 'parcela', modulo: 'M0' },
+    { rotulo: 'Labores (30 días)', valor: numero(i.laboresMes), icono: 'campo', modulo: 'M1' },
+    { rotulo: 'Lotes de cosecha', valor: numero(i.lotesCosecha), sub: `${numero(i.kgCosechados)} kg`, icono: 'qr', modulo: 'M2' },
+    { rotulo: 'Trabajadores', valor: numero(i.trabajadores), icono: 'personas', modulo: 'M3' },
   ].filter((k) => sesion.tieneModulo(k.modulo));
 });
 
@@ -57,7 +57,7 @@ onMounted(async () => {
       <h1>{{ saludo }}, {{ sesion.usuario?.nombre?.split(' ')[0] }} 👋</h1>
       <p>Así está {{ sesion.finca?.nombre }} hoy, {{ new Date().toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' }) }}.</p>
     </div>
-    <RouterLink v-if="sesion.tieneModulo('M2') && sesion.puede('labores:escribir')" to="/campo?nuevo=1" class="btn"><Icono nombre="mas" /> Registrar labor</RouterLink>
+    <RouterLink v-if="sesion.tieneModulo('M1') && sesion.puede('labores:escribir')" to="/campo?nuevo=1" class="btn"><Icono nombre="mas" /> Registrar labor</RouterLink>
   </div>
 
   <div v-if="!d" class="rejilla r-kpi"><div v-for="i in 4" :key="i" class="tarjeta"><div class="esqueleto" style="height: 56px" /></div></div>
@@ -84,12 +84,12 @@ onMounted(async () => {
         <div v-for="a in d.alertas" :key="a.id" style="display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0ece2">
           <span style="color: var(--rojo)"><Icono nombre="alerta" /></span>
           <div>
-            <strong>{{ a.parcela }} · {{ ETIQUETAS_OBS[a.tipo] }}</strong>
+            <strong>{{ a.lote }} · {{ ETIQUETAS_OBS[a.tipo] }}</strong>
             <span class="insignia" :class="claseSeveridad(a.severidad)" style="margin-left: 6px">{{ a.severidad }}/5</span>
             <div class="apagado" style="font-size: 0.88rem">{{ a.nota }} · {{ fecha(a.fecha) }}</div>
           </div>
         </div>
-        <template v-if="d.insumosBajos?.length && sesion.tieneModulo('M6')">
+        <template v-if="d.insumosBajos?.length && sesion.tieneModulo('M4')">
           <h3 style="margin-top: 16px">Insumos bajo mínimo</h3>
           <div v-for="i in d.insumosBajos" :key="i.nombre" style="display: flex; justify-content: space-between; padding: 6px 0">
             <span>{{ i.nombre }}</span><span class="insignia ambar">{{ i.stock }} {{ i.unidad }}</span>

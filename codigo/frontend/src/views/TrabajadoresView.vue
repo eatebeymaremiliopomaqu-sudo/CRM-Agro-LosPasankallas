@@ -11,7 +11,7 @@ const sesion = useSesion();
 const ui = useUi();
 const pestana = ref('lista');
 const trabajadores = ref([]);
-const parcelas = ref([]);
+const lotes = ref([]);
 const modal = ref(false);
 const f = reactive({});
 
@@ -29,7 +29,7 @@ const presentes = computed(() => lista.value.filter((x) => x.presente).length);
 async function cargar() {
   try {
     trabajadores.value = await api.get('/trabajadores');
-    if (sesion.tieneModulo('M1')) parcelas.value = await api.get('/parcelas').catch(() => []);
+    if (sesion.tieneModulo('M0')) lotes.value = await api.get('/lotes').catch(() => []);
     prepararLista();
   } catch (e) {
     ui.error(e);
@@ -42,13 +42,13 @@ async function prepararLista() {
   } catch { /* sin conexión: lista vacía */ }
   lista.value = trabajadores.value.map((t) => {
     const a = existentes.find((x) => x.trabajadorId === t.id);
-    return { trabajadorId: t.id, nombre: t.nombre, presente: Boolean(a) || !existentes.length, horas: a?.horas ?? 8, tarea: a?.tarea ?? '', parcelaId: a?.parcelaId ?? '' };
+    return { trabajadorId: t.id, nombre: t.nombre, presente: Boolean(a) || !existentes.length, horas: a?.horas ?? 8, tarea: a?.tarea ?? '', loteId: a?.loteId ?? '' };
   });
 }
 watch(diaLista, prepararLista);
 
 async function guardarLista() {
-  const registros = lista.value.filter((x) => x.presente).map((x) => ({ trabajadorId: x.trabajadorId, fecha: diaLista.value, horas: Number(x.horas), tarea: x.tarea || null, parcelaId: x.parcelaId ? Number(x.parcelaId) : null }));
+  const registros = lista.value.filter((x) => x.presente).map((x) => ({ trabajadorId: x.trabajadorId, fecha: diaLista.value, horas: Number(x.horas), tarea: x.tarea || null, loteId: x.loteId ? Number(x.loteId) : null }));
   if (!registros.length) return ui.avisar('Marca al menos un trabajador presente', 'alerta');
   try {
     const r = await api.postOffline('/trabajadores/asistencias', { registros }, `Asistencia ${diaLista.value}`);
@@ -110,7 +110,7 @@ onMounted(cargar);
   <div class="encabezado">
     <div>
       <h1>Trabajadores</h1>
-      <p>Personal, asistencia diaria y planilla de jornales. <span class="insignia tierra">M4</span></p>
+      <p>Personal, asistencia diaria y planilla de jornales. <span class="insignia tierra">M3</span></p>
     </div>
     <button v-if="sesion.puede('trabajadores:escribir')" class="btn" @click="abrir()"><Icono nombre="mas" /> Nuevo trabajador</button>
   </div>
@@ -152,7 +152,7 @@ onMounted(cargar);
       </div>
       <div class="tabla-envoltura">
         <table>
-          <thead><tr><th>Presente</th><th>Trabajador</th><th class="num">Horas</th><th>Tarea</th><th>Parcela</th></tr></thead>
+          <thead><tr><th>Presente</th><th>Trabajador</th><th class="num">Horas</th><th>Tarea</th><th>Lote</th></tr></thead>
           <tbody>
             <tr v-for="x in lista" :key="x.trabajadorId" :style="{ opacity: x.presente ? 1 : 0.5 }">
               <td><label class="interruptor"><input v-model="x.presente" type="checkbox" :aria-label="`Presente ${x.nombre}`" /><span /></label></td>
@@ -160,7 +160,7 @@ onMounted(cargar);
               <td class="num"><input v-model.number="x.horas" type="number" min="0" max="24" step="0.5" class="entrada" style="width: 80px" :disabled="!x.presente" /></td>
               <td><input v-model="x.tarea" class="entrada" placeholder="Riego, cosecha…" :disabled="!x.presente" /></td>
               <td>
-                <select v-model="x.parcelaId" class="entrada" :disabled="!x.presente"><option value="">—</option><option v-for="p in parcelas" :key="p.id" :value="p.id">{{ p.codigo }}</option></select>
+                <select v-model="x.loteId" class="entrada" :disabled="!x.presente"><option value="">—</option><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }}</option></select>
               </td>
             </tr>
           </tbody>

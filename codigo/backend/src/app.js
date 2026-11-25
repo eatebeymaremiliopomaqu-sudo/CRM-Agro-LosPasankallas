@@ -11,7 +11,7 @@ import { manejadorErrores, noEncontradoRuta } from './middleware/errores.js';
 import { openapi } from './docs/openapi.js';
 import auth from './routes/auth.js';
 import fincas from './routes/fincas.js';
-import parcelas from './routes/parcelas.js';
+import lotes from './routes/lotes.js';
 import campo from './routes/campo.js';
 import { privado as trazaPrivado, publico as trazaPublico } from './routes/trazabilidad.js';
 import trabajadores from './routes/trabajadores.js';
@@ -53,12 +53,12 @@ export function crearApp() {
   app.use('/api', autenticar);
   app.use('/api/dashboard', dashboard);
   app.use('/api', fincas); // M0
-  app.use('/api/parcelas', requiereModulo('M1'), parcelas);
-  app.use('/api/campo', requiereModulo('M2'), campo);
-  app.use('/api/trazabilidad', requiereModulo('M3'), trazaPrivado);
-  app.use('/api/trabajadores', requiereModulo('M4'), trabajadores);
-  app.use('/api/agente', requiereModulo('M5'), agenteRouter);
-  app.use('/api/insumos', requiereModulo('M6'), insumos);
+  app.use('/api/lotes', requiereModulo('M1'), lotes);
+  app.use('/api/campo', requiereModulo('M1'), campo);
+  app.use('/api/trazabilidad', requiereModulo('M2'), trazaPrivado);
+  app.use('/api/trabajadores', requiereModulo('M3'), trabajadores);
+  app.use('/api/agente', requiereModulo('M1'), agenteRouter);
+  app.use('/api/insumos', requiereModulo('M4'), insumos);
 
   app.use(noEncontradoRuta);
   app.use(manejadorErrores);

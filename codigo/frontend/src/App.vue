@@ -16,12 +16,16 @@ const menuAbierto = ref(false);
 const enlaces = computed(() =>
   [
     { a: '/', texto: 'Tablero', icono: 'tablero' },
-    { a: '/parcelas', texto: 'Parcelas', icono: 'parcela', modulo: 'M1' },
-    { a: '/campo', texto: 'Control de campo', corto: 'Campo', icono: 'campo', modulo: 'M2' },
-    { a: '/trazabilidad', texto: 'Trazabilidad', corto: 'Lotes', icono: 'qr', modulo: 'M3' },
-    { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M4', permiso: 'trabajadores:leer' },
-    { a: '/agente', texto: 'Agente y WhatsApp', corto: 'Agente', icono: 'chat', modulo: 'M5', permiso: 'agente:usar' },
-    { a: '/insumos', texto: 'Insumos', icono: 'caja', modulo: 'M6' },
+    { a: '/lotes', texto: 'Lotes de campo', corto: 'Lotes', icono: 'parcela', modulo: 'M0' },
+    { a: '/campo', texto: 'Control de campo', corto: 'Campo', icono: 'campo', modulo: 'M1' },
+    { a: '/trazabilidad', texto: 'Trazabilidad', corto: 'Cosecha', icono: 'qr', modulo: 'M2' },
+    { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M3', permiso: 'trabajadores:leer' },
+    { a: '/insumos', texto: 'Insumos', icono: 'caja', modulo: 'M4' },
+    // M5, M6, M7 pendientes de implementar en bloques posteriores
+    // { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
+    // { a: '/vivero', texto: 'Vivero', icono: 'planta', modulo: 'M6' },
+    // { a: '/reportes', texto: 'Reportes', icono: 'grafico', modulo: 'M7' },
+    { a: '/agente', texto: 'Agente y WhatsApp', corto: 'Agente', icono: 'chat', permiso: 'agente:usar' },
     { a: '/configuracion', texto: 'Configuración', icono: 'ajustes', permiso: 'finca:configurar' },
   ].filter((e) => (!e.modulo || sesion.tieneModulo(e.modulo)) && (!e.permiso || sesion.puede(e.permiso)))
 );

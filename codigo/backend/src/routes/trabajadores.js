@@ -57,7 +57,7 @@ r.patch('/:id(\\d+)', autorizar('trabajadores:escribir'), validar(esquemaTrabaja
 r.get('/asistencias', autorizar('trabajadores:leer'), asyncH(async (req, res) => {
   res.json(await prisma.asistencia.findMany({
     where: { trabajador: { fincaId: req.usuario.fincaId }, fecha: rangoFechas(req.query.desde, req.query.hasta) },
-    include: { trabajador: { select: { nombre: true } }, parcela: { select: { codigo: true } } },
+    include: { trabajador: { select: { nombre: true } }, lote: { select: { codigo: true } } },
     orderBy: [{ fecha: 'desc' }],
   }));
 }));
@@ -67,7 +67,7 @@ const esquemaAsistencia = z.object({
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   horas: z.number().min(0).max(24),
   tarea: z.string().max(80).nullable().optional(),
-  parcelaId: z.number().int().positive().nullable().optional(),
+  loteId: z.number().int().positive().nullable().optional(),
 });
 
 // Registro masivo (pasar lista del día): idempotente por trabajador+fecha
@@ -81,7 +81,7 @@ r.post('/asistencias', autorizar('trabajadores:escribir'), validar(z.object({ re
       const f = new Date(`${fecha}T12:00:00.000Z`);
       return prisma.asistencia.upsert({
         where: { trabajadorId_fecha: { trabajadorId: x.trabajadorId, fecha: f } },
-        update: { horas: x.horas, tarea: x.tarea ?? null, parcelaId: x.parcelaId ?? null },
+        update: { horas: x.horas, tarea: x.tarea ?? null, loteId: x.loteId ?? null },
         create: { ...x, fecha: f },
       });
     })

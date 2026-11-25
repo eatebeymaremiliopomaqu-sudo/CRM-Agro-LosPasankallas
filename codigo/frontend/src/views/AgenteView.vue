@@ -20,11 +20,11 @@ const bitacora = ref({ modo: '', mensajes: [] });
 const acciones = ref([]);
 
 const sugerencias = [
-  'regué la parcela 1 por 3 horas',
-  'fumigué P-03 con FitoVerde, 2 litros',
-  'hay pulgón en la parcela 4, severidad 4',
-  'Juan Pérez trabajó 8 horas en P-02',
-  'cosechamos 6 qq de papa en P-04',
+  'regué el lote 1 por 3 horas',
+  'fumigué L-03 con FitoVerde, 2 litros',
+  'hay pulgón en el lote 4, severidad 4',
+  'Juan Pérez trabajó 8 horas en L-02',
+  'cosechamos 6 qq de papa en L-04',
   '¿qué dosis de fungicida le pongo?',
   'resumen de hoy',
 ];
@@ -73,7 +73,7 @@ onMounted(cargarPanel);
   <div class="encabezado">
     <div>
       <h1>Agente de IA y WhatsApp</h1>
-      <p>Registro conversacional con confirmación previa. El agente <strong>no recomienda dosis</strong>. <span class="insignia tierra">M5</span></p>
+      <p>Registro conversacional con confirmación previa. El agente <strong>no recomienda dosis</strong>.</p>
     </div>
   </div>
 
@@ -95,7 +95,7 @@ onMounted(cargarPanel);
           <div v-if="enviando" class="burbuja bot apagado">escribiendo…</div>
         </div>
         <form class="chat-entrada" @submit.prevent="enviar()">
-          <input v-model="texto" class="entrada" placeholder="Ej.: regué la parcela 2 por 3 horas" maxlength="800" aria-label="Mensaje" />
+          <input v-model="texto" class="entrada" placeholder="Ej.: regué el lote 2 por 3 horas" maxlength="800" aria-label="Mensaje" />
           <button class="btn" :disabled="enviando || !texto.trim()" aria-label="Enviar"><Icono nombre="enviar" :tam="18" /></button>
         </form>
       </div>

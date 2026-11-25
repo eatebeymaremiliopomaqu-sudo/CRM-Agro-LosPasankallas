@@ -1,26 +1,26 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  interpretarPorReglas, INTENCIONES, extraerParcela, extraerKg, extraerHoras, extraerCantidadUsada, extraerProducto,
-  extraerTrabajador, extraerFecha, extraerSeveridad, tipoObservacion, normalizarCodigoParcela,
+  interpretarPorReglas, INTENCIONES, extraerLote, extraerKg, extraerHoras, extraerCantidadUsada, extraerProducto,
+  extraerTrabajador, extraerFecha, extraerSeveridad, tipoObservacion, normalizarCodigoLote,
 } from '../../src/agente/parser.js';
 
 const AHORA = new Date('2026-11-20T15:00:00Z');
 
 describe('Extractores del intérprete por reglas', () => {
-  it('parcela en distintos formatos', () => {
-    assert.equal(extraerParcela('parcela 2'), 'P-02');
-    assert.equal(extraerParcela('en el lote 12'), 'P-12');
-    assert.equal(extraerParcela('p-03'), 'P-03');
-    assert.equal(extraerParcela('parcela nro. 4'), 'P-04');
-    assert.equal(extraerParcela('sin dato'), null);
+  it('lote en distintos formatos', () => {
+    assert.equal(extraerLote('lote 2'), 'L-02');
+    assert.equal(extraerLote('en el lote 12'), 'L-12');
+    assert.equal(extraerLote('l-03'), 'L-03');
+    assert.equal(extraerLote('lote nro. 4'), 'L-04');
+    assert.equal(extraerLote('sin dato'), null);
   });
-  it('normaliza códigos de parcela', () => {
-    assert.equal(normalizarCodigoParcela('p 7'), 'P-07');
-    assert.equal(normalizarCodigoParcela(3), 'P-03');
-    assert.equal(normalizarCodigoParcela('P-105'), 'P-105');
-    assert.equal(normalizarCodigoParcela(null), null);
-    assert.equal(normalizarCodigoParcela('norte'), 'NORTE');
+  it('normaliza códigos de lote', () => {
+    assert.equal(normalizarCodigoLote('l 7'), 'L-07');
+    assert.equal(normalizarCodigoLote(3), 'L-03');
+    assert.equal(normalizarCodigoLote('L-105'), 'L-105');
+    assert.equal(normalizarCodigoLote(null), null);
+    assert.equal(normalizarCodigoLote('norte'), 'NORTE');
   });
   it('cantidades: kg, quintales (46 kg) y arrobas', () => {
     assert.equal(extraerKg('350 kg'), 350);
@@ -41,16 +41,16 @@ describe('Extractores del intérprete por reglas', () => {
     assert.equal(extraerCantidadUsada('nada'), null);
   });
   it('producto aplicado', () => {
-    assert.equal(extraerProducto('fumigue la parcela 2 con fitoverde, 2 litros'), 'Fitoverde');
-    assert.equal(extraerProducto('aplique con agro protect en p-01'), 'Agro Protect');
+    assert.equal(extraerProducto('fumigue el lote 2 con fitoverde, 2 litros'), 'Fitoverde');
+    assert.equal(extraerProducto('aplique con agro protect en l-01'), 'Agro Protect');
     assert.equal(extraerProducto('fumigue con mochila'), null);
-    assert.equal(extraerProducto('fumigue la parcela 3'), null);
+    assert.equal(extraerProducto('fumigue el lote 3'), null);
   });
   it('trabajador', () => {
     assert.equal(extraerTrabajador('juan perez trabajo 8 horas'), 'Juan Perez');
     assert.equal(extraerTrabajador('asistencia de maria flores hoy'), 'Maria Flores');
     assert.equal(extraerTrabajador('hoy rosa vino 6 horas'), 'Rosa');
-    assert.equal(extraerTrabajador('regue la parcela'), null);
+    assert.equal(extraerTrabajador('regue el lote'), null);
   });
   it('fecha relativa', () => {
     assert.equal(extraerFecha('hoy', AHORA), '2026-11-20');
@@ -91,28 +91,28 @@ describe('Intenciones (CP-AG-04)', () => {
   }
 
   it('labor de riego completa', () => {
-    const r = interpretarPorReglas('Regué la parcela 2 por 3 horas', AHORA);
+    const r = interpretarPorReglas('Regué el lote 2 por 3 horas', AHORA);
     assert.equal(r.intencion, INTENCIONES.REGISTRAR_LABOR);
     assert.equal(r.datos.tipo, 'RIEGO');
-    assert.equal(r.datos.parcela, 'P-02');
+    assert.equal(r.datos.lote, 'L-02');
     assert.equal(r.datos.horas, 3);
     assert.deepEqual(r.faltantes, []);
   });
   it('fumigación sin producto pide el dato', () => {
-    const r = interpretarPorReglas('fumigamos la parcela 3', AHORA);
+    const r = interpretarPorReglas('fumigamos el lote 3', AHORA);
     assert.equal(r.datos.tipo, 'FUMIGACION');
     assert.deepEqual(r.faltantes, ['producto']);
   });
   it('fumigación con producto y cantidad (registro, no recomendación)', () => {
-    const r = interpretarPorReglas('Ayer fumigué P-03 con FitoVerde, 2 litros, 4 horas', AHORA);
+    const r = interpretarPorReglas('Ayer fumigué L-03 con FitoVerde, 2 litros, 4 horas', AHORA);
     assert.equal(r.datos.producto, 'Fitoverde');
     assert.equal(r.datos.cantidadUsada, 2);
     assert.equal(r.datos.unidad, 'L');
     assert.equal(r.datos.horas, 4);
     assert.equal(r.datos.fecha, '2026-11-19');
   });
-  it('labor sin parcela', () => {
-    assert.deepEqual(interpretarPorReglas('deshierbamos toda la mañana', AHORA).faltantes, ['parcela']);
+  it('labor sin lote', () => {
+    assert.deepEqual(interpretarPorReglas('deshierbamos toda la mañana', AHORA).faltantes, ['lote']);
   });
   it('asistencia con horas por defecto', () => {
     const r = interpretarPorReglas('asistencia de Pedro Gutierrez', AHORA);
@@ -127,24 +127,24 @@ describe('Intenciones (CP-AG-04)', () => {
     assert.deepEqual(interpretarPorReglas('hoy se trabajo 8 horas', AHORA).faltantes, ['trabajador']);
   });
   it('observación de plaga', () => {
-    const r = interpretarPorReglas('Hay pulgón en la parcela 4, severidad 3', AHORA);
+    const r = interpretarPorReglas('Hay pulgón en el lote 4, severidad 3', AHORA);
     assert.equal(r.intencion, INTENCIONES.REGISTRAR_OBSERVACION);
     assert.equal(r.datos.tipo, 'PLAGA');
     assert.equal(r.datos.severidad, 3);
-    assert.equal(r.datos.parcela, 'P-04');
+    assert.equal(r.datos.lote, 'L-04');
   });
   it('cosecha en quintales', () => {
-    const r = interpretarPorReglas('Cosechamos 12 qq de papa en la parcela 4, segunda', AHORA);
+    const r = interpretarPorReglas('Cosechamos 12 qq de papa en el lote 4, segunda', AHORA);
     assert.equal(r.intencion, INTENCIONES.REGISTRAR_COSECHA);
     assert.equal(r.datos.cantidadKg, 552);
     assert.equal(r.datos.cultivo, 'Papa');
     assert.equal(r.datos.calidad, 'SEGUNDA');
   });
-  it('cosecha sin parcela', () => {
-    assert.deepEqual(interpretarPorReglas('cosechamos 300 kg de tomate', AHORA).faltantes, ['parcela']);
+  it('cosecha sin lote', () => {
+    assert.deepEqual(interpretarPorReglas('cosechamos 300 kg de tomate', AHORA).faltantes, ['lote']);
   });
   it('fertilización registra cantidad sin exigir producto', () => {
-    const r = interpretarPorReglas('fertilizamos la parcela 5 con nutrisuelo 3 sacos', AHORA);
+    const r = interpretarPorReglas('fertilizamos el lote 5 con nutrisuelo 3 sacos', AHORA);
     assert.equal(r.datos.tipo, 'FERTILIZACION');
     assert.equal(r.datos.unidad, 'saco');
     assert.deepEqual(r.faltantes, []);

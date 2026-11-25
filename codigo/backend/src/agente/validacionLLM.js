@@ -2,10 +2,10 @@ import { INTENCIONES } from './parser.js';
 
 // Campos permitidos por intención: cualquier otro dato que devuelva el LLM se descarta.
 const CAMPOS = {
-  REGISTRAR_LABOR: ['tipo', 'parcela', 'horas', 'fecha', 'descripcion', 'producto', 'cantidadUsada', 'unidad'],
-  REGISTRAR_ASISTENCIA: ['trabajador', 'horas', 'parcela', 'fecha', 'tarea'],
-  REGISTRAR_OBSERVACION: ['tipo', 'parcela', 'severidad', 'nota', 'fecha'],
-  REGISTRAR_COSECHA: ['parcela', 'cantidadKg', 'cultivo', 'calidad', 'fecha'],
+  REGISTRAR_LABOR: ['tipo', 'lote', 'horas', 'fecha', 'descripcion', 'producto', 'cantidadUsada', 'unidad'],
+  REGISTRAR_ASISTENCIA: ['trabajador', 'horas', 'lote', 'fecha', 'tarea'],
+  REGISTRAR_OBSERVACION: ['tipo', 'lote', 'severidad', 'nota', 'fecha'],
+  REGISTRAR_COSECHA: ['lote', 'cantidadKg', 'cultivo', 'calidad', 'fecha'],
   CONSULTA: ['tema'],
 };
 
@@ -35,10 +35,10 @@ export function validarRespuestaLLM(crudo) {
   // Si falta un dato obligatorio, lo agregamos a faltantes aunque el LLM no lo haya hecho
   const faltantes = Array.isArray(obj.faltantes) ? obj.faltantes.map(String).slice(0, 5) : [];
   const obligatorios = {
-    REGISTRAR_LABOR: ['parcela', 'tipo'],
+    REGISTRAR_LABOR: ['lote', 'tipo'],
     REGISTRAR_ASISTENCIA: ['trabajador'],
-    REGISTRAR_OBSERVACION: ['parcela'],
-    REGISTRAR_COSECHA: ['parcela', 'cantidadKg'],
+    REGISTRAR_OBSERVACION: ['lote'],
+    REGISTRAR_COSECHA: ['lote', 'cantidadKg'],
   }[obj.intencion] || [];
   for (const o of obligatorios) if ((datos[o] === undefined || datos[o] === null || datos[o] === '') && !faltantes.includes(o)) faltantes.push(o);
   if (obj.intencion === 'REGISTRAR_ASISTENCIA' && datos.horas == null) datos.horas = 8;

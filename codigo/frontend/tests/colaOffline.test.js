@@ -62,9 +62,9 @@ describe('Cola sin conexión (CP-PWA-01)', () => {
 
 describe('Utilidades de interfaz', () => {
   it('permisos de la interfaz', () => {
-    expect(puede('CONSULTA', 'labores:escribir')).toBe(false);
-    expect(puede('TECNICO', 'aplicaciones:escribir')).toBe(true);
-    expect(puede('SUPERVISOR', 'aplicaciones:escribir')).toBe(false);
+    expect(puede('TRABAJADOR', 'labores:escribir')).toBe(true);
+    expect(puede('ENCARGADO', 'aplicaciones:escribir')).toBe(true);
+    expect(puede('TRABAJADOR', 'aplicaciones:escribir')).toBe(false);
   });
   it('formatos', () => {
     expect(fecha(null)).toBe('—');

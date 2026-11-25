@@ -2,25 +2,29 @@
 // el frontend tiene una copia sólo para ocultar botones (la seguridad real está aquí).
 import { ROLES } from '../constantes.js';
 
-const { ADMIN, TECNICO, SUPERVISOR, CONSULTA } = ROLES;
+const { PROPIETARIO, ENCARGADO, TRABAJADOR } = ROLES;
 
 export const PERMISOS = Object.freeze({
-  'finca:configurar': [ADMIN],
-  'usuarios:gestionar': [ADMIN],
-  'auditoria:ver': [ADMIN],
-  'parcelas:leer': [ADMIN, TECNICO, SUPERVISOR, CONSULTA],
-  'parcelas:escribir': [ADMIN, TECNICO],
-  'labores:leer': [ADMIN, TECNICO, SUPERVISOR, CONSULTA],
-  'labores:escribir': [ADMIN, TECNICO, SUPERVISOR],
-  'aplicaciones:escribir': [ADMIN, TECNICO], // sólo el técnico registra agroquímicos
-  'trazabilidad:leer': [ADMIN, TECNICO, SUPERVISOR, CONSULTA],
-  'trazabilidad:escribir': [ADMIN, TECNICO, SUPERVISOR],
-  'trabajadores:leer': [ADMIN, SUPERVISOR, TECNICO],
-  'trabajadores:escribir': [ADMIN, SUPERVISOR],
-  'pagos:gestionar': [ADMIN],
-  'agente:usar': [ADMIN, TECNICO, SUPERVISOR],
-  'insumos:leer': [ADMIN, TECNICO, SUPERVISOR, CONSULTA],
-  'insumos:escribir': [ADMIN, TECNICO],
+  'finca:configurar': [PROPIETARIO],
+  'usuarios:gestionar': [PROPIETARIO],
+  'modulos:gestionar': [PROPIETARIO],
+  'auditoria:ver': [PROPIETARIO],
+  'lotes:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
+  'lotes:escribir': [PROPIETARIO, ENCARGADO],
+  'labores:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
+  'labores:escribir': [PROPIETARIO, ENCARGADO, TRABAJADOR], // trabajador solo sus tareas
+  'aplicaciones:escribir': [PROPIETARIO, ENCARGADO], // solo encargado/propietario registra agroquímicos
+  'trazabilidad:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
+  'trazabilidad:escribir': [PROPIETARIO, ENCARGADO],
+  'trabajadores:leer': [PROPIETARIO, ENCARGADO],
+  'trabajadores:escribir': [PROPIETARIO, ENCARGADO],
+  'pagos:gestionar': [PROPIETARIO],
+  'finanzas:ver': [PROPIETARIO],
+  'agente:usar': [PROPIETARIO, ENCARGADO, TRABAJADOR], // trabajador con permisos limitados
+  'insumos:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
+  'insumos:escribir': [PROPIETARIO, ENCARGADO],
+  'ventas:leer': [PROPIETARIO, ENCARGADO],
+  'ventas:escribir': [PROPIETARIO, ENCARGADO],
 });
 
 export function puede(rol, permiso) {
@@ -29,16 +33,19 @@ export function puede(rol, permiso) {
   return roles.includes(rol);
 }
 
-export const MODULOS_VALIDOS = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6'];
+export const MODULOS_VALIDOS = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7'];
 
-/** Lee de forma segura la lista JSON de módulos de la finca. M0 siempre está activo. */
+/**
+ * Lee de forma segura la lista de módulos activos de la finca. M0 siempre está activo.
+ * @param {Object} finca - Objeto finca con propiedad `modulos` (array de {codigo, activo})
+ * @returns {string[]} - Array de códigos de módulos activos, ej: ['M0', 'M1', 'M2']
+ */
 export function modulosDe(finca) {
-  try {
-    const lista = JSON.parse(finca?.modulosActivos ?? '[]');
-    return ['M0', ...lista.filter((m) => MODULOS_VALIDOS.includes(m))];
-  } catch {
-    return ['M0'];
-  }
+  if (!finca || !finca.modulos) return ['M0'];
+  const activos = finca.modulos
+    .filter((m) => m.activo && MODULOS_VALIDOS.includes(m.codigo))
+    .map((m) => m.codigo);
+  return ['M0', ...activos];
 }
 
 export function tieneModulo(finca, modulo) {
@@ -48,9 +55,9 @@ export function tieneModulo(finca, modulo) {
 
 /** Dependencias entre módulos: no se puede activar uno sin su base. */
 export const DEPENDENCIAS = Object.freeze({
-  M2: ['M1'],
-  M3: ['M1'],
-  M5: ['M1'],
+  M2: ['M1'], // trazabilidad requiere campo
+  M5: ['M4'], // ventas requiere inventarios
+  M7: ['M1', 'M4'], // reportes requiere campo e inventarios
 });
 
 export function validarActivacion(lista) {

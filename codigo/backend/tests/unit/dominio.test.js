@@ -28,32 +28,32 @@ describe('Nómina de jornales (CP-M4-01)', () => {
 });
 
 describe('Roles y permisos RBAC (CP-SEG-01)', () => {
-  it('sólo ADMIN configura la finca y gestiona usuarios', () => {
-    assert.equal(puede('ADMIN', 'finca:configurar'), true);
-    for (const rol of ['TECNICO', 'SUPERVISOR', 'CONSULTA']) assert.equal(puede(rol, 'usuarios:gestionar'), false);
+  it('sólo PROPIETARIO configura la finca y gestiona usuarios', () => {
+    assert.equal(puede('PROPIETARIO', 'finca:configurar'), true);
+    for (const rol of ['ENCARGADO', 'TRABAJADOR', 'CONSULTA']) assert.equal(puede(rol, 'usuarios:gestionar'), false);
   });
-  it('sólo técnico/admin registran aplicaciones de agroquímicos', () => {
-    assert.equal(puede('TECNICO', 'aplicaciones:escribir'), true);
-    assert.equal(puede('SUPERVISOR', 'aplicaciones:escribir'), false);
+  it('sólo encargado/propietario registran aplicaciones de agroquímicos', () => {
+    assert.equal(puede('ENCARGADO', 'aplicaciones:escribir'), true);
+    assert.equal(puede('TRABAJADOR', 'aplicaciones:escribir'), false);
   });
   it('CONSULTA no escribe en ningún módulo', () => {
     const escrituras = Object.keys(PERMISOS).filter((p) => /escribir|gestionar|configurar|usar/.test(p));
     for (const p of escrituras) assert.equal(puede('CONSULTA', p), false, p);
   });
   it('permiso desconocido o rol inválido = denegado', () => {
-    assert.equal(puede('ADMIN', 'no:existe'), false);
-    assert.equal(puede('HACKER', 'parcelas:leer'), false);
+    assert.equal(puede('PROPIETARIO', 'no:existe'), false);
+    assert.equal(puede('HACKER', 'lotes:leer'), false);
   });
 });
 
 describe('Módulos activables por finca (CP-M0-02)', () => {
   it('M0 siempre activo y filtra módulos desconocidos', () => {
-    assert.deepEqual(modulosDe({ modulosActivos: '["M1","M9","M3"]' }), ['M0', 'M1', 'M3']);
-    assert.deepEqual(modulosDe({ modulosActivos: 'json roto' }), ['M0']);
+    assert.deepEqual(modulosDe({ modulos: [{ codigo: 'M1', activo: true }, { codigo: 'M9', activo: true }, { codigo: 'M3', activo: true }] }), ['M0', 'M1', 'M3']);
+    assert.deepEqual(modulosDe({ modulos: [] }), ['M0']);
     assert.deepEqual(modulosDe(null), ['M0']);
   });
   it('tieneModulo', () => {
-    const f = { modulosActivos: '["M1","M4"]' };
+    const f = { modulos: [{ codigo: 'M1', activo: true }, { codigo: 'M4', activo: true }] };
     assert.equal(tieneModulo(f, 'M0'), true);
     assert.equal(tieneModulo(f, 'M4'), true);
     assert.equal(tieneModulo(f, 'M5'), false);
@@ -61,6 +61,8 @@ describe('Módulos activables por finca (CP-M0-02)', () => {
   it('valida dependencias entre módulos', () => {
     assert.deepEqual(validarActivacion(['M1', 'M2', 'M3']), []);
     assert.deepEqual(validarActivacion(['M2']), ['M2 requiere activar M1']);
+    assert.deepEqual(validarActivacion(['M5']), ['M5 requiere activar M4']);
+    assert.deepEqual(validarActivacion(['M7']), ['M7 requiere activar M1', 'M7 requiere activar M4']);
     assert.deepEqual(validarActivacion(['M1', 'M8']), ['Módulo desconocido: M8']);
   });
 });
@@ -93,7 +95,7 @@ describe('WhatsApp Cloud API (CP-M5-01)', () => {
       metadata: { phone_number_id: '123' },
       contacts: [{ wa_id: '59170000003', profile: { name: 'Carla' } }],
       messages: [
-        { id: 'w1', from: '59170000003', type: 'text', text: { body: 'regué la parcela 1' } },
+        { id: 'w1', from: '59170000003', type: 'text', text: { body: 'regué el lote 1' } },
         { id: 'w2', from: '59170000003', type: 'image', image: {} },
       ],
     } }] }],
@@ -102,7 +104,7 @@ describe('WhatsApp Cloud API (CP-M5-01)', () => {
     const m = extraerMensajes(payload);
     assert.equal(m.length, 1);
     assert.equal(m[0].nombre, 'Carla');
-    assert.equal(m[0].texto, 'regué la parcela 1');
+    assert.equal(m[0].texto, 'regué el lote 1');
     assert.deepEqual(extraerMensajes({}), []);
   });
   it('verifica la firma HMAC del webhook', () => {

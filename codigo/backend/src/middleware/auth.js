@@ -35,7 +35,10 @@ export const autorizar = (permiso) => (req, _res, next) => {
 /** Bloquea rutas de un módulo que la finca no tiene activo (módulos activables). */
 export const requiereModulo = (modulo) => async (req, _res, next) => {
   try {
-    const finca = await prisma.finca.findUnique({ where: { id: req.usuario.fincaId } });
+    const finca = await prisma.finca.findUnique({
+      where: { id: req.usuario.fincaId },
+      include: { modulos: true }
+    });
     if (!tieneModulo(finca, modulo)) {
       return next(new ErrorHttp(403, `El módulo ${modulo} no está activo para esta finca`));
     }

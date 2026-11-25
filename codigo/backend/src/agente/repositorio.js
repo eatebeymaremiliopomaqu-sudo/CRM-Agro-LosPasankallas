@@ -2,7 +2,7 @@
 import { prisma } from '../db.js';
 import { crearLote, urlPublicaLote } from '../services/lotes.js';
 import { normalizar } from './guardrails.js';
-import { INTENCIONES, normalizarCodigoParcela } from './parser.js';
+import { INTENCIONES, normalizarCodigoLote } from './parser.js';
 import { auditar } from '../utils/auditoria.js';
 
 export const almacenPrisma = {
@@ -25,15 +25,15 @@ export const almacenPrisma = {
   },
 };
 
-async function parcelaDe(fincaId, codigo) {
-  const cod = normalizarCodigoParcela(codigo);
-  const p = await prisma.parcela.findFirst({ where: { fincaId, codigo: cod } });
-  if (!p) throw new Error(`no existe la parcela ${cod} en la finca`);
-  return p;
+async function loteDe(fincaId, codigo) {
+  const cod = normalizarCodigoLote(codigo);
+  const l = await prisma.lote.findFirst({ where: { fincaId, codigo: cod } });
+  if (!l) throw new Error(`no existe el lote ${cod} en la finca`);
+  return l;
 }
 
-async function siembraActiva(parcelaId) {
-  return prisma.siembra.findFirst({ where: { parcelaId, estado: 'EN_CURSO' }, orderBy: { fechaSiembra: 'desc' } });
+async function campaniaActiva(loteId) {
+  return prisma.campania.findFirst({ where: { loteId, estado: 'EN_CURSO' }, orderBy: { fechaSiembra: 'desc' } });
 }
 
 async function trabajadorPorNombre(fincaId, nombre) {
@@ -54,12 +54,12 @@ export const ejecutorPrisma = {
     let texto;
     switch (tipo) {
       case INTENCIONES.REGISTRAR_LABOR: {
-        const parcela = await parcelaDe(fincaId, d.parcela);
-        const siembra = await siembraActiva(parcela.id);
+        const lote = await loteDe(fincaId, d.lote);
+        const campania = await campaniaActiva(lote.id);
         const labor = await prisma.labor.create({
           data: {
-            parcelaId: parcela.id,
-            siembraId: siembra?.id ?? null,
+            loteId: lote.id,
+            campaniaId: campania?.id ?? null,
             tipo: d.tipo,
             fecha: diaUTC(d.fecha),
             horas: Number(d.horas) || 0,
@@ -80,36 +80,36 @@ export const ejecutorPrisma = {
               : {}),
           },
         });
-        texto = `Labor #${labor.id} (${d.tipo}) guardada en ${parcela.codigo}.`;
+        texto = `Labor #${labor.id} (${d.tipo}) guardada en ${lote.codigo}.`;
         break;
       }
       case INTENCIONES.REGISTRAR_ASISTENCIA: {
         const t = await trabajadorPorNombre(fincaId, d.trabajador);
-        const parcela = d.parcela ? await parcelaDe(fincaId, d.parcela) : null;
+        const lote = d.lote ? await loteDe(fincaId, d.lote) : null;
         const fecha = diaUTC(d.fecha);
         await prisma.asistencia.upsert({
           where: { trabajadorId_fecha: { trabajadorId: t.id, fecha } },
-          update: { horas: Number(d.horas) || 8, tarea: d.tarea || null, parcelaId: parcela?.id ?? null },
-          create: { trabajadorId: t.id, fecha, horas: Number(d.horas) || 8, tarea: d.tarea || null, parcelaId: parcela?.id ?? null, origen },
+          update: { horas: Number(d.horas) || 8, tarea: d.tarea || null, loteId: lote?.id ?? null },
+          create: { trabajadorId: t.id, fecha, horas: Number(d.horas) || 8, tarea: d.tarea || null, loteId: lote?.id ?? null, origen },
         });
         texto = `Asistencia de ${t.nombre} guardada (${Number(d.horas) || 8} h).`;
         break;
       }
       case INTENCIONES.REGISTRAR_OBSERVACION: {
-        const parcela = await parcelaDe(fincaId, d.parcela);
+        const lote = await loteDe(fincaId, d.lote);
         const o = await prisma.observacion.create({
-          data: { parcelaId: parcela.id, tipo: d.tipo || 'OTRO', severidad: Math.min(5, Math.max(1, Number(d.severidad) || 2)), nota: d.nota || '', fecha: diaUTC(d.fecha), origen },
+          data: { loteId: lote.id, tipo: d.tipo || 'OTRO', severidad: Math.min(5, Math.max(1, Number(d.severidad) || 2)), nota: d.nota || '', fecha: diaUTC(d.fecha), origen },
         });
-        texto = `Observación #${o.id} guardada en ${parcela.codigo}.`;
-        if (o.severidad >= 4) texto += ' ⚠️ Severidad alta: se avisó en el tablero para revisión del técnico.';
+        texto = `Observación #${o.id} guardada en ${lote.codigo}.`;
+        if (o.severidad >= 4) texto += ' ⚠️ Severidad alta: se avisó en el tablero para revisión del encargado.';
         break;
       }
       case INTENCIONES.REGISTRAR_COSECHA: {
-        const parcela = await parcelaDe(fincaId, d.parcela);
-        const siembra = await siembraActiva(parcela.id);
-        if (!siembra) throw new Error(`la parcela ${parcela.codigo} no tiene una siembra en curso`);
-        const lote = await crearLote({ fincaId, siembraId: siembra.id, fechaCosecha: diaUTC(d.fecha), cantidadKg: Number(d.cantidadKg), calidad: d.calidad || 'PRIMERA' });
-        texto = `Lote ${lote.codigo} creado. Trazabilidad: ${urlPublicaLote(lote.tokenPublico)}`;
+        const lote = await loteDe(fincaId, d.lote);
+        const campania = await campaniaActiva(lote.id);
+        if (!campania) throw new Error(`el lote ${lote.codigo} no tiene una campaña en curso`);
+        const loteCosecha = await crearLote({ fincaId, campaniaId: campania.id, fechaCosecha: diaUTC(d.fecha), cantidadKg: Number(d.cantidadKg), calidad: d.calidad || 'PRIMERA' });
+        texto = `Lote de cosecha ${loteCosecha.codigo} creado. Trazabilidad: ${urlPublicaLote(loteCosecha.tokenPublico)}`;
         break;
       }
       default:
@@ -126,10 +126,10 @@ export const ejecutorPrisma = {
     const hace7 = new Date(inicioDia.getTime() - 7 * 86400000);
     const inicioMes = new Date(Date.UTC(inicioDia.getUTCFullYear(), inicioDia.getUTCMonth(), 1));
     const [labores, asistencias, alertas, cosecha, trabajadores] = await Promise.all([
-      prisma.labor.count({ where: { parcela: { fincaId }, fecha: { gte: inicioDia, lt: finDia } } }),
+      prisma.labor.count({ where: { lote: { fincaId }, fecha: { gte: inicioDia, lt: finDia } } }),
       prisma.asistencia.count({ where: { trabajador: { fincaId }, fecha: { gte: inicioDia, lt: finDia } } }),
-      prisma.observacion.count({ where: { parcela: { fincaId }, severidad: { gte: 4 }, fecha: { gte: hace7 } } }),
-      prisma.loteCosecha.aggregate({ _sum: { cantidadKg: true }, where: { siembra: { parcela: { fincaId } }, fechaCosecha: { gte: inicioMes } } }),
+      prisma.observacion.count({ where: { lote: { fincaId }, severidad: { gte: 4 }, fecha: { gte: hace7 } } }),
+      prisma.loteCosecha.aggregate({ _sum: { cantidadKg: true }, where: { campania: { lote: { fincaId } }, fechaCosecha: { gte: inicioMes } } }),
       prisma.trabajador.count({ where: { fincaId, activo: true } }),
     ]);
     if (tema === 'TRABAJADORES') return `👷 Trabajadores activos: ${trabajadores}. Asistencias registradas hoy: ${asistencias}.`;

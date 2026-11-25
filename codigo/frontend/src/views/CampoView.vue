@@ -14,23 +14,23 @@ const ruta = useRoute();
 const pestana = ref('labores');
 const labores = ref([]);
 const observaciones = ref([]);
-const parcelas = ref([]);
+const lotes = ref([]);
 const trabajadores = ref([]);
-const filtro = reactive({ parcelaId: '', tipo: '' });
+const filtro = reactive({ loteId: '', tipo: '' });
 const modal = ref(null);
 const f = reactive({});
 
 const conAplicacion = computed(() => ['FUMIGACION', 'FERTILIZACION'].includes(f.tipo) && sesion.puede('aplicaciones:escribir'));
-const laboresFiltradas = computed(() => labores.value.filter((l) => (!filtro.parcelaId || l.parcelaId === Number(filtro.parcelaId)) && (!filtro.tipo || l.tipo === filtro.tipo)));
+const laboresFiltradas = computed(() => labores.value.filter((l) => (!filtro.loteId || l.loteId === Number(filtro.loteId)) && (!filtro.tipo || l.tipo === filtro.tipo)));
 const ORIGEN = { WEB: ['gris', 'Web'], WHATSAPP: ['', 'WhatsApp'], AGENTE: ['azul', 'Agente IA'], OFFLINE: ['tierra', 'Sin conexión'] };
 
 async function cargar() {
   try {
-    const [l, o, p] = await Promise.all([api.get('/campo/labores'), api.get('/campo/observaciones'), api.get('/parcelas')]);
+    const [l, o, p] = await Promise.all([api.get('/campo/labores'), api.get('/campo/observaciones'), api.get('/lotes')]);
     labores.value = l;
     observaciones.value = o;
-    parcelas.value = p.filter((x) => x.activa);
-    if (sesion.tieneModulo('M4') && sesion.puede('trabajadores:leer')) trabajadores.value = await api.get('/trabajadores').catch(() => []);
+    lotes.value = p.filter((x) => x.activo);
+    if (sesion.tieneModulo('M3') && sesion.puede('trabajadores:leer')) trabajadores.value = await api.get('/trabajadores').catch(() => []);
   } catch (e) {
     ui.error(e);
   }
@@ -38,18 +38,18 @@ async function cargar() {
 
 function nuevaLabor() {
   Object.keys(f).forEach((k) => delete f[k]);
-  Object.assign(f, { parcelaId: parcelas.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '' });
+  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '' });
   modal.value = 'labor';
 }
 function nuevaObs() {
   Object.keys(f).forEach((k) => delete f[k]);
-  Object.assign(f, { parcelaId: parcelas.value[0]?.id, tipo: 'PLAGA', severidad: 2, nota: '', fecha: hoyISO() });
+  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'PLAGA', severidad: 2, nota: '', fecha: hoyISO() });
   modal.value = 'obs';
 }
 
 async function guardarLabor() {
   const cuerpo = {
-    parcelaId: Number(f.parcelaId), tipo: f.tipo, fecha: f.fecha, horas: Number(f.horas) || 0, costoBs: Number(f.costoBs) || 0,
+    loteId: Number(f.loteId), tipo: f.tipo, fecha: f.fecha, horas: Number(f.horas) || 0, costoBs: Number(f.costoBs) || 0,
     descripcion: f.descripcion || null, trabajadorId: f.trabajadorId ? Number(f.trabajadorId) : null, origen: 'WEB',
   };
   if (conAplicacion.value && f.producto) {
@@ -70,7 +70,7 @@ async function guardarLabor() {
 }
 async function guardarObs() {
   try {
-    const r = await api.postOffline('/campo/observaciones', { parcelaId: Number(f.parcelaId), tipo: f.tipo, severidad: Number(f.severidad), nota: f.nota, fecha: f.fecha }, `Observación ${ETIQUETAS_OBS[f.tipo]}`);
+    const r = await api.postOffline('/campo/observaciones', { loteId: Number(f.loteId), tipo: f.tipo, severidad: Number(f.severidad), nota: f.nota, fecha: f.fecha }, `Observación ${ETIQUETAS_OBS[f.tipo]}`);
     ui.avisar(r?.encolado ? '📴 Observación guardada sin conexión' : 'Observación registrada ✔');
     modal.value = null;
     if (!r?.encolado) cargar();
@@ -89,7 +89,7 @@ onMounted(async () => {
   <div class="encabezado">
     <div>
       <h1>Control técnico de campo</h1>
-      <p>Labores, aplicaciones registradas y monitoreo fitosanitario. <span class="insignia tierra">M2</span></p>
+      <p>Labores, aplicaciones registradas y monitoreo fitosanitario. <span class="insignia tierra">M1</span></p>
     </div>
     <div v-if="sesion.puede('labores:escribir')" style="display: flex; gap: 8px">
       <button class="btn secundario" @click="nuevaObs"><Icono nombre="alerta" /> Observación</button>
@@ -105,18 +105,18 @@ onMounted(async () => {
 
     <template v-if="pestana === 'labores'">
       <div class="filtros">
-        <select v-model="filtro.parcelaId" class="entrada" aria-label="Filtrar por parcela"><option value="">Todas las parcelas</option><option v-for="p in parcelas" :key="p.id" :value="p.id">{{ p.codigo }} · {{ p.nombre }}</option></select>
+        <select v-model="filtro.loteId" class="entrada" aria-label="Filtrar por lote"><option value="">Todos los lotes</option><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }} · {{ l.nombre }}</option></select>
         <select v-model="filtro.tipo" class="entrada" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option><option v-for="(t, k) in ETIQUETAS_LABOR" :key="k" :value="k">{{ t }}</option></select>
         <small style="margin-left: auto">{{ laboresFiltradas.length }} registros</small>
       </div>
       <div class="tabla-envoltura">
         <table>
-          <thead><tr><th>Fecha</th><th>Labor</th><th>Parcela</th><th>Aplicación registrada</th><th class="num">Horas</th><th class="num">Costo</th><th>Origen</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Labor</th><th>Lote</th><th>Aplicación registrada</th><th class="num">Horas</th><th class="num">Costo</th><th>Origen</th></tr></thead>
           <tbody>
             <tr v-for="l in laboresFiltradas" :key="l.id">
               <td style="white-space: nowrap">{{ fecha(l.fecha) }}</td>
               <td><span class="punto" :style="{ color: COLORES_LABOR[l.tipo] }" /> <strong>{{ ETIQUETAS_LABOR[l.tipo] }}</strong><br /><small>{{ l.trabajador?.nombre || l.registradoPor?.nombre || '' }}</small></td>
-              <td>{{ l.parcela.codigo }}</td>
+              <td>{{ l.lote.codigo }}</td>
               <td>
                 <template v-if="l.aplicacion">
                   {{ l.aplicacion.producto }}<br />
@@ -137,11 +137,11 @@ onMounted(async () => {
     <template v-else>
       <div class="tabla-envoltura">
         <table>
-          <thead><tr><th>Fecha</th><th>Parcela</th><th>Tipo</th><th>Severidad</th><th>Nota</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Lote</th><th>Tipo</th><th>Severidad</th><th>Nota</th></tr></thead>
           <tbody>
             <tr v-for="o in observaciones" :key="o.id">
               <td style="white-space: nowrap">{{ fecha(o.fecha) }}</td>
-              <td>{{ o.parcela.codigo }}</td>
+              <td>{{ o.lote.codigo }}</td>
               <td>{{ ETIQUETAS_OBS[o.tipo] }}</td>
               <td><span class="insignia" :class="claseSeveridad(o.severidad)">{{ '●'.repeat(o.severidad) }}{{ '○'.repeat(5 - o.severidad) }}</span></td>
               <td>{{ o.nota }}</td>
@@ -155,7 +155,7 @@ onMounted(async () => {
   <Modal v-if="modal === 'labor'" titulo="Registrar labor" ancho="640px" @cerrar="modal = null">
     <form @submit.prevent="guardarLabor">
       <div class="fila-campos">
-        <div class="campo"><label>Parcela</label><select v-model="f.parcelaId" required><option v-for="p in parcelas" :key="p.id" :value="p.id">{{ p.codigo }} · {{ p.nombre }}</option></select></div>
+        <div class="campo"><label>Lote</label><select v-model="f.loteId" required><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }} · {{ l.nombre }}</option></select></div>
         <div class="campo"><label>Tipo de labor</label><select v-model="f.tipo"><option v-for="(t, k) in ETIQUETAS_LABOR" :key="k" :value="k">{{ t }}</option></select></div>
         <div class="campo"><label>Fecha</label><input v-model="f.fecha" type="date" required :max="hoyISO()" /></div>
       </div>
@@ -191,7 +191,7 @@ onMounted(async () => {
   <Modal v-if="modal === 'obs'" titulo="Registrar observación" @cerrar="modal = null">
     <form @submit.prevent="guardarObs">
       <div class="fila-campos">
-        <div class="campo"><label>Parcela</label><select v-model="f.parcelaId" required><option v-for="p in parcelas" :key="p.id" :value="p.id">{{ p.codigo }} · {{ p.nombre }}</option></select></div>
+        <div class="campo"><label>Lote</label><select v-model="f.loteId" required><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }} · {{ l.nombre }}</option></select></div>
         <div class="campo"><label>Tipo</label><select v-model="f.tipo"><option v-for="(t, k) in ETIQUETAS_OBS" :key="k" :value="k">{{ t }}</option></select></div>
       </div>
       <div class="campo">

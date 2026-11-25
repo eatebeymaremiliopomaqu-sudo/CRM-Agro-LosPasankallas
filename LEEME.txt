@@ -14,14 +14,29 @@ URL PÚBLICAS (completar tras desplegar)
   Nota: el plan gratuito de Render "duerme" tras 15 min; la primera carga tarda ~1 min.
 
 USUARIOS DE DEMOSTRACIÓN (clave: Agro2026!)
-  admin@finca.test       Administrador        WhatsApp simulado: 59170000001
-  tecnico@finca.test     Técnico de campo     59170000002
-  supervisor@finca.test  Capataz/supervisor   59170000003
-  consulta@finca.test    Sólo consulta        59170000004
+  propietario@finca.test  PROPIETARIO (acceso total)           WhatsApp: 59170000001
+  encargado@finca.test    ENCARGADO (gestión operativa)        WhatsApp: 59170000002
+  trabajador@finca.test   TRABAJADOR (registro de labores)     WhatsApp: 59170000003
+
+MÓDULOS (M0-M7)
+  M0: Núcleo (login, roles PROPIETARIO/ENCARGADO/TRABAJADOR, módulos activables)
+  M1: Lotes y cultivos (campos en mapa, campañas agrícolas)
+  M2: Control técnico de campo (labores, aplicaciones, observaciones)
+  M3: Trazabilidad (lotes de cosecha con QR)
+  M4: Trabajadores (personal, asistencias, jornales)
+  M5: Ventas (EN DESARROLLO - clientes con consentimiento WhatsApp)
+  M6: Vivero (EN DESARROLLO - almácigos y plantines)
+  M7: Reportes (EN DESARROLLO - dashboards)
+
+NOTA SOBRE NOMENCLATURA
+  - "Lote" = campo/parcela de la finca (M1)
+  - "Lote de cosecha" = producto cosechado con código QR (M3)
+  - "Siembra" → "Campaña" en la base de datos
+  - Rutas: /api/parcelas → /api/lotes
 
 CONTENIDO
   /codigo
-     backend/    API Node.js + Express + Prisma + SQLite (JWT, roles, módulos M0-M6,
+     backend/    API Node.js + Express + Prisma + SQLite (JWT, roles, módulos M0-M7,
                  agente IA, webhook WhatsApp, Swagger, pruebas)
      frontend/   Vue 3 + Vite + Pinia + PWA sin conexión (Leaflet, Chart.js)
      render.yaml despliegue del backend en Render (Blueprint)
@@ -40,6 +55,7 @@ CONTENIDO
 
 EJECUTAR EN LOCAL (Node.js 20+)
   cd codigo/backend   && cp .env.example .env && npm install
+                      (si hay problemas: npm install-scripts approve)
                       && npx prisma db push && npm run db:seed && npm run dev
   cd codigo/frontend  && npm install && npm run dev     -> http://localhost:5173
 

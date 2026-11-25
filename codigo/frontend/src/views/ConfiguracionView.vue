@@ -17,7 +17,7 @@ const usuarios = ref([]);
 const auditoria = ref([]);
 const modal = ref(false);
 const u = reactive({});
-const DEPENDE = { M2: 'M1', M3: 'M1', M5: 'M1' };
+const DEPENDE = { M2: 'M1', M5: 'M4', M7: ['M1', 'M4'] };
 
 async function cargar() {
   try {
@@ -28,8 +28,15 @@ async function cargar() {
   }
 }
 async function alternar(m, encender) {
-  let lista = encender ? [...new Set([...activos.value, m, ...(DEPENDE[m] ? [DEPENDE[m]] : [])])] : activos.value.filter((x) => x !== m);
-  if (!encender) lista = lista.filter((x) => DEPENDE[x] !== m); // apagar dependientes
+  const deps = DEPENDE[m] ? (Array.isArray(DEPENDE[m]) ? DEPENDE[m] : [DEPENDE[m]]) : [];
+  let lista = encender ? [...new Set([...activos.value, m, ...deps])] : activos.value.filter((x) => x !== m);
+  if (!encender) {
+    for (const [mod, dep] of Object.entries(DEPENDE)) {
+      if ((Array.isArray(dep) && dep.includes(m)) || dep === m) {
+        lista = lista.filter((x) => x !== mod);
+      }
+    }
+  }
   try {
     const r = await api.put('/finca/modulos', { modulos: lista });
     activos.value = r.modulos.filter((x) => x !== 'M0');
@@ -64,7 +71,7 @@ async function cargarAuditoria() {
   }
 }
 function nuevoUsuario() {
-  Object.assign(u, { nombre: '', email: '', password: '', rol: 'SUPERVISOR', telefono: '' });
+  Object.assign(u, { nombre: '', email: '', password: '', rol: 'TRABAJADOR', telefono: '' });
   modal.value = true;
 }
 async function crearUsuario() {
@@ -112,7 +119,7 @@ onMounted(cargar);
         <div style="flex: 1">
           <strong>{{ desc }}</strong><br />
           <small v-if="m === 'M0'">Siempre activo</small>
-          <small v-else-if="DEPENDE[m]">Requiere {{ DEPENDE[m] }}</small>
+          <small v-else-if="DEPENDE[m]">Requiere {{ Array.isArray(DEPENDE[m]) ? DEPENDE[m].join(', ') : DEPENDE[m] }}</small>
         </div>
         <label class="interruptor">
           <input type="checkbox" :checked="m === 'M0' || activos.includes(m)" :disabled="m === 'M0'" :aria-label="`Módulo ${m}`" @change="alternar(m, $event.target.checked)" />

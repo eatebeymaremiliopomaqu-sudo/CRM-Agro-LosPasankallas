@@ -13,7 +13,10 @@ import { modulosDe, validarActivacion } from '../utils/permisos.js';
 const r = Router();
 
 r.get('/finca', asyncH(async (req, res) => {
-  const f = await prisma.finca.findUnique({ where: { id: req.usuario.fincaId } });
+  const f = await prisma.finca.findUnique({
+    where: { id: req.usuario.fincaId },
+    include: { modulos: true }
+  });
   res.json({ ...f, modulos: modulosDe(f), catalogoModulos: MODULOS });
 }));
 
@@ -33,12 +36,37 @@ r.patch('/finca', autorizar('finca:configurar'), validar(esquemaFinca), asyncH(a
   res.json(f);
 }));
 
-r.put('/finca/modulos', autorizar('finca:configurar'), validar(z.object({ modulos: z.array(z.string()).max(10) })), asyncH(async (req, res) => {
+r.put('/finca/modulos', autorizar('modulos:gestionar'), validar(z.object({ modulos: z.array(z.string()).max(10) })), asyncH(async (req, res) => {
   const lista = [...new Set(req.body.modulos.filter((m) => m !== 'M0'))];
   const errores = validarActivacion(lista);
   if (errores.length) throw solicitudInvalida('Configuración de módulos inválida', errores);
-  const f = await prisma.finca.update({ where: { id: req.usuario.fincaId }, data: { modulosActivos: JSON.stringify(lista) } });
-  await auditar({ usuarioId: req.usuario.id, fincaId: f.id, accion: 'ACTUALIZAR', entidad: 'Modulos', detalle: lista.join(',') });
+
+  const fincaId = req.usuario.fincaId;
+
+  // Actualizar tabla ModuloFinca
+  await prisma.$transaction(async (tx) => {
+    // Desactivar todos los módulos actuales
+    await tx.moduloFinca.updateMany({
+      where: { fincaId },
+      data: { activo: false }
+    });
+
+    // Activar o crear los módulos de la nueva lista
+    for (const codigo of lista) {
+      await tx.moduloFinca.upsert({
+        where: { fincaId_codigo: { fincaId, codigo } },
+        update: { activo: true },
+        create: { fincaId, codigo, activo: true }
+      });
+    }
+  });
+
+  await auditar({ usuarioId: req.usuario.id, fincaId, accion: 'ACTUALIZAR', entidad: 'Modulos', detalle: lista.join(',') });
+
+  const f = await prisma.finca.findUnique({
+    where: { id: fincaId },
+    include: { modulos: true }
+  });
   res.json({ modulos: modulosDe(f) });
 }));
 
@@ -53,7 +81,7 @@ const esquemaUsuario = z.object({
   nombre: z.string().min(3).max(80),
   email: z.string().email().toLowerCase(),
   password: z.string().min(8).max(100),
-  rol: z.enum(['ADMIN', 'TECNICO', 'SUPERVISOR', 'CONSULTA']),
+  rol: z.enum(['PROPIETARIO', 'ENCARGADO', 'TRABAJADOR']),
   telefono: z.string().max(20).optional().nullable(),
 });
 
@@ -71,8 +99,8 @@ r.patch('/usuarios/:id', autorizar('usuarios:gestionar'), validar(esquemaUsuario
   const id = Number(req.params.id);
   const existe = await prisma.usuario.findFirst({ where: { id, fincaId: req.usuario.fincaId } });
   if (!existe) throw new ErrorHttp(404, 'Usuario no encontrado');
-  if (id === req.usuario.id && (req.body.activo === false || (req.body.rol && req.body.rol !== 'ADMIN'))) {
-    throw new ErrorHttp(400, 'No puede desactivarse ni quitarse el rol de administrador a sí mismo');
+  if (id === req.usuario.id && (req.body.activo === false || (req.body.rol && req.body.rol !== 'PROPIETARIO'))) {
+    throw new ErrorHttp(400, 'No puede desactivarse ni quitarse el rol de propietario a sí mismo');
   }
   const { password, ...resto } = req.body;
   const data = { ...resto, ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}) };

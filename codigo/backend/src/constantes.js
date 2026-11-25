@@ -1,19 +1,19 @@
 // Constantes de dominio sin dependencias externas (se pueden probar sin instalar nada).
 export const ROLES = Object.freeze({
-  ADMIN: 'ADMIN',
-  TECNICO: 'TECNICO',
-  SUPERVISOR: 'SUPERVISOR',
-  CONSULTA: 'CONSULTA',
+  PROPIETARIO: 'PROPIETARIO',
+  ENCARGADO: 'ENCARGADO',
+  TRABAJADOR: 'TRABAJADOR',
 });
 
 export const MODULOS = Object.freeze({
-  M0: 'Núcleo (usuarios, roles, fincas, auditoría)',
-  M1: 'Parcelas y cultivos',
-  M2: 'Control técnico de campo',
-  M3: 'Trazabilidad con QR',
-  M4: 'Trabajadores, asistencia y jornales',
-  M5: 'WhatsApp y agente de IA',
-  M6: 'Inventario de insumos (opcional)',
+  M0: 'Núcleo (finca, usuarios, lotes, cultivos)',
+  M1: 'Control técnico de campo',
+  M2: 'Trazabilidad',
+  M3: 'Trabajadores',
+  M4: 'Inventarios',
+  M5: 'Ventas y clientes',
+  M6: 'Vivero',
+  M7: 'Reportes y finanzas',
 });
 
 export const TIPOS_LABOR = ['SIEMBRA', 'RIEGO', 'FERTILIZACION', 'FUMIGACION', 'DESHIERBE', 'PODA', 'COSECHA', 'MONITOREO', 'OTRA'];

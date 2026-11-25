@@ -1,6 +1,6 @@
 // Orquestador del agente. No depende de la base de datos: recibe por inyección
 // el intérprete, el almacén de acciones pendientes y el ejecutor. Así se prueba fácil.
-import { INTENCIONES, normalizarCodigoParcela } from './parser.js';
+import { INTENCIONES, normalizarCodigoLote } from './parser.js';
 import { MENSAJE_SIN_DOSIS, pideRecomendacionDosis, pareceInyeccion, sanitizarEntrada } from './guardrails.js';
 
 export const ESTADOS = Object.freeze({
@@ -15,16 +15,16 @@ export const ESTADOS = Object.freeze({
 
 export const TEXTO_AYUDA =
   '🌱 *Asistente CRM-Agro*. Puedo registrar (siempre te pido confirmación antes de guardar):\n' +
-  '• Labores: "regué la parcela 2 por 3 horas"\n' +
-  '• Aplicaciones ya hechas: "fumigué P-03 con Producto X, 2 litros"\n' +
-  '• Asistencia: "Juan Pérez trabajó 8 horas en P-01"\n' +
-  '• Observaciones: "hay pulgón en la parcela 4, severidad 3"\n' +
-  '• Cosechas: "cosechamos 12 qq de papa en P-01"\n' +
+  '• Labores: "regué el lote 2 por 3 horas"\n' +
+  '• Aplicaciones ya hechas: "fumigué L-03 con Producto X, 2 litros"\n' +
+  '• Asistencia: "Juan Pérez trabajó 8 horas en L-01"\n' +
+  '• Observaciones: "hay pulgón en el lote 4, severidad 3"\n' +
+  '• Cosechas: "cosechamos 12 qq de papa en L-01"\n' +
   '• Consultas: "resumen de hoy"\n' +
   'No recomiendo dosis ni productos agroquímicos.';
 
 const ETIQUETAS_FALTANTES = {
-  parcela: 'la parcela (ej.: P-02 o "parcela 2")',
+  lote: 'el lote (ej.: L-02 o "lote 2")',
   trabajador: 'el nombre del trabajador',
   producto: 'el nombre del producto aplicado',
   cantidadKg: 'la cantidad cosechada (kg o qq)',
@@ -46,18 +46,18 @@ const fmtFecha = (f) => {
 export function describirAccion(intencion, d) {
   switch (intencion) {
     case INTENCIONES.REGISTRAR_LABOR: {
-      let s = `Labor *${d.tipo}* en ${d.parcela} el ${fmtFecha(d.fecha)}`;
+      let s = `Labor *${d.tipo}* en ${d.lote} el ${fmtFecha(d.fecha)}`;
       if (d.horas) s += `, ${d.horas} h`;
       if (d.producto) s += `. Producto aplicado: ${d.producto}`;
       if (d.cantidadUsada) s += ` (${d.cantidadUsada} ${d.unidad || ''} usados, según lo informado)`;
       return s;
     }
     case INTENCIONES.REGISTRAR_ASISTENCIA:
-      return `Asistencia de *${d.trabajador}* el ${fmtFecha(d.fecha)}: ${d.horas} h${d.parcela ? ` en ${d.parcela}` : ''}`;
+      return `Asistencia de *${d.trabajador}* el ${fmtFecha(d.fecha)}: ${d.horas} h${d.lote ? ` en ${d.lote}` : ''}`;
     case INTENCIONES.REGISTRAR_OBSERVACION:
-      return `Observación de *${d.tipo}* en ${d.parcela}, severidad ${d.severidad}/5: "${d.nota}"`;
+      return `Observación de *${d.tipo}* en ${d.lote}, severidad ${d.severidad}/5: "${d.nota}"`;
     case INTENCIONES.REGISTRAR_COSECHA:
-      return `Cosecha de *${d.cantidadKg} kg*${d.cultivo ? ` de ${d.cultivo}` : ''} en ${d.parcela} (${d.calidad}) el ${fmtFecha(d.fecha)}. Se generará un lote con código QR`;
+      return `Cosecha de *${d.cantidadKg} kg*${d.cultivo ? ` de ${d.cultivo}` : ''} en ${d.lote} (${d.calidad}) el ${fmtFecha(d.fecha)}. Se generará un lote de cosecha con código QR`;
     default:
       return '';
   }
@@ -113,7 +113,7 @@ export function crearAgente({ interpretar, almacen, ejecutor, reloj = () => new 
         return { estado: ESTADOS.FALTAN_DATOS, respuesta: `Para registrarlo me falta ${lista}. Envía el mensaje completo de nuevo, por favor.` };
       }
       const datos = { ...interpretado.datos, fecha: interpretado.datos.fecha || ahora.toISOString().slice(0, 10) };
-      if (datos.parcela) datos.parcela = normalizarCodigoParcela(datos.parcela);
+      if (datos.lote) datos.lote = normalizarCodigoLote(datos.lote);
       const resumen = describirAccion(interpretado.intencion, datos);
       const expiraEn = new Date(ahora.getTime() + minutosConfirmacion * 60000);
       const id = await almacen.crearPendiente({

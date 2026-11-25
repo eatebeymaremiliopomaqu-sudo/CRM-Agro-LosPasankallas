@@ -21,8 +21,8 @@ const esquemaAplicacion = z.object({
 });
 
 const esquemaLabor = z.object({
-  parcelaId: z.number().int().positive(),
-  siembraId: z.number().int().positive().nullable().optional(),
+  loteId: z.number().int().positive(),
+  campaniaId: z.number().int().positive().nullable().optional(),
   tipo: z.enum(TIPOS_LABOR),
   fecha: z.coerce.date().optional(),
   descripcion: z.string().max(500).nullable().optional(),
@@ -33,24 +33,24 @@ const esquemaLabor = z.object({
   aplicacion: esquemaAplicacion.nullable().optional(),
 });
 
-async function verificarParcela(fincaId, parcelaId) {
-  const p = await prisma.parcela.findFirst({ where: { id: parcelaId, fincaId } });
-  if (!p) throw noEncontrado('Parcela');
-  return p;
+async function verificarLote(fincaId, loteId) {
+  const l = await prisma.lote.findFirst({ where: { id: loteId, fincaId } });
+  if (!l) throw noEncontrado('Lote');
+  return l;
 }
 
 r.get('/labores', autorizar('labores:leer'), asyncH(async (req, res) => {
-  const { parcelaId, tipo, desde, hasta } = req.query;
+  const { loteId, tipo, desde, hasta } = req.query;
   const where = {
-    parcela: { fincaId: req.usuario.fincaId },
-    ...(parcelaId ? { parcelaId: Number(parcelaId) } : {}),
+    lote: { fincaId: req.usuario.fincaId },
+    ...(loteId ? { loteId: Number(loteId) } : {}),
     ...(tipo ? { tipo: String(tipo) } : {}),
     ...(desde || hasta ? { fecha: { ...(desde ? { gte: new Date(desde) } : {}), ...(hasta ? { lte: new Date(hasta) } : {}) } } : {}),
   };
   const labores = await prisma.labor.findMany({
     where,
     include: {
-      parcela: { select: { codigo: true, nombre: true } },
+      lote: { select: { codigo: true, nombre: true } },
       aplicacion: true,
       trabajador: { select: { nombre: true } },
       registradoPor: { select: { nombre: true } },
@@ -63,12 +63,12 @@ r.get('/labores', autorizar('labores:leer'), asyncH(async (req, res) => {
 
 r.post('/labores', autorizar('labores:escribir'), validar(esquemaLabor), asyncH(async (req, res) => {
   const { aplicacion, ...datos } = req.body;
-  await verificarParcela(req.usuario.fincaId, datos.parcelaId);
-  // Sólo técnicos/administradores registran aplicaciones de agroquímicos
-  if (aplicacion && !puede(req.usuario.rol, 'aplicaciones:escribir')) throw prohibido('Sólo un técnico puede registrar aplicaciones de agroquímicos');
-  if (!datos.siembraId) {
-    const s = await prisma.siembra.findFirst({ where: { parcelaId: datos.parcelaId, estado: 'EN_CURSO' }, orderBy: { fechaSiembra: 'desc' } });
-    datos.siembraId = s?.id ?? null;
+  await verificarLote(req.usuario.fincaId, datos.loteId);
+  // Sólo encargados/propietarios registran aplicaciones de agroquímicos
+  if (aplicacion && !puede(req.usuario.rol, 'aplicaciones:escribir')) throw prohibido('Sólo un encargado o propietario puede registrar aplicaciones de agroquímicos');
+  if (!datos.campaniaId) {
+    const c = await prisma.campania.findFirst({ where: { loteId: datos.loteId, estado: 'EN_CURSO' }, orderBy: { fechaSiembra: 'desc' } });
+    datos.campaniaId = c?.id ?? null;
   }
   const labor = await prisma.labor.create({
     data: { ...datos, registradoPorId: req.usuario.id, ...(aplicacion ? { aplicacion: { create: aplicacion } } : {}) },
@@ -78,8 +78,8 @@ r.post('/labores', autorizar('labores:escribir'), validar(esquemaLabor), asyncH(
   res.status(201).json(labor);
 }));
 
-r.delete('/labores/:id', autorizar('parcelas:escribir'), asyncH(async (req, res) => {
-  const l = await prisma.labor.findFirst({ where: { id: Number(req.params.id), parcela: { fincaId: req.usuario.fincaId } } });
+r.delete('/labores/:id', autorizar('lotes:escribir'), asyncH(async (req, res) => {
+  const l = await prisma.labor.findFirst({ where: { id: Number(req.params.id), lote: { fincaId: req.usuario.fincaId } } });
   if (!l) throw noEncontrado('Labor');
   await prisma.labor.delete({ where: { id: l.id } });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'ELIMINAR', entidad: 'Labor', entidadId: l.id });
@@ -88,7 +88,7 @@ r.delete('/labores/:id', autorizar('parcelas:escribir'), asyncH(async (req, res)
 
 // Observaciones fitosanitarias / clima
 const esquemaObs = z.object({
-  parcelaId: z.number().int().positive(),
+  loteId: z.number().int().positive(),
   tipo: z.enum(TIPOS_OBSERVACION),
   severidad: z.number().int().min(1).max(5),
   nota: z.string().min(3).max(500),
@@ -97,15 +97,15 @@ const esquemaObs = z.object({
 
 r.get('/observaciones', autorizar('labores:leer'), asyncH(async (req, res) => {
   res.json(await prisma.observacion.findMany({
-    where: { parcela: { fincaId: req.usuario.fincaId }, ...(req.query.parcelaId ? { parcelaId: Number(req.query.parcelaId) } : {}) },
-    include: { parcela: { select: { codigo: true, nombre: true } } },
+    where: { lote: { fincaId: req.usuario.fincaId }, ...(req.query.loteId ? { loteId: Number(req.query.loteId) } : {}) },
+    include: { lote: { select: { codigo: true, nombre: true } } },
     orderBy: { fecha: 'desc' },
     take: 200,
   }));
 }));
 
 r.post('/observaciones', autorizar('labores:escribir'), validar(esquemaObs), asyncH(async (req, res) => {
-  await verificarParcela(req.usuario.fincaId, req.body.parcelaId);
+  await verificarLote(req.usuario.fincaId, req.body.loteId);
   const o = await prisma.observacion.create({ data: req.body });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'Observacion', entidadId: o.id });
   res.status(201).json(o);
