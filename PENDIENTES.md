@@ -13,31 +13,38 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Pruebas actualizadas (backend: 91 pruebas ✅, frontend: 7 pruebas ✅)
 - [x] Backend arranca correctamente
 - [x] Frontend compila sin errores
+- [x] Commit: f5e9395
+
+### BLOQUE 2 - Calendario, aplicaciones con carencia (sprint-1) ✅
+- [x] Modelo `LaborProgramada` para calendario
+- [x] Vista de calendario con tabla de labores programadas en frontend
+- [x] Riego programado por frecuencia (campo LaborProgramada con tipos)
+- [x] Aplicación con campos: `motivo`, `dosisEtiqueta` (texto), `periodoCarenciaDias`
+- [x] Cálculo y display de fecha fin de carencia
+- [x] Validación backend: HTTP 409 al cosechar lote en carencia (utils/carencia.js)
+- [x] Override solo para PROPIETARIO con justificación
+- [x] Pruebas automatizadas de bloqueo por carencia (10 tests nuevos)
+- [x] Registro directo de cosecha por lote (en trazabilidad)
+- [x] Commit: 45bc7a2
+
+### BLOQUE 3 - Inventario de productos y Ventas (sprint-2) ✅
+- [x] Inventario de productos cosechados (ProductoCosechado, MovimientoProducto)
+- [x] Inventario de plantines (pendiente para M6)
+- [x] Movimientos: cosecha→entrada, venta→salida automáticos
+- [x] Descontar insumo usado en aplicación (opcional - no implementado)
+- [x] Modelos: Cliente, Pedido, DetallePedido, Venta, DetalleVenta, Cobro
+- [x] VentasView.vue completa con 5 pestañas
+- [x] Vinculación DetalleVenta → LoteCosecha (trazabilidad)
+- [x] Lista de precios (ProductoCosechado.precioVentaBs)
+- [x] Cobros y cuentas por cobrar con estado automático
+- [x] Pantallas móvil-first responsive
+- [x] Backend: 4 rutas nuevas (productos, clientes, pedidos, ventas)
+- [x] Seed: 5 productos, 6 clientes, 3 pedidos, 5 ventas
+- [x] Permisos: ventas:leer, ventas:escribir
+- [x] 105 pruebas backend ✅, 7 pruebas frontend ✅
+- [x] Commit: 0b35d89
 
 ## 📋 PENDIENTE
-
-### BLOQUE 2 - Calendario, aplicaciones con carencia (sprint-1)
-- [ ] Modelo `LaborProgramada` (o `Tarea`) para calendario
-- [ ] Vista de calendario mensual/semanal en frontend
-- [ ] Riego programado por frecuencia
-- [ ] Aplicación con campos: `motivo`, `dosisEtiqueta` (texto), `periodoCarenciaDias`
-- [ ] Cálculo y display de fecha fin de carencia
-- [ ] Validación backend: HTTP 409 al cosechar/vender lote en carencia
-- [ ] Override solo para PROPIETARIO con justificación
-- [ ] Pruebas automatizadas de bloqueo por carencia
-- [ ] Registro directo de cosecha por lote
-
-### BLOQUE 3 - Inventario de productos y Ventas (sprint-2)
-- [ ] Inventario de productos cosechados (tabla o extender Insumo)
-- [ ] Inventario de plantines (si M6 activo)
-- [ ] Movimientos: cosecha→entrada, venta→salida
-- [ ] Descontar insumo usado en aplicación (opcional)
-- [ ] Modelos: Cliente ✅, Pedido, Venta, DetalleVenta
-- [ ] VentasView.vue completa
-- [ ] Vinculación DetalleVenta → LoteCosecha (trazabilidad)
-- [ ] Lista de precios o precio por producto
-- [ ] Cobros y cuentas por cobrar
-- [ ] Pantallas móvil-first
 
 ### BLOQUE 4 - Trazabilidad completa y Tareas (sprint-2)
 - [ ] Ficha pública QR: mostrar ventas (sin datos personales del cliente)
