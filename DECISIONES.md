@@ -1,0 +1,387 @@
+# Registro de Decisiones Técnicas (ADR)
+
+Este documento registra las decisiones técnicas importantes tomadas durante el desarrollo del proyecto CRM-Agro, siguiendo el formato Architecture Decision Records (ADR).
+
+---
+
+## ADR-001: Renumeración de módulos según guía del ingeniero
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+**Decisión tomada por**: Equipo de desarrollo
+
+### Contexto
+
+El proyecto inicial tenía una numeración de módulos diferente a la especificada en la guía del ingeniero. Era necesario renumerar para cumplir con los requisitos exactos del proyecto.
+
+### Decisión
+
+Se renumeran los módulos de la siguiente manera:
+
+| Anterior | Nuevo | Nombre |
+|----------|-------|--------|
+| M0 | M0 | Núcleo (sin cambios) |
+| M1 | (eliminado) | Parcelas → integrado en M0 como "Lotes" |
+| M2 | M1 | Control técnico de campo |
+| M3 | M2 | Trazabilidad |
+| M4 | M3 | Trabajadores |
+| M5 | (capacidad transversal) | WhatsApp + agente IA |
+| M6 | M4 | Inventarios |
+| - | M5 | Ventas y clientes (nuevo) |
+| - | M6 | Vivero (nuevo) |
+| - | M7 | Reportes y finanzas (nuevo) |
+
+### Consecuencias
+
+- ✅ Cumplimiento exacto con la guía del ingeniero
+- ✅ Mejor organización modular
+- ⚠️ Requiere actualizar: BD, API, frontend, Swagger, documentación, pruebas y seed
+- ⚠️ Se debe hacer en una sola fase para evitar inconsistencias
+
+---
+
+## ADR-002: "Parcela" vs "Lote" - terminología
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La guía del ingeniero usa el término "lote" para referirse a las divisiones de campo (antes llamadas "parcelas"), pero también existe el "lote de cosecha" para trazabilidad. Esto genera ambigüedad.
+
+### Decisión
+
+- **Lote de campo** (o simplemente "lote"): división física de la finca donde se cultiva (tabla `Lote`, antes `Parcela`)
+- **Lote de cosecha**: código QR de trazabilidad de un producto cosechado (tabla `LoteCosecha`, sin cambios)
+
+En la interfaz y documentación, cuando el contexto es claro, se usa "lote". Cuando puede haber confusión, se especifica "lote de campo" o "lote de cosecha".
+
+### Consecuencias
+
+- ✅ Alineación con la terminología de la guía
+- ✅ Distinción clara entre dos conceptos diferentes
+- ⚠️ Requiere renombrar `Parcela` → `Lote` en todo el código
+
+---
+
+## ADR-003: Tabla ModuloFinca vs JSON modulosActivos
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+El sistema actual guarda los módulos activos como un JSON en el campo `modulosActivos` de la tabla `Finca`. La guía sugiere una tabla separada para activación de módulos.
+
+### Decisión
+
+Crear tabla `ModuloFinca` con:
+- `fincaId` (FK a Finca)
+- `codigo` (ej: "M1", "M2", etc.)
+- `activo` (boolean)
+
+Esto permite:
+- Consultas SQL más eficientes
+- Validación de datos más estricta
+- Histórico de activación/desactivación (si se agrega `fechaActivacion`)
+- Configuración adicional por módulo (ej: límites, precios)
+
+### Consecuencias
+
+- ✅ Mejor normalización de la BD
+- ✅ Más flexible para futuras extensiones
+- ⚠️ Requiere migración del campo JSON actual
+- ⚠️ Cambios en el middleware `requiereModulo()`
+
+---
+
+## ADR-004: WhatsApp como capacidad transversal, no como módulo
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+En la numeración antigua, WhatsApp + agente era el módulo M5. En la nueva numeración, M5 es "Ventas y clientes". WhatsApp/agente es usado por múltiples módulos (campo, trabajadores, ventas, inventarios).
+
+### Decisión
+
+WhatsApp + agente de IA se convierte en una **capacidad transversal** activable a nivel de finca mediante un campo booleano `whatsappActivo` en la tabla `Finca`, en lugar de ser un módulo independiente.
+
+Alternativamente, se puede mantener como "submódulo" de M0 (Núcleo) si se requiere que aparezca en la lista de módulos para efectos de presentación.
+
+**Decisión final**: Campo `whatsappActivo` en `Finca` + documentar como capacidad transversal.
+
+### Consecuencias
+
+- ✅ Refleja mejor la arquitectura real (es infraestructura, no funcionalidad de negocio)
+- ✅ Simplifica la gestión de dependencias entre módulos
+- ⚠️ Cambiar la UI de configuración de módulos
+- ⚠️ Actualizar documentación y diagramas
+
+---
+
+## ADR-005: Siembra vs Campaña
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La guía menciona "campaña" como un ciclo de cultivo de un lote. El modelo actual tiene `Siembra` que cumple ese rol.
+
+### Decisión
+
+Renombrar `Siembra` → `Campania` (sin tilde por convención de código).
+
+Una **campaña** representa un ciclo completo de cultivo en un lote: desde la siembra hasta la cosecha final, con todas las labores asociadas.
+
+### Consecuencias
+
+- ✅ Alineación con terminología agronómica estándar
+- ✅ Nombre más semántico
+- ⚠️ Renombrar en BD, API, frontend, pruebas
+
+---
+
+## ADR-006: Roles nuevos según guía
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+Roles actuales: ADMIN, TECNICO, SUPERVISOR, CONSULTA.
+Roles según guía: PROPIETARIO, ENCARGADO, TRABAJADOR.
+
+### Decisión
+
+Mapeo de roles:
+
+| Anterior | Nuevo | Responsabilidades |
+|----------|-------|-------------------|
+| ADMIN | PROPIETARIO | Todo: configuración, usuarios, módulos, finanzas, pagos |
+| TECNICO | ENCARGADO | Campo, trazabilidad, inventarios, ventas, trabajadores, aplicaciones fitosanitarias |
+| SUPERVISOR | (eliminar o mapear a ENCARGADO) | - |
+| CONSULTA | (eliminar o mantener como lectura) | Solo lectura |
+| - | TRABAJADOR | Ve sus tareas, registra labores simples, marca tareas completadas |
+
+**Decisión final**:
+- PROPIETARIO (antes ADMIN)
+- ENCARGADO (antes TECNICO)
+- TRABAJADOR (nuevo)
+- Eliminar SUPERVISOR y CONSULTA (o mantener CONSULTA si se necesita un rol de auditor/visitante)
+
+### Consecuencias
+
+- ✅ Alineación con la guía
+- ✅ Roles más claros y específicos del dominio agrícola
+- ⚠️ Actualizar `src/utils/permisos.js`
+- ⚠️ Actualizar pruebas de RBAC
+- ⚠️ Migrar usuarios del seed
+
+---
+
+## ADR-007: Usuario trabajador vinculado a Trabajador
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+Los trabajadores de campo necesitan acceder al sistema para ver sus tareas y registrar labores, pero actualmente `Trabajador` y `Usuario` son entidades separadas.
+
+### Decisión
+
+Agregar campo opcional `trabajadorId` en la tabla `Usuario`. Cuando un usuario tiene rol TRABAJADOR y está vinculado a un `Trabajador`:
+- Ve solo "sus tareas" (asignadas a ese trabajador)
+- Puede registrar su asistencia
+- Puede marcar tareas como completadas
+- **NO** ve datos financieros ni pagos de otros
+
+### Consecuencias
+
+- ✅ Permite acceso móvil para trabajadores de campo
+- ✅ Simplicidad (no requiere autenticación compleja por WhatsApp)
+- ⚠️ Agregar campo `trabajadorId` en `Usuario` (nullable)
+- ⚠️ Actualizar vistas de tareas para filtrar por trabajador
+
+---
+
+## ADR-008: Vitest en lugar de node:test para el backend
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+Las pruebas actuales del backend usan `node:test` (nativo de Node.js). La guía pide "Jest o Vitest" y el frontend ya usa Vitest.
+
+### Decisión
+
+Migrar las pruebas del backend de `node:test` a **Vitest** para:
+- Cumplir con la guía
+- Unificar el framework de pruebas en todo el proyecto
+- Aprovechar las funcionalidades avanzadas de Vitest (UI, coverage, watch mode)
+- Mejor integración con el ecosistema de Vite
+
+### Consecuencias
+
+- ✅ Cumplimiento de la guía
+- ✅ Un solo framework de pruebas para todo el proyecto
+- ✅ Mejor DX (developer experience)
+- ⚠️ Requiere migración de las 91 pruebas existentes
+- ⚠️ Instalar dependencias de Vitest en el backend
+- ⚠️ Actualizar scripts en `package.json`
+
+---
+
+## ADR-009: Abstracción de proveedores de WhatsApp
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+El sistema actual soporta Meta Cloud API. La guía permite usar **Twilio Sandbox** como alternativa más simple para comenzar. Se recomienda Twilio en las instrucciones.
+
+### Decisión
+
+Crear una abstracción de proveedor de WhatsApp con variable de entorno `WHATSAPP_PROVIDER`:
+- `meta`: Meta Cloud API (actual)
+- `twilio`: Twilio API (Sandbox para desarrollo, API completa para producción)
+- `simulado`: Sin credenciales, solo para pruebas locales
+
+Implementar adaptadores en `src/services/whatsapp.js` que normalicen:
+- Formato de números (`whatsapp:+591...` en Twilio vs `591...` en Meta)
+- Validación de webhooks (firma HMAC en Meta vs `X-Twilio-Signature`)
+- Envío de mensajes (TwiML vs REST API de Meta)
+
+### Consecuencias
+
+- ✅ Flexibilidad para elegir proveedor
+- ✅ Facilita testing (modo simulado)
+- ✅ Permite migración futura entre proveedores
+- ⚠️ Requiere refactorización de `src/services/whatsapp.js`
+- ⚠️ Documentar configuración de cada proveedor
+
+---
+
+## ADR-010: Período de carencia y bloqueo de cosecha/venta
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La guía requiere **respeto del período de carencia**: no permitir cosechar ni vender productos de un lote que está en carencia por una aplicación fitosanitaria reciente.
+
+### Decisión
+
+1. **Registro de aplicaciones** incluye `periodoCarenciaDias` (obligatorio si es agroquímico)
+2. **Cálculo automático** de fecha de fin de carencia: `fechaAplicacion + periodoCarenciaDias`
+3. **Validación en API**:
+   - `POST /api/campo/labores` con tipo COSECHA → verificar que el lote no esté en carencia
+   - `POST /api/ventas` → verificar que los lotes de los productos no estén en carencia
+   - Si está en carencia: **HTTP 409 Conflict** con mensaje explicativo
+4. **Override solo para PROPIETARIO**: con justificación (guardada en auditoría) y advertencia clara
+
+### Consecuencias
+
+- ✅ Cumple requisito de seguridad alimentaria
+- ✅ Protege al productor de sanciones
+- ✅ Auditoría de excepciones
+- ⚠️ Requiere endpoint de consulta de "lotes en carencia"
+- ⚠️ Pruebas automatizadas obligatorias de este flujo
+
+---
+
+## ADR-011: Consentimiento para WhatsApp (GDPR/protección de datos)
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La guía menciona **consentimiento de trabajadores y clientes** para el uso de WhatsApp. Es un requisito ético y legal (RGPD/GDPR si se exporta, Ley 164 de Telecomunicaciones en Bolivia).
+
+### Decisión
+
+1. Agregar campos en `Trabajador` y `Cliente`:
+   - `consentimientoWhatsapp` (boolean, default false)
+   - `fechaConsentimiento` (DateTime, nullable)
+
+2. **Nunca enviar mensajes automáticos** (alertas, notificaciones) a números que no hayan dado consentimiento
+
+3. **Comandos por WhatsApp**:
+   - `ALTA` → activa consentimiento y registra fecha
+   - `BAJA` → desactiva consentimiento
+
+4. **UI**: checkbox al crear/editar trabajador o cliente, con texto legal claro
+
+### Consecuencias
+
+- ✅ Cumple con protección de datos
+- ✅ Transparencia y ética
+- ⚠️ Cambios en BD (2 campos por tabla)
+- ⚠️ Filtrar destinatarios de alertas automáticas
+- ⚠️ Documentar en el informe (sección Seguridad y Ética)
+
+---
+
+## ADR-012: M6 Vivero y M7 Reportes como módulos opcionales implementados
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+
+### Contexto
+
+La rúbrica exige M0-M5 + al menos un módulo opcional. La guía menciona vivero y análisis financiero. Estos aparecen en la imagen oficial del proyecto.
+
+### Decisión
+
+Implementar **ambos módulos opcionales**:
+- **M6 Vivero**: producción de plantines (siembra, germinación, stock, venta)
+- **M7 Reportes y finanzas**: costos por lote, ingresos, márgenes, gráficos, exportación
+
+Esto permite:
+- Superar el mínimo (solo 1 opcional)
+- Demostrar más funcionalidades
+- Cubrir el caso de uso completo de fincas con vivero (mencionado en la guía)
+
+### Consecuencias
+
+- ✅ Proyecto más completo y destacado
+- ✅ Demuestra capacidad técnica
+- ⚠️ Más trabajo de implementación (justificado por el impacto)
+- ⚠️ Más pruebas y documentación
+
+---
+
+## Plantilla para nuevas decisiones
+
+```markdown
+## ADR-XXX: Título de la decisión
+
+**Fecha**: YYYY-MM-DD
+**Estado**: Propuesta | Aceptada | Rechazada | Obsoleta
+**Decisión tomada por**: Nombre/Equipo
+
+### Contexto
+
+Descripción del problema o situación que requiere una decisión.
+
+### Decisión
+
+La decisión tomada y sus razones.
+
+### Consecuencias
+
+- ✅ Beneficios
+- ⚠️ Riesgos o trabajo adicional
+- ❌ Desventajas aceptadas
+```
+
+---
+
+**Nota**: Este documento debe actualizarse cada vez que se tome una decisión técnica importante durante el desarrollo del proyecto.
