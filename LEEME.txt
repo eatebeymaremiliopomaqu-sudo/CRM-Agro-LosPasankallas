@@ -1,0 +1,55 @@
+CRM-AGRO · GRUPO ##
+===================
+CRM web modular y de bajo costo para fincas pequeñas: control técnico de campo,
+trazabilidad con QR y gestión de trabajadores, con WhatsApp y un agente de IA que
+registra datos con confirmación previa y NO recomienda dosis de agroquímicos.
+Todos los datos son FICTICIOS.
+
+Integrantes: Integrante 1 [Nombre] · Integrante 2 [Nombre] · Integrante 3 [Nombre]
+Materia: [Nombre]  ·  Docente: [Nombre]
+
+URL PÚBLICAS (completar tras desplegar)
+  Aplicación (Vercel): https://[proyecto].vercel.app
+  API + Swagger (Render): https://[servicio].onrender.com/api/docs
+  Nota: el plan gratuito de Render "duerme" tras 15 min; la primera carga tarda ~1 min.
+
+USUARIOS DE DEMOSTRACIÓN (clave: Agro2026!)
+  admin@finca.test       Administrador        WhatsApp simulado: 59170000001
+  tecnico@finca.test     Técnico de campo     59170000002
+  supervisor@finca.test  Capataz/supervisor   59170000003
+  consulta@finca.test    Sólo consulta        59170000004
+
+CONTENIDO
+  /codigo
+     backend/    API Node.js + Express + Prisma + SQLite (JWT, roles, módulos M0-M6,
+                 agente IA, webhook WhatsApp, Swagger, pruebas)
+     frontend/   Vue 3 + Vite + Pinia + PWA sin conexión (Leaflet, Chart.js)
+     render.yaml despliegue del backend en Render (Blueprint)
+     .github/workflows/ci.yml  CI/CD con GitHub Actions
+     README.md   instrucciones detalladas
+     (sin node_modules ni .env: usar los archivos .env.example)
+  /informe/Informe_Grupo##.pdf
+  /diapositivas/Diapositivas_Grupo##.pptx   (14 láminas, con notas del orador)
+  /evidencias
+     scrum/      product_backlog.csv (importable a Jira/Trello), burndown de los
+                 3 sprints, velocidad, costos
+     pruebas/    plan_de_pruebas.csv, reporte_defectos.csv, salidas de las pruebas,
+                 cobertura
+     diagramas/  arquitectura, modelo ER, flujo del agente (.png y fuente .dot)
+     capturas/   maquetas de pantallas (agregar capturas reales del despliegue)
+
+EJECUTAR EN LOCAL (Node.js 20+)
+  cd codigo/backend   && cp .env.example .env && npm install
+                      && npx prisma db push && npm run db:seed && npm run dev
+  cd codigo/frontend  && npm install && npm run dev     -> http://localhost:5173
+
+PRUEBAS
+  cd codigo/backend  && npm run test:cov   (91 pruebas unitarias + cobertura)
+  cd codigo/backend  && npm run test:int   (integración; requiere BD con seed)
+  cd codigo/frontend && npm test           (Vitest)
+
+DECLARACIÓN DE USO DE IA
+  Se usó Claude (Anthropic) como asistente para generar borradores de código, pruebas,
+  diagramas, informe y diapositivas. Todo fue revisado, ejecutado y probado por el equipo.
+  El agente del producto usa la API de Claude o Groq sólo para extraer datos; nunca guarda
+  sin confirmación del usuario ni recomienda dosis.

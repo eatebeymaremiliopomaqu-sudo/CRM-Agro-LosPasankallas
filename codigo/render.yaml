@@ -1,0 +1,45 @@
+# Blueprint de Render: crea el backend del CRM-Agro con un clic (New > Blueprint).
+services:
+  - type: web
+    name: crm-agro-api
+    runtime: node
+    rootDir: backend
+    plan: free            # para datos persistentes usar "starter" + el disco de abajo
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:render
+    healthCheckPath: /api/salud
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        value: file:./prod.db          # con disco: file:/var/data/crm-agro.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: CORS_ORIGIN
+        value: https://crm-agro.vercel.app
+      - key: FRONTEND_URL
+        value: https://crm-agro.vercel.app
+      - key: AI_PROVIDER
+        value: reglas                  # cambiar a "claude" o "groq" al cargar la API key
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: crm-agro-verify
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+    # disk:                            # descomentar en plan starter (persistencia de SQLite)
+    #   name: datos
+    #   mountPath: /var/data
+    #   sizeGB: 1

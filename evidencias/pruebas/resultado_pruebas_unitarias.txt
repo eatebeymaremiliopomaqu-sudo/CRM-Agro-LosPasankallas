@@ -1,0 +1,159 @@
+Pruebas unitarias del backend · comando: npm run test:cov (node --test --experimental-test-coverage)
+
+▶ Flujo con confirmación previa (CP-AG-05)
+  ✔ propone, NO guarda hasta confirmar, y guarda al responder SI (5.716382ms)
+  ✔ cancela con NO y no guarda nada (5.155317ms)
+  ✔ la confirmación expira a los 10 minutos (0.556306ms)
+  ✔ un nuevo registro reemplaza al pendiente anterior (0.924992ms)
+  ✔ las confirmaciones son por remitente (otro teléfono no confirma) (0.400249ms)
+  ✔ SI/NO sin nada pendiente (0.330999ms)
+✔ Flujo con confirmación previa (CP-AG-05) (14.779462ms)
+▶ Límites y manejo de errores (CP-AG-06)
+  ✔ rechaza pedidos de dosis sin crear acciones (0.773108ms)
+  ✔ rechaza intentos de inyección (1.011206ms)
+  ✔ pide datos faltantes (1.152162ms)
+  ✔ si el ejecutor falla, informa el error y cancela la acción (0.550518ms)
+  ✔ mensaje vacío devuelve ayuda (0.232645ms)
+  ✔ mensaje no entendido devuelve ayuda (0.526394ms)
+  ✔ consultas no requieren confirmación (0.4267ms)
+  ✔ completa fecha y normaliza la parcela que devuelve un LLM (0.369144ms)
+✔ Límites y manejo de errores (CP-AG-06) (5.509478ms)
+▶ Resumen legible de acciones
+  ✔ describe cada tipo (0.402962ms)
+✔ Resumen legible de acciones (1.48612ms)
+▶ Validación de la respuesta del LLM (CP-AG-07)
+  ✔ acepta JSON válido aunque venga con texto alrededor (0.585464ms)
+  ✔ descarta campos no permitidos y objetos anidados (0.20732ms)
+  ✔ agrega faltantes obligatorios y horas por defecto (1.263343ms)
+  ✔ rechaza JSON roto, intención inventada o tipos incorrectos (0.25263ms)
+✔ Validación de la respuesta del LLM (CP-AG-07) (2.531086ms)
+[whatsapp:simulado] → 591: hola…
+▶ Nómina de jornales (CP-M4-01)
+  ✔ 8 horas = 1 jornal (1.522461ms)
+  ✔ sin asistencias paga 0 (1.068624ms)
+  ✔ rechaza horas inválidas y jornales negativos (0.543484ms)
+  ✔ planilla agrupa, omite sin registros y ordena por monto (0.297349ms)
+✔ Nómina de jornales (CP-M4-01) (4.526589ms)
+▶ Roles y permisos RBAC (CP-SEG-01)
+  ✔ sólo ADMIN configura la finca y gestiona usuarios (0.152258ms)
+  ✔ sólo técnico/admin registran aplicaciones de agroquímicos (0.076559ms)
+  ✔ CONSULTA no escribe en ningún módulo (0.274505ms)
+  ✔ permiso desconocido o rol inválido = denegado (0.081084ms)
+✔ Roles y permisos RBAC (CP-SEG-01) (0.724404ms)
+▶ Módulos activables por finca (CP-M0-02)
+  ✔ M0 siempre activo y filtra módulos desconocidos (0.213385ms)
+  ✔ tieneModulo (0.093999ms)
+  ✔ valida dependencias entre módulos (0.198831ms)
+✔ Módulos activables por finca (CP-M0-02) (0.605433ms)
+▶ Códigos de trazabilidad (CP-M3-01)
+  ✔ iniciales sin tildes ni símbolos (0.330268ms)
+  ✔ código correlativo con ceros (0.140701ms)
+  ✔ token público aleatorio y seguro para URL (0.402771ms)
+  ✔ teléfono boliviano (0.119119ms)
+✔ Códigos de trazabilidad (CP-M3-01) (1.114589ms)
+▶ WhatsApp Cloud API (CP-M5-01)
+  ✔ extrae sólo mensajes de texto (0.252343ms)
+  ✔ verifica la firma HMAC del webhook (0.628785ms)
+  ✔ sin credenciales el envío es simulado (1.24199ms)
+✔ WhatsApp Cloud API (CP-M5-01) (2.294766ms)
+▶ Guardrail: el agente NO recomienda dosis (CP-AG-01)
+  ✔ bloquea: "¿Qué dosis de mancozeb uso para el tomate?" (1.29561ms)
+  ✔ bloquea: "cuanto glifosato le echo a la mochila de 20 litros" (0.60956ms)
+  ✔ bloquea: "Cuántos ml de insecticida por mochila?" (0.405698ms)
+  ✔ bloquea: "recomiéndame un fungicida para la roya" (0.085513ms)
+  ✔ bloquea: "¿con qué fumigo el pulgón?" (0.196509ms)
+  ✔ bloquea: "qué le echo para el gusano cogollero" (0.41444ms)
+  ✔ bloquea: "¿Puedo mezclar urea con el foliar?" (0.103849ms)
+  ✔ bloquea: "cuál es la dosis recomendada de cipermetrina" (0.076126ms)
+  ✔ bloquea: "qué producto uso contra la mosca blanca" (0.111839ms)
+  ✔ bloquea: "cada cuánto fumigo la frutilla con fungicida" (0.220484ms)
+  ✔ bloquea: "cuanto abono debo poner por planta" (1.034533ms)
+✔ Guardrail: el agente NO recomienda dosis (CP-AG-01) (5.841759ms)
+▶ Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02)
+  ✔ permite: "fumigué la parcela 2 con FitoVerde, 2 litros" (0.162801ms)
+  ✔ permite: "apliqué AgroProtect en P-03 ayer" (0.099975ms)
+  ✔ permite: "hay pulgón en la parcela 4 severidad 3" (0.283723ms)
+  ✔ permite: "regué la parcela 1 por 3 horas" (0.12591ms)
+  ✔ permite: "Juan Pérez trabajó 8 horas" (0.06362ms)
+  ✔ permite: "cosechamos 12 qq de papa en P-04" (0.081761ms)
+  ✔ permite: "resumen de hoy" (0.056415ms)
+  ✔ permite: "" (0.050567ms)
+✔ Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) (1.136778ms)
+▶ Filtro de salida del LLM (CP-AG-03)
+  ✔ detecta dosificaciones en la respuesta (0.464959ms)
+  ✔ no confunde datos normales con dosis (0.078869ms)
+  ✔ reemplaza la respuesta peligrosa por el mensaje seguro (0.097872ms)
+✔ Filtro de salida del LLM (CP-AG-03) (0.735988ms)
+▶ Sanitización e inyección (CP-SEG-04)
+  ✔ quita caracteres de control y recorta el largo (0.160141ms)
+  ✔ detecta intentos de cambiar las reglas (0.313687ms)
+✔ Sanitización e inyección (CP-SEG-04) (0.553436ms)
+▶ Extractores del intérprete por reglas
+  ✔ parcela en distintos formatos (1.010693ms)
+  ✔ normaliza códigos de parcela (0.243569ms)
+  ✔ cantidades: kg, quintales (46 kg) y arrobas (0.380061ms)
+  ✔ horas y cantidades usadas (1.27089ms)
+  ✔ producto aplicado (0.63018ms)
+  ✔ trabajador (0.597748ms)
+  ✔ fecha relativa (0.515273ms)
+  ✔ severidad y tipo de observación (2.409805ms)
+✔ Extractores del intérprete por reglas (8.30767ms)
+▶ Intenciones (CP-AG-04)
+  ✔ "si" → CONFIRMAR (0.944139ms)
+  ✔ "Sí!" → CONFIRMAR (0.241943ms)
+  ✔ "ok" → CONFIRMAR (0.104482ms)
+  ✔ "no" → CANCELAR (0.146423ms)
+  ✔ "cancelar" → CANCELAR (0.19841ms)
+  ✔ "hola" → AYUDA (0.270594ms)
+  ✔ "" → AYUDA (0.109008ms)
+  ✔ "resumen de hoy" → CONSULTA (1.256399ms)
+  ✔ "cuántos trabajadores vinieron hoy?" → CONSULTA (0.243492ms)
+  ✔ "¿cómo vamos?" → CONSULTA (0.110938ms)
+  ✔ "qwerty asdf" → DESCONOCIDA (0.448526ms)
+  ✔ labor de riego completa (0.251482ms)
+  ✔ fumigación sin producto pide el dato (0.265937ms)
+  ✔ fumigación con producto y cantidad (registro, no recomendación) (0.271666ms)
+  ✔ labor sin parcela (0.128687ms)
+  ✔ asistencia con horas por defecto (0.187177ms)
+  ✔ pregunta por trabajadores es consulta de personal (0.108879ms)
+  ✔ asistencia sin nombre (0.200949ms)
+  ✔ observación de plaga (0.193277ms)
+  ✔ cosecha en quintales (0.281608ms)
+  ✔ cosecha sin parcela (0.261478ms)
+  ✔ fertilización registra cantidad sin exigir producto (0.223495ms)
+✔ Intenciones (CP-AG-04) (7.270348ms)
+ℹ tests 91
+ℹ suites 15
+ℹ pass 91
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 411.480218
+ℹ start of coverage report
+ℹ ---------------------------------------------------------------------
+ℹ file                 | line % | branch % | funcs % | uncovered lines
+ℹ ---------------------------------------------------------------------
+ℹ src                  |        |          |         | 
+ℹ  agente              |        |          |         | 
+ℹ   agente.js          | 100.00 |    85.71 |   92.86 | 
+ℹ   guardrails.js      | 100.00 |   100.00 |  100.00 | 
+ℹ   parser.js          |  99.48 |    97.39 |  100.00 | 77
+ℹ   validacionLLM.js   |  95.65 |    87.50 |  100.00 | 24-25
+ℹ  constantes.js       | 100.00 |   100.00 |  100.00 | 
+ℹ  services            |        |          |         | 
+ℹ   nomina.js          | 100.00 |   100.00 |  100.00 | 
+ℹ   whatsapp.js        |  84.62 |    73.08 |  100.00 | 42-49
+ℹ  utils               |        |          |         | 
+ℹ   codigos.js         | 100.00 |   100.00 |  100.00 | 
+ℹ   permisos.js        | 100.00 |   100.00 |  100.00 | 
+ℹ tests                |        |          |         | 
+ℹ  unit                |        |          |         | 
+ℹ   agente.test.js     | 100.00 |   100.00 |  100.00 | 
+ℹ   dominio.test.js    | 100.00 |   100.00 |  100.00 | 
+ℹ   guardrails.test.js | 100.00 |   100.00 |  100.00 | 
+ℹ   parser.test.js     | 100.00 |   100.00 |  100.00 | 
+ℹ ---------------------------------------------------------------------
+ℹ all files            |  99.08 |    94.51 |   99.36 | 
+ℹ ---------------------------------------------------------------------
+ℹ end of coverage report

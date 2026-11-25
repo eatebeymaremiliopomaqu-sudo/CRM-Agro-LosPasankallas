@@ -1,0 +1,26 @@
+﻿ID,Módulo,Historia de usuario,Criterios de aceptación,Story points,Prioridad,Sprint,Estado
+HU-01,M0,Como administrador quiero iniciar sesión con correo y contraseña para acceder de forma segura.,JWT de 8 h; mensaje genérico ante error; límite de 10 intentos/15 min.,5,Alta,1,Hecho
+HU-02,M0,Como administrador quiero asignar roles a los usuarios para que cada uno vea sólo lo que le corresponde.,4 roles; la API responde 403 si no hay permiso.,5,Alta,1,Hecho
+HU-03,M0,Como administrador quiero activar o desactivar módulos de mi finca para usar sólo lo que necesito.,Rutas bloqueadas con 403; dependencias M2/M3/M5→M1.,5,Alta,1,Hecho
+HU-04,M0,Como administrador quiero una bitácora de auditoría para saber quién hizo cada cambio.,Se registra crear/actualizar/eliminar/login/agente.,3,Media,1,Hecho
+HU-05,M1,"Como técnico quiero registrar parcelas con área, riego y coordenadas.",Código único P-01 por finca; baja lógica.,5,Alta,1,Hecho
+HU-06,M1,Como técnico quiero ver las parcelas en un mapa para ubicarlas rápido.,Leaflet + OSM; color por cultivo; popup.,5,Media,1,Hecho
+HU-07,M1,Como técnico quiero registrar siembras (ciclos de cultivo) por parcela.,"Cultivo, variedad, fechas, estado.",3,Alta,1,Hecho
+HU-08,INF,Como equipo queremos desplegar el esqueleto en Vercel y Render desde el sprint 1.,URL pública funcionando con /api/salud.,3,Alta,1,Pasó a S2
+HU-09,M2,"Como capataz quiero registrar labores (riego, deshierbe, poda…) con horas y costo.",Filtros por parcela y tipo; origen del registro.,5,Alta,2,Hecho
+HU-10,M2,"Como técnico quiero registrar la aplicación de un agroquímico tal como se hizo, sin que el sistema recomiende dosis.","Sólo TECNICO/ADMIN; producto, cantidad usada, carencia, responsable.",5,Alta,2,Hecho
+HU-11,M2,"Como capataz quiero reportar plagas, enfermedades o daños de clima con severidad.",Severidad 1-5; alertas ≥4 en el tablero.,3,Alta,2,Hecho
+HU-12,M3,Como técnico quiero crear un lote de cosecha con código correlativo y QR.,Código FLM-AAAA-NNNN; token público no adivinable.,8,Alta,2,Hecho
+HU-13,M3,Como consumidor quiero escanear el QR y ver el origen del producto.,Página pública sin datos sensibles (sin trabajadores ni costos).,5,Alta,2,Hecho
+HU-14,M4,Como capataz quiero pasar lista diaria con horas y tarea.,Registro masivo idempotente por trabajador y fecha.,5,Alta,2,Hecho
+HU-15,M4,Como administrador quiero calcular la planilla de jornales y generar pagos.,8 h = 1 jornal; total del periodo; estado del pago.,5,Media,2,Hecho
+HU-16,M0,Como usuario quiero un tablero con indicadores y gráficos.,"KPIs, horas por día, labores por tipo, kg por cultivo.",3,Media,2,Pasó a S3
+HU-08b,INF,(Arrastre) Despliegue en Vercel y Render con variables de entorno.,URL pública; CORS configurado.,3,Alta,2,Hecho
+HU-17,M5,Como capataz quiero registrar labores por WhatsApp escribiendo en lenguaje natural.,Webhook verificado (HMAC); usuario identificado por teléfono.,8,Alta,3,Hecho
+HU-18,M5,Como técnico quiero que el agente me pida confirmación antes de guardar.,Acción pendiente que vence en 10 min; SI/NO.,5,Alta,3,Hecho
+HU-19,M5,Como responsable de la finca quiero que el agente se niegue a recomendar dosis o productos.,Guardrail de entrada y de salida; pruebas automatizadas.,5,Alta,3,Hecho
+HU-20,M5,Como equipo queremos que el agente siga funcionando si el LLM falla.,Tiempo máximo 8 s; validación de JSON; respaldo por reglas.,3,Alta,3,Hecho
+HU-21,M6,Como técnico quiero controlar el stock de insumos con alertas de mínimo (módulo opcional).,Entradas/salidas; no permite stock negativo.,5,Media,3,Hecho
+HU-22,PWA,Como capataz sin señal quiero seguir registrando y que se sincronice después.,Cola local; sincroniza al volver la red; PWA instalable.,5,Alta,3,Hecho
+HU-23,INF,"Como equipo queremos CI/CD, Swagger y pruebas automatizadas.",GitHub Actions; /api/docs; cobertura ≥ 90 % en lógica de negocio.,5,Alta,3,Hecho
+HU-16b,M0,(Arrastre) Tablero con indicadores y gráficos.,Chart.js; alertas de campo e insumos bajos.,3,Media,3,Hecho

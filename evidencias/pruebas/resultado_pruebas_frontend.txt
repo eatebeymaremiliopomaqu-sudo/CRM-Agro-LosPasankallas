@@ -1,0 +1,21 @@
+Pruebas del frontend (tests/colaOffline.test.js). Ejecutadas en el entorno de desarrollo con un adaptador de node:test que reemplaza la API de Vitest (describe/it/expect). En el proyecto se ejecutan con: cd frontend && npm test
+
+▶ Cola sin conexión (CP-PWA-01)
+  ✔ encola y lista en orden (1.703908ms)
+  ✔ sincroniza todo cuando vuelve la red (0.93488ms)
+  ✔ si sigue sin red, se detiene y conserva los pendientes (0.44352ms)
+  ✔ descarta y reporta los rechazados por validación (4xx) (0.293303ms)
+  ✔ tolera almacenamiento corrupto (0.38264ms)
+✔ Cola sin conexión (CP-PWA-01) (4.684837ms)
+▶ Utilidades de interfaz
+  ✔ permisos de la interfaz (0.117113ms)
+  ✔ formatos (16.657703ms)
+✔ Utilidades de interfaz (17.052602ms)
+ℹ tests 7
+ℹ suites 2
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 152.47853

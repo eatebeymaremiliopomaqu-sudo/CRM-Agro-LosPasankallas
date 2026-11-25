@@ -1,0 +1,15 @@
+﻿ID,Severidad,Componente,Descripción,Cómo se detectó,Corrección,Estado
+DEF-01,Alta,M5 Agente,"""cuanto glifosato le echo a la mochila"" no era bloqueado: el patrón sólo aceptaba infinitivos (echar) y no conjugaciones (echo)",CP-AG-01 falló en la 1.ª ejecución,"Se agregaron conjugaciones (echo, pongo, aplico, uso, mezclo, fumigo) al patrón",Cerrado
+DEF-02,Media,M5 Agente,"""hoy se trabajó 8 horas"" registraba un trabajador llamado ""Se""",CP-AG-04 falló en la 1.ª ejecución,Lista de palabras que no pueden ser nombres,Cerrado
+DEF-03,Media,M5 Agente,"""¿cuántos trabajadores vinieron?"" se trataba como registro de asistencia en vez de consulta",Revisión de casos de prueba,"Preguntas (cuántos, quién, cómo vamos) se clasifican como CONSULTA",Cerrado
+DEF-04,Baja,M5 Agente,Los signos ¿ ¡ al inicio impedían reconocer saludos y consultas,Revisión de código,El normalizador elimina ¿ ¡,Cerrado
+DEF-05,Alta,M5 Agente,"El LLM podía devolver campos no esperados (p. ej. ""dosisRecomendada"") que llegaban al resumen",Revisión de seguridad del agente,Lista blanca de campos por intención; objetos anidados descartados,Cerrado
+DEF-06,Media,M5 Agente,"Si el LLM omitía la fecha, el resumen mostraba ""el undefined""",Prueba exploratoria,Fecha por defecto = hoy y normalización del código de parcela,Cerrado
+DEF-07,Alta,M1 Mapa,XSS: el nombre de la parcela se insertaba como HTML en el popup de Leaflet,Revisión de código (seguridad),Escape de HTML antes de insertar,Cerrado
+DEF-08,Media,M3 Trazabilidad,XSS en la etiqueta imprimible del lote (cultivo y nombre de finca),Revisión de código (seguridad),Escape de HTML en la ventana de impresión,Cerrado
+DEF-09,Alta,Despliegue,El build en Render fallaría: el CLI de Prisma estaba en devDependencies y Render instala con NODE_ENV=production,Revisión del pipeline,prisma pasa a dependencies,Cerrado
+DEF-10,Media,CI/CD,GitHub Actions no permite usar secrets en la condición if de un paso,Validación del workflow,Secret expuesto como variable de entorno y condición sobre env,Cerrado
+DEF-11,Baja,Pruebas,"""node --test tests/unit/"" no encontraba los archivos en Node 22",Ejecución de npm test,"Patrón glob ""tests/unit/**/*.test.js""",Cerrado
+DEF-12,Baja,Calidad de código,Expresiones regulares con caracteres de control literales (frágiles al editar),Revisión de código,Reemplazo por secuencias \uXXXX,Cerrado
+DEF-13,Media,Despliegue,En el plan gratuito de Render SQLite se borra al reiniciar,Análisis de costos,seed-si-vacio.js recarga datos demo; plan Starter + disco para producción,Mitigado
+DEF-14,Baja,UI / CSS,Las tarjetas dentro de una rejilla quedaban desalineadas (la regla .tarjeta + .tarjeta les sumaba margen superior),Revisión visual de las pantallas,Margen 0 para tarjetas dentro de .rejilla,Cerrado

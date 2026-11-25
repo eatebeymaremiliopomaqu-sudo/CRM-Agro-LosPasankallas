@@ -1,0 +1,34 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", fontname="Inter", pad=0.4, nodesep=0.5, ranksep=0.9, dpi=200];
+  node [shape=box, style="rounded,filled", fontname="Inter", fontsize=12, color="#c9c2b0", fillcolor="#FFFDF8", penwidth=1.4, margin="0.18,0.10"];
+  edge [color="#7b857f", fontname="Inter", fontsize=10, fontcolor="#4b564f", penwidth=1.3];
+
+  subgraph cluster_usuarios { label="Usuarios"; fontname="Inter Bold"; fontsize=13; color="#e4dfd2"; style="rounded,filled"; fillcolor="#f6f3ea";
+    web [label="Navegador / PWA\n(celular o PC)", fillcolor="#e7f2dc", color="#3e7b4f"];
+    wa  [label="WhatsApp\n(capataz en campo)", fillcolor="#e7f2dc", color="#3e7b4f"];
+    qr  [label="Consumidor\n(escanea el QR)", fillcolor="#f6e7d4", color="#c8823a"];
+  }
+  subgraph cluster_vercel { label="Vercel (gratis)"; fontname="Inter Bold"; fontsize=13; color="#e4dfd2"; style="rounded";
+    vue [label="Frontend Vue 3 + Vite\nPinia · Vue Router\nLeaflet · Chart.js\nService Worker (offline)", fillcolor="#ffffff"];
+  }
+  subgraph cluster_render { label="Render (Node.js 20)"; fontname="Inter Bold"; fontsize=13; color="#e4dfd2"; style="rounded";
+    api [label="API Express\nHelmet · CORS · Rate limit\nJWT + RBAC + módulos\nZod · Swagger", fillcolor="#ffffff"];
+    agente [label="Agente IA\nguardrails · confirmación SI/NO", fillcolor="#e1eef6", color="#2e6f95"];
+    db [label="SQLite\n(Prisma ORM)", shape=cylinder, fillcolor="#1F3A2B", fontcolor="white", color="#1F3A2B"];
+  }
+  meta [label="WhatsApp\nCloud API (Meta)", fillcolor="#ffffff"];
+  llm  [label="LLM: Claude / Groq\n(respaldo: reglas)", fillcolor="#ffffff"];
+  osm  [label="OpenStreetMap\n(mosaicos del mapa)", fillcolor="#ffffff"];
+
+  web -> vue [label="HTTPS"];
+  qr -> vue [label="/t/{token}"];
+  vue -> api [label="REST + JWT"];
+  vue -> osm [style=dashed];
+  wa -> meta;
+  meta -> api [label="webhook\nfirma HMAC"];
+  api -> meta [label="respuesta", style=dashed];
+  api -> agente;
+  agente -> llm [label="extrae JSON", style=dashed];
+  api -> db;
+  agente -> db [label="sólo tras\nconfirmar"];
+}
