@@ -83,4 +83,5 @@ export const api = {
   put: (ruta, cuerpo) => enviar('PUT', ruta, cuerpo),
   delete: (ruta) => enviar('DELETE', ruta),
   postOffline: (ruta, cuerpo, descripcion) => escribirOffline('POST', ruta, cuerpo, descripcion),
+  putOffline: (ruta, cuerpo, descripcion) => escribirOffline('PUT', ruta, cuerpo, descripcion),
 };

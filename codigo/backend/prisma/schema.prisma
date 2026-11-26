@@ -62,6 +62,7 @@ model Usuario {
 
   labores      Labor[]
   auditorias   Auditoria[]
+  tareasAsignadas Tarea[] @relation("TareasAsignadas")
 }
 
 model Auditoria {
@@ -95,6 +96,7 @@ model Lote {
   observaciones Observacion[]
   asistencias   Asistencia[]
   laboresProgramadas LaborProgramada[]
+  tareas        Tarea[]
 
   @@unique([fincaId, codigo])
 }
@@ -225,6 +227,7 @@ model Trabajador {
   pagos       Pago[]
   labores     Labor[]
   laboresProgramadas LaborProgramada[]
+  tareas      Tarea[]
 }
 
 model Asistencia {
@@ -251,6 +254,25 @@ model Pago {
   montoBs      Float
   estado       String     @default("PENDIENTE") // PENDIENTE | PAGADO
   creadoEn     DateTime   @default(now())
+}
+
+model Tarea {
+  id              Int        @id @default(autoincrement())
+  trabajadorId    Int
+  trabajador      Trabajador @relation(fields: [trabajadorId], references: [id])
+  asignadoPorId   Int
+  asignadoPor     Usuario    @relation("TareasAsignadas", fields: [asignadoPorId], references: [id])
+  titulo          String
+  descripcion     String?
+  loteId          Int?
+  lote            Lote?      @relation(fields: [loteId], references: [id])
+  prioridad       String     @default("MEDIA") // BAJA | MEDIA | ALTA | URGENTE
+  estado          String     @default("PENDIENTE") // PENDIENTE | EN_CURSO | COMPLETADA | CANCELADA
+  fechaAsignacion DateTime   @default(now())
+  fechaVencimiento DateTime?
+  fechaCompletada DateTime?
+  notificada      Boolean    @default(false)
+  creadoEn        DateTime   @default(now())
 }
 
 // ───────────── M4 · Inventario de insumos ─────────────

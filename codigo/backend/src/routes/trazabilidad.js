@@ -1,4 +1,4 @@
-// M3 · Trazabilidad: lotes de cosecha, eventos de la cadena y código QR público.
+// M2 · Trazabilidad: lotes de cosecha, eventos de la cadena y código QR público.
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -9,6 +9,7 @@ import { auditar } from '../utils/auditoria.js';
 import { crearLote, qrDeLote, urlPublicaLote } from '../services/lotes.js';
 import { TIPOS_EVENTO } from '../constantes.js';
 import { validarCarenciaParaCosecha, CarenciaError } from '../utils/carencia.js';
+import { obtenerFichaPublica, ejecutarConsultasTrazabilidad, CONSULTAS_TRAZABILIDAD } from '../services/trazabilidad.js';
 
 export const privado = Router();
 export const publico = Router();
@@ -39,6 +40,7 @@ const esquemaLoteCosecha = z.object({
   cantidadKg: z.number().positive().max(1000000),
   calidad: z.enum(['PRIMERA', 'SEGUNDA', 'DESCARTE']).optional(),
   destino: z.string().max(120).nullable().optional(),
+  justificacion: z.string().max(500).optional(), // solo para forzar carencia (PROPIETARIO)
 });
 
 privado.post('/lotes', autorizar('trazabilidad:escribir'), validar(esquemaLoteCosecha), asyncH(async (req, res) => {
@@ -56,7 +58,8 @@ privado.post('/lotes', autorizar('trazabilidad:escribir'), validar(esquemaLoteCo
     const validacion = await validarCarenciaParaCosecha(campania.loteId, req.usuario, forzar, justificacion);
 
     // Crear el lote de cosecha
-    const loteCosecha = await crearLote({ fincaId: req.usuario.fincaId, ...req.body });
+    const { justificacion: _j, ...datos } = req.body;
+    const loteCosecha = await crearLote({ fincaId: req.usuario.fincaId, ...datos });
     await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'LoteCosecha', entidadId: loteCosecha.id, detalle: loteCosecha.codigo });
 
     const respuesta = { ...loteCosecha, urlPublica: urlPublicaLote(loteCosecha.tokenPublico) };
@@ -74,7 +77,7 @@ privado.post('/lotes', autorizar('trazabilidad:escribir'), validar(esquemaLoteCo
           lote: campania.lote,
           aplicacion: error.detalles.aplicacion,
           fechaFinCarencia: error.detalles.fechaFinCarencia,
-          puedeForrzar: req.usuario.rol === 'PROPIETARIO'
+          puedeForzar: req.usuario.rol === 'PROPIETARIO'
         }
       });
     }
@@ -102,42 +105,27 @@ privado.post('/lotes/:id/eventos', autorizar('trazabilidad:escribir'),
   }));
 
 /**
- * Vista pública del QR: sólo datos que el consumidor puede ver.
- * No expone ids internos, trabajadores ni costos. Las aplicaciones se muestran
- * como producto + fecha + carencia (transparencia), nunca como recomendación.
+ * Vista pública del QR: trazabilidad completa para el consumidor
+ * (lote → labores con aplicaciones y carencia → cosecha → eventos → ventas anonimizadas).
  */
 publico.get('/:token', asyncH(async (req, res) => {
-  const token = String(req.params.token).slice(0, 64);
-  const lc = await prisma.loteCosecha.findUnique({
-    where: { tokenPublico: token },
-    include: {
-      eventos: { orderBy: { fecha: 'asc' }, select: { tipo: true, fecha: true, detalle: true } },
-      campania: {
-        include: {
-          lote: { select: { codigo: true, nombre: true, finca: { select: { nombre: true, municipio: true, departamento: true } } } },
-          labores: {
-            where: { tipo: { in: ['SIEMBRA', 'RIEGO', 'FERTILIZACION', 'FUMIGACION', 'DESHIERBE', 'PODA', 'COSECHA'] } },
-            orderBy: { fecha: 'asc' },
-            select: { tipo: true, fecha: true, aplicacion: { select: { producto: true, periodoCarenciaDias: true } } },
-          },
-        },
-      },
-    },
-  });
-  if (!lc) throw noEncontrado('Lote de cosecha');
-  const { campania } = lc;
-  res.set('Cache-Control', 'public, max-age=300');
+  const ficha = await obtenerFichaPublica(req.params.token);
+  if (!ficha) throw noEncontrado('Lote de cosecha');
+  res.set('Cache-Control', 'public, max-age=120');
+  res.json(ficha);
+}));
+
+/**
+ * Misma trazabilidad, pero mostrando las consultas SQL documentadas y su resultado real
+ * (propósito educativo: es la consulta clave que se explica en el informe).
+ */
+publico.get('/:token/sql', asyncH(async (req, res) => {
+  const ficha = await obtenerFichaPublica(req.params.token);
+  if (!ficha) throw noEncontrado('Lote de cosecha');
+  const resultados = await ejecutarConsultasTrazabilidad(req.params.token);
   res.json({
-    codigo: lc.codigo,
-    producto: campania.cultivo,
-    variedad: campania.variedad,
-    calidad: lc.calidad,
-    cantidadKg: lc.cantidadKg,
-    fechaSiembra: campania.fechaSiembra,
-    fechaCosecha: lc.fechaCosecha,
-    finca: campania.lote.finca,
-    lote: `${campania.lote.codigo} · ${campania.lote.nombre}`,
-    labores: campania.labores.map((x) => ({ tipo: x.tipo, fecha: x.fecha, producto: x.aplicacion?.producto || null, carenciaDias: x.aplicacion?.periodoCarenciaDias ?? null })),
-    eventos: lc.eventos,
+    codigo: ficha.codigo,
+    motor: 'SQLite (Prisma guarda las fechas como enteros en milisegundos)',
+    consultas: CONSULTAS_TRAZABILIDAD.map((c) => ({ nombre: c.nombre, descripcion: c.descripcion, sql: c.sql, filas: resultados[c.nombre] })),
   });
 }));

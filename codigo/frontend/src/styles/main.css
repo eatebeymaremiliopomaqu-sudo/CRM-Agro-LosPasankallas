@@ -255,3 +255,9 @@ tbody tr:hover { background: #faf8f2; }
   h1 { font-size: 1.45rem; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- Notas en línea ---------- */
+.nota-alerta { background: var(--ambar-suave); color: #7a4d06; border: 1px solid #f1d39b; border-radius: var(--radio-sm); padding: 10px 12px; margin: 0 0 12px; font-size: 0.88rem; }
+.nota-info { background: var(--azul-suave); color: #1d4b66; border: 1px solid #c3dcea; border-radius: var(--radio-sm); padding: 10px 12px; margin: 0 0 12px; font-size: 0.88rem; }
+.nota-peligro { background: var(--rojo-suave); color: #7d241a; border: 1px solid #f0bcb5; border-radius: var(--radio-sm); padding: 10px 12px; margin: 0 0 12px; font-size: 0.88rem; }
+pre.codigo { background: #1d2420; color: #e7f2dc; padding: 14px; border-radius: var(--radio-sm); overflow-x: auto; font-size: 0.78rem; line-height: 1.45; }

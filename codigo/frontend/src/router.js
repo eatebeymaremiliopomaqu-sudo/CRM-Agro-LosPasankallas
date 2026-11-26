@@ -9,6 +9,7 @@ const rutas = [
   { path: '/campo', name: 'campo', component: () => import('./views/CampoView.vue'), meta: { modulo: 'M1' } },
   { path: '/trazabilidad', name: 'trazabilidad', component: () => import('./views/TrazabilidadView.vue'), meta: { modulo: 'M2' } },
   { path: '/trabajadores', name: 'trabajadores', component: () => import('./views/TrabajadoresView.vue'), meta: { modulo: 'M3', permiso: 'trabajadores:leer' } },
+  { path: '/mis-tareas', name: 'mis-tareas', component: () => import('./views/MisTareasView.vue'), meta: { modulo: 'M3', permiso: 'tareas:leer' } },
   { path: '/insumos', name: 'insumos', component: () => import('./views/InsumosView.vue'), meta: { modulo: 'M4' } },
   { path: '/ventas', name: 'ventas', component: () => import('./views/VentasView.vue'), meta: { modulo: 'M5', permiso: 'ventas:leer' } },
   // M6, M7 pendientes de implementar en bloques posteriores

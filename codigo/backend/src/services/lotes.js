@@ -1,11 +1,14 @@
 import QRCode from 'qrcode';
 import { prisma } from '../db.js';
 import { config } from '../config.js';
-import { codigoLote, tokenPublico } from '../utils/codigos.js';
+import { claveCultivo, codigoLote, tokenPublico } from '../utils/codigos.js';
 
 export const urlPublicaLote = (token) => `${config.frontendUrl.replace(/\/$/, '')}/t/${token}`;
 
-/** Crea un lote de cosecha con código correlativo por finca/año y su primer evento. */
+/**
+ * Crea un lote de cosecha con código correlativo por finca/año, su primer evento y
+ * la ENTRADA en el inventario de productos cosechados (M4). El descarte no entra a stock.
+ */
 export async function crearLote({ fincaId, campaniaId, fechaCosecha, cantidadKg, calidad = 'PRIMERA', destino = null }) {
   const campania = await prisma.campania.findFirst({
     where: { id: campaniaId, lote: { fincaId } },
@@ -31,6 +34,18 @@ export async function crearLote({ fincaId, campaniaId, fechaCosecha, cantidadKg,
         eventos: { create: { tipo: 'COSECHA', fecha, detalle: `Cosecha de ${cantidadKg} kg en ${campania.lote.codigo}` } },
       },
     });
+    if (calidad !== 'DESCARTE') {
+      const clave = claveCultivo(campania.cultivo);
+      let producto = await tx.productoCosechado.findFirst({ where: { fincaId, cultivo: clave, unidad: 'kg' } });
+      if (!producto) {
+        producto = await tx.productoCosechado.create({ data: { fincaId, nombre: campania.cultivo, cultivo: clave, unidad: 'kg' } });
+      }
+      await tx.movimientoProducto.create({
+        data: { productoId: producto.id, tipo: 'ENTRADA', cantidad: cantidadKg, motivo: 'COSECHA', referencia: loteCosecha.codigo, fecha },
+      });
+      await tx.productoCosechado.update({ where: { id: producto.id }, data: { stock: { increment: cantidadKg } } });
+      loteCosecha.productoId = producto.id;
+    }
     return loteCosecha;
   });
 }

@@ -6,6 +6,7 @@ import { useUi } from '../stores/ui.js';
 import Icono from '../components/Icono.vue';
 import Modal from '../components/Modal.vue';
 import { bs, fecha, haceDiasISO, hoyISO, iniciales, numero } from '../utils/formato.js';
+import { CLASE_ESTADO_TAREA, CLASE_PRIORIDAD, ETIQUETAS_ESTADO_TAREA, ETIQUETAS_PRIORIDAD, tareaVencida } from '../utils/tareas.js';
 
 const sesion = useSesion();
 const ui = useUi();
@@ -22,6 +23,15 @@ const lista = ref([]);
 const rango = reactive({ desde: haceDiasISO(14), hasta: hoyISO() });
 const planilla = ref(null);
 const pagos = ref([]);
+// Tareas asignadas
+const tareas = ref([]);
+const filtroTareas = ref('ACTIVAS');
+const modalTarea = ref(false);
+const ft = reactive({});
+const tareasFiltradas = computed(() =>
+  filtroTareas.value === 'ACTIVAS' ? tareas.value.filter((t) => ['PENDIENTE', 'EN_CURSO'].includes(t.estado)) : tareas.value
+);
+const trabajadorTarea = computed(() => trabajadores.value.find((t) => t.id === Number(ft.trabajadorId)));
 
 const CARGOS = { JORNALERO: 'Jornalero', CAPATAZ: 'Capataz', TRACTORISTA: 'Tractorista', REGADOR: 'Regador', OTRO: 'Otro' };
 const presentes = computed(() => lista.value.filter((x) => x.presente).length);
@@ -84,8 +94,47 @@ async function marcarPagado(p) {
   }
 }
 
+async function cargarTareas() {
+  try {
+    tareas.value = await api.get('/tareas');
+  } catch (e) {
+    ui.error(e);
+  }
+}
+function abrirTarea(t = null) {
+  Object.assign(ft, { trabajadorId: t?.id ?? trabajadores.value[0]?.id, titulo: '', descripcion: '', loteId: '', prioridad: 'MEDIA', fechaVencimiento: hoyISO() });
+  modalTarea.value = true;
+}
+async function guardarTarea() {
+  const cuerpo = {
+    trabajadorId: Number(ft.trabajadorId),
+    titulo: ft.titulo,
+    descripcion: ft.descripcion || null,
+    loteId: ft.loteId ? Number(ft.loteId) : null,
+    prioridad: ft.prioridad,
+    fechaVencimiento: ft.fechaVencimiento || null,
+  };
+  try {
+    const r = await api.post('/tareas', cuerpo);
+    ui.avisar(r.notificada ? 'Tarea asignada y avisada por WhatsApp' : 'Tarea asignada (sin aviso por WhatsApp: el trabajador no dio consentimiento)');
+    modalTarea.value = false;
+    pestana.value = 'tareas';
+    cargarTareas();
+  } catch (e) {
+    ui.error(e);
+  }
+}
+async function accionTarea(t, accion) {
+  try {
+    await api.put(`/tareas/${t.id}/${accion}`);
+    cargarTareas();
+  } catch (e) {
+    ui.error(e);
+  }
+}
+
 function abrir(t = null) {
-  Object.assign(f, t ? { id: t.id, nombre: t.nombre, documento: t.documento, telefono: t.telefono, cargo: t.cargo, jornalBs: t.jornalBs, activo: t.activo } : { id: null, nombre: '', documento: '', telefono: '', cargo: 'JORNALERO', jornalBs: 110, activo: true });
+  Object.assign(f, t ? { id: t.id, nombre: t.nombre, documento: t.documento, telefono: t.telefono, cargo: t.cargo, jornalBs: t.jornalBs, activo: t.activo, consentimientoWhatsapp: t.consentimientoWhatsapp } : { id: null, nombre: '', documento: '', telefono: '', cargo: 'JORNALERO', jornalBs: 110, activo: true, consentimientoWhatsapp: false });
   modal.value = true;
 }
 async function guardar() {
@@ -102,7 +151,10 @@ async function guardar() {
   }
 }
 
-watch(pestana, (p) => p === 'planilla' && cargarPlanilla());
+watch(pestana, (p) => {
+  if (p === 'planilla') cargarPlanilla();
+  if (p === 'tareas') cargarTareas();
+});
 onMounted(cargar);
 </script>
 
@@ -112,19 +164,23 @@ onMounted(cargar);
       <h1>Trabajadores</h1>
       <p>Personal, asistencia diaria y planilla de jornales. <span class="insignia tierra">M3</span></p>
     </div>
-    <button v-if="sesion.puede('trabajadores:escribir')" class="btn" @click="abrir()"><Icono nombre="mas" /> Nuevo trabajador</button>
+    <div class="acciones" style="margin: 0">
+      <button v-if="sesion.puede('tareas:escribir')" class="btn secundario" @click="abrirTarea()"><Icono nombre="tarea" /> Asignar tarea</button>
+      <button v-if="sesion.puede('trabajadores:escribir')" class="btn" @click="abrir()"><Icono nombre="mas" /> Nuevo trabajador</button>
+    </div>
   </div>
 
   <div class="tarjeta">
     <div class="pestanas">
       <button :class="{ activa: pestana === 'lista' }" @click="pestana = 'lista'">Personal ({{ trabajadores.length }})</button>
       <button v-if="sesion.puede('trabajadores:escribir')" :class="{ activa: pestana === 'asistencia' }" @click="pestana = 'asistencia'">Pasar lista</button>
+      <button v-if="sesion.puede('tareas:escribir')" :class="{ activa: pestana === 'tareas' }" @click="pestana = 'tareas'">Tareas asignadas</button>
       <button :class="{ activa: pestana === 'planilla' }" @click="pestana = 'planilla'">Planilla y pagos</button>
     </div>
 
     <div v-if="pestana === 'lista'" class="tabla-envoltura">
       <table>
-        <thead><tr><th>Trabajador</th><th>Cargo</th><th>Teléfono</th><th class="num">Jornal</th><th class="num">Días registrados</th><th /></tr></thead>
+        <thead><tr><th>Trabajador</th><th>Cargo</th><th>Teléfono</th><th>WhatsApp</th><th class="num">Jornal</th><th class="num">Días registrados</th><th /></tr></thead>
         <tbody>
           <tr v-for="t in trabajadores" :key="t.id">
             <td>
@@ -135,6 +191,7 @@ onMounted(cargar);
             </td>
             <td><span class="insignia gris">{{ CARGOS[t.cargo] }}</span></td>
             <td>{{ t.telefono || '—' }}</td>
+            <td><span class="insignia" :class="t.consentimientoWhatsapp ? '' : 'gris'" :title="t.fechaConsentimiento ? `Desde ${fecha(t.fechaConsentimiento)}` : ''">{{ t.consentimientoWhatsapp ? 'Acepta avisos' : 'Sin consentimiento' }}</span></td>
             <td class="num">{{ bs(t.jornalBs) }}</td>
             <td class="num">{{ t._count?.asistencias }}</td>
             <td style="text-align: right"><button v-if="sesion.puede('trabajadores:escribir')" class="btn fantasma chico" @click="abrir(t)">Editar</button></td>
@@ -161,6 +218,36 @@ onMounted(cargar);
               <td><input v-model="x.tarea" class="entrada" placeholder="Riego, cosecha…" :disabled="!x.presente" /></td>
               <td>
                 <select v-model="x.loteId" class="entrada" :disabled="!x.presente"><option value="">—</option><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }}</option></select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div v-else-if="pestana === 'tareas'">
+      <div class="filtros">
+        <select v-model="filtroTareas" class="entrada" aria-label="Filtro de tareas"><option value="ACTIVAS">Solo activas</option><option value="TODAS">Todas</option></select>
+        <span class="insignia">{{ tareasFiltradas.length }} tarea(s)</span>
+      </div>
+      <div v-if="!tareasFiltradas.length" class="apagado">No hay tareas para mostrar.</div>
+      <div v-else class="tabla-envoltura">
+        <table>
+          <thead><tr><th>Tarea</th><th>Trabajador</th><th>Lote</th><th>Prioridad</th><th>Estado</th><th>Para</th><th>Aviso</th><th /></tr></thead>
+          <tbody>
+            <tr v-for="t in tareasFiltradas" :key="t.id">
+              <td><strong>{{ t.titulo }}</strong><br /><small>{{ t.descripcion }}</small></td>
+              <td>{{ t.trabajador?.nombre }}</td>
+              <td>{{ t.lote?.codigo || '—' }}</td>
+              <td><span class="insignia" :class="CLASE_PRIORIDAD[t.prioridad]">{{ ETIQUETAS_PRIORIDAD[t.prioridad] }}</span></td>
+              <td><span class="insignia" :class="CLASE_ESTADO_TAREA[t.estado]">{{ ETIQUETAS_ESTADO_TAREA[t.estado] }}</span> <span v-if="tareaVencida(t)" class="insignia rojo">Vencida</span></td>
+              <td>{{ fecha(t.fechaVencimiento) }}</td>
+              <td><small>{{ t.notificada ? 'WhatsApp ✓' : '—' }}</small></td>
+              <td style="text-align: right; white-space: nowrap">
+                <template v-if="['PENDIENTE', 'EN_CURSO'].includes(t.estado)">
+                  <button class="btn fantasma chico" @click="accionTarea(t, 'completar')">Hecha</button>
+                  <button class="btn fantasma chico" @click="accionTarea(t, 'cancelar')">Cancelar</button>
+                </template>
               </td>
             </tr>
           </tbody>
@@ -215,8 +302,26 @@ onMounted(cargar);
         <div class="campo"><label>Cargo</label><select v-model="f.cargo"><option v-for="(t, k) in CARGOS" :key="k" :value="k">{{ t }}</option></select></div>
         <div class="campo"><label>Jornal (Bs/día)</label><input v-model.number="f.jornalBs" type="number" min="0" step="1" required /></div>
       </div>
+      <label style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px"><span class="interruptor"><input v-model="f.consentimientoWhatsapp" type="checkbox" /><span /></span> Aceptó recibir avisos de tareas por WhatsApp (consentimiento informado)</label>
       <label v-if="f.id" style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px"><span class="interruptor"><input v-model="f.activo" type="checkbox" /><span /></span> Activo</label>
       <div class="acciones"><button type="button" class="btn secundario" @click="modal = false">Cancelar</button><button class="btn">Guardar</button></div>
+    </form>
+  </Modal>
+
+  <Modal v-if="modalTarea" titulo="Asignar tarea" @cerrar="modalTarea = false">
+    <form @submit.prevent="guardarTarea">
+      <div class="campo"><label>Trabajador</label><select v-model="ft.trabajadorId" required><option v-for="t in trabajadores" :key="t.id" :value="t.id">{{ t.nombre }}</option></select></div>
+      <p v-if="trabajadorTarea && !trabajadorTarea.consentimientoWhatsapp" class="nota-alerta">
+        {{ trabajadorTarea.nombre }} no dio consentimiento para WhatsApp: la tarea se asigna, pero no se le enviará aviso.
+      </p>
+      <div class="campo"><label>Tarea</label><input v-model="ft.titulo" required minlength="3" maxlength="120" placeholder="Ej.: Revisar goteros del L-01" /></div>
+      <div class="campo"><label>Detalle (opcional)</label><textarea v-model="ft.descripcion" rows="2" maxlength="500" /></div>
+      <div class="fila-campos">
+        <div class="campo"><label>Lote (opcional)</label><select v-model="ft.loteId"><option value="">— Sin lote —</option><option v-for="l in lotes" :key="l.id" :value="l.id">{{ l.codigo }} · {{ l.nombre }}</option></select></div>
+        <div class="campo"><label>Prioridad</label><select v-model="ft.prioridad"><option v-for="(t, k) in ETIQUETAS_PRIORIDAD" :key="k" :value="k">{{ t }}</option></select></div>
+      </div>
+      <div class="campo"><label>Fecha límite</label><input v-model="ft.fechaVencimiento" type="date" /></div>
+      <div class="acciones"><button type="button" class="btn secundario" @click="modalTarea = false">Cancelar</button><button class="btn">Asignar</button></div>
     </form>
   </Modal>
 </template>

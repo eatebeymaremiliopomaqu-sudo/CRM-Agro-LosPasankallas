@@ -1,6 +1,9 @@
 // Integración con WhatsApp Cloud API (Meta). Si no hay credenciales, el envío
 // se simula (queda guardado en la bitácora de mensajes), útil para la demo.
 import crypto from 'node:crypto';
+import { prisma } from '../db.js';
+import { normalizarTelefono } from '../utils/codigos.js';
+import { mensajeTareaAsignada } from '../utils/tareas.js';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 
@@ -49,4 +52,24 @@ export function crearClienteWhatsApp({ token, phoneNumberId }) {
       return res.json();
     },
   };
+}
+
+/**
+ * Aviso de tarea asignada. Solo se envía si el trabajador dio consentimiento y tiene teléfono.
+ * El mensaje queda en la bitácora MensajeWhatsApp (dirección SALIENTE).
+ */
+export async function notificarTareaAsignada(fincaId, trabajador, tarea, cliente = clientePorDefecto()) {
+  if (!trabajador?.consentimientoWhatsapp) return { enviado: false, razon: 'SIN_CONSENTIMIENTO' };
+  if (!trabajador.telefono) return { enviado: false, razon: 'SIN_TELEFONO' };
+  const para = normalizarTelefono(trabajador.telefono);
+  const texto = mensajeTareaAsignada(tarea);
+  await prisma.mensajeWhatsApp.create({ data: { fincaId, telefono: para, direccion: 'SALIENTE', texto } });
+  await cliente.enviarTexto(para, texto);
+  return { enviado: true, simulado: cliente.simulado };
+}
+
+let _cliente;
+function clientePorDefecto() {
+  if (!_cliente) _cliente = crearClienteWhatsApp({ token: process.env.WHATSAPP_TOKEN, phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID });
+  return _cliente;
 }

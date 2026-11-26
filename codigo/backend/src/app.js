@@ -15,6 +15,7 @@ import lotes from './routes/lotes.js';
 import campo from './routes/campo.js';
 import { privado as trazaPrivado, publico as trazaPublico } from './routes/trazabilidad.js';
 import trabajadores from './routes/trabajadores.js';
+import tareas from './routes/tareas.js';
 import { agenteRouter, webhookRouter } from './routes/agente.js';
 import insumos from './routes/insumos.js';
 import productos from './routes/productos.js';
@@ -57,10 +58,11 @@ export function crearApp() {
   app.use('/api', autenticar);
   app.use('/api/dashboard', dashboard);
   app.use('/api', fincas); // M0
-  app.use('/api/lotes', requiereModulo('M1'), lotes);
+  app.use('/api/lotes', lotes); // M0: lotes y cultivos siempre activos
   app.use('/api/campo', requiereModulo('M1'), campo);
   app.use('/api/trazabilidad', requiereModulo('M2'), trazaPrivado);
   app.use('/api/trabajadores', requiereModulo('M3'), trabajadores);
+  app.use('/api/tareas', requiereModulo('M3'), tareas);
   app.use('/api/agente', requiereModulo('M1'), agenteRouter);
   app.use('/api/insumos', requiereModulo('M4'), insumos);
   app.use('/api/productos', requiereModulo('M5'), productos);

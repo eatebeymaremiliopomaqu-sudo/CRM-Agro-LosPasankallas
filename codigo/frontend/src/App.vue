@@ -19,7 +19,8 @@ const enlaces = computed(() =>
     { a: '/lotes', texto: 'Lotes de campo', corto: 'Lotes', icono: 'parcela', modulo: 'M0' },
     { a: '/campo', texto: 'Control de campo', corto: 'Campo', icono: 'campo', modulo: 'M1' },
     { a: '/trazabilidad', texto: 'Trazabilidad', corto: 'Cosecha', icono: 'qr', modulo: 'M2' },
-    { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M3', permiso: 'trabajadores:leer' },
+    { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M3', permiso: 'trabajadores:leer', roles: ['PROPIETARIO', 'ENCARGADO'] },
+    { a: '/mis-tareas', texto: 'Mis tareas', corto: 'Tareas', icono: 'check', modulo: 'M3', permiso: 'tareas:leer', roles: ['TRABAJADOR'] },
     { a: '/insumos', texto: 'Insumos', icono: 'caja', modulo: 'M4' },
     { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
     // M6, M7 pendientes de implementar en bloques posteriores
@@ -27,7 +28,7 @@ const enlaces = computed(() =>
     // { a: '/reportes', texto: 'Reportes', icono: 'grafico', modulo: 'M7' },
     { a: '/agente', texto: 'Agente y WhatsApp', corto: 'Agente', icono: 'chat', permiso: 'agente:usar' },
     { a: '/configuracion', texto: 'Configuración', icono: 'ajustes', permiso: 'finca:configurar' },
-  ].filter((e) => (!e.modulo || sesion.tieneModulo(e.modulo)) && (!e.permiso || sesion.puede(e.permiso)))
+  ].filter((e) => (!e.modulo || sesion.tieneModulo(e.modulo)) && (!e.permiso || sesion.puede(e.permiso)) && (!e.roles || e.roles.includes(sesion.rol)))
 );
 const enlacesMovil = computed(() => enlaces.value.slice(0, 5));
 const conMarco = computed(() => sesion.autenticado && !ruta.meta.publica);

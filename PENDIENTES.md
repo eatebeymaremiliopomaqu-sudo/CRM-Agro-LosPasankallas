@@ -44,16 +44,18 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] 105 pruebas backend ✅, 7 pruebas frontend ✅
 - [x] Commit: 0b35d89
 
-## 📋 PENDIENTE
+### BLOQUE 4 - Trazabilidad completa y Tareas (sprint-2) ✅
+- [x] Ficha pública QR: lote → labores (aplicaciones y carencia) → cosecha → eventos → ventas (solo tipo de cliente)
+- [x] Consultas SQL de trazabilidad documentadas y ejecutadas con parámetro enlazado (`GET /api/publico/lotes/:token/sql`)
+- [x] Modelo `Tarea` vinculado a Trabajador (prioridad, estado, vencimiento, aviso)
+- [x] Vista "Mis tareas" para rol TRABAJADOR (móvil, funciona sin conexión)
+- [x] Asignación y seguimiento de tareas desde ENCARGADO/PROPIETARIO (pestaña en Trabajadores)
+- [x] Aviso por WhatsApp al asignar tarea solo con consentimiento (fecha de consentimiento guardada)
+- [x] Cosecha genera entrada automática en inventario de productos
+- [x] Correcciones: forzar carencia (justificación se perdía en Zod), orden de tareas, `/api/lotes` en M0
+- [x] 121 pruebas backend ✅, 7 pruebas frontend ✅, build OK
 
-### BLOQUE 4 - Trazabilidad completa y Tareas (sprint-2)
-- [ ] Ficha pública QR: mostrar ventas (sin datos personales del cliente)
-- [ ] Endpoint trazabilidad completa con query SQL documentada
-- [ ] Modelo `Tarea` vinculado a Trabajador
-- [ ] Vista "Mis tareas" para rol TRABAJADOR (móvil)
-- [ ] Asignación de tareas desde ENCARGADO
-- [ ] Marcar tarea como completada
-- [ ] Aviso por WhatsApp al asignar tarea (con consentimiento)
+## 📋 PENDIENTE
 
 ### BLOQUE 5 - WhatsApp real (Twilio + Meta) (sprint-3)
 - [ ] Abstracción `WHATSAPP_PROVIDER` (twilio | meta | simulado)

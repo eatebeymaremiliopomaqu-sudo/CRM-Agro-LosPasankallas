@@ -1,4 +1,4 @@
-// M4 · Trabajadores, asistencia y jornales
+// M3 · Trabajadores, asistencia y jornales
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -17,7 +17,14 @@ const esquemaTrabajador = z.object({
   cargo: z.enum(['JORNALERO', 'CAPATAZ', 'TRACTORISTA', 'REGADOR', 'OTRO']).optional(),
   jornalBs: z.number().min(0).max(2000),
   activo: z.boolean().optional(),
+  consentimientoWhatsapp: z.boolean().optional(),
 });
+
+/** Al cambiar el consentimiento se guarda la fecha (evidencia ética de la guía). */
+const conFechaConsentimiento = (datos, previo = null) => {
+  if (datos.consentimientoWhatsapp === undefined || datos.consentimientoWhatsapp === previo?.consentimientoWhatsapp) return datos;
+  return { ...datos, fechaConsentimiento: datos.consentimientoWhatsapp ? new Date() : null };
+};
 
 async function trabajadorPropio(fincaId, id) {
   const t = await prisma.trabajador.findFirst({ where: { id: Number(id), fincaId } });
@@ -41,14 +48,14 @@ r.get('/', autorizar('trabajadores:leer'), asyncH(async (req, res) => {
 }));
 
 r.post('/', autorizar('trabajadores:escribir'), validar(esquemaTrabajador), asyncH(async (req, res) => {
-  const t = await prisma.trabajador.create({ data: { ...req.body, fincaId: req.usuario.fincaId } });
+  const t = await prisma.trabajador.create({ data: { ...conFechaConsentimiento(req.body), fincaId: req.usuario.fincaId } });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'Trabajador', entidadId: t.id });
   res.status(201).json(t);
 }));
 
 r.patch('/:id(\\d+)', autorizar('trabajadores:escribir'), validar(esquemaTrabajador.partial()), asyncH(async (req, res) => {
   const t0 = await trabajadorPropio(req.usuario.fincaId, req.params.id);
-  const t = await prisma.trabajador.update({ where: { id: t0.id }, data: req.body });
+  const t = await prisma.trabajador.update({ where: { id: t0.id }, data: conFechaConsentimiento(req.body, t0) });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'ACTUALIZAR', entidad: 'Trabajador', entidadId: t.id });
   res.json(t);
 }));

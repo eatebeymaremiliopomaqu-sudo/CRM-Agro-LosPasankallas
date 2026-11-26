@@ -30,3 +30,8 @@ export function normalizarTelefono(tel = '', pais = '591') {
   if (digitos.length === 8) return pais + digitos;
   return digitos;
 }
+
+/** Clave del cultivo para enlazar campaña e inventario: "Pimentón" -> "PIMENTON". */
+export function claveCultivo(nombre = '') {
+  return String(nombre).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase().split(/\s+/)[0] || 'OTRO';
+}

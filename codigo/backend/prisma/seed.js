@@ -19,7 +19,7 @@ const dia = (offset) => {
 async function main() {
   console.log('🌱 Limpiando datos…');
   // Eliminar en orden inverso a las dependencias
-  for (const m of ['cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'productoCosechado', 'movimientoInsumo', 'insumo', 'cliente', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
+  for (const m of ['cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'productoCosechado', 'movimientoInsumo', 'insumo', 'cliente', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'tarea', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
     await prisma[m].deleteMany();
   }
 
@@ -568,6 +568,226 @@ async function main() {
   });
   await prisma.movimientoProducto.create({
     data: { productoId: productos[3].id, tipo: 'SALIDA', cantidad: 13, motivo: 'VENTA', referencia: `V-${ventas[4].id}`, fecha: dia(-2) }
+  });
+
+  // M3 Tareas para trabajadores (gestión de asignaciones)
+  // Tareas PENDIENTES (futuras, para trabajadores con consentimiento)
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez (Capataz) - tiene consentimiento
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Revisar sistema de riego en L-01',
+      descripcion: 'Verificar que todos los goteros funcionen correctamente y no haya fugas',
+      loteId: lotes[0].id,
+      prioridad: 'ALTA',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(2),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[1].id, // María Flores - tiene consentimiento
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Deshierbe en L-02',
+      descripcion: 'Eliminar malezas alrededor de las plantas de pimentón',
+      loteId: lotes[1].id,
+      prioridad: 'MEDIA',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(3),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[2].id, // Pedro Gutiérrez - tiene consentimiento
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Preparar terreno para nueva siembra',
+      descripcion: 'Arar y nivelar el lote L-06 para la próxima campaña',
+      loteId: lotes[5].id,
+      prioridad: 'BAJA',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(7),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez - más tareas para el trabajador vinculado
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Supervisar aplicación de fertilizante',
+      descripcion: 'Coordinar y supervisar la fertilización en todos los lotes de tomate',
+      loteId: null,
+      prioridad: 'URGENTE',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(1),
+      notificada: true,
+    }
+  });
+
+  // Tareas EN_CURSO (siendo trabajadas actualmente)
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Monitoreo fitosanitario semanal',
+      descripcion: 'Revisar todos los lotes en busca de plagas o enfermedades',
+      loteId: null,
+      prioridad: 'ALTA',
+      estado: 'EN_CURSO',
+      fechaVencimiento: dia(0),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[1].id, // María Flores
+      asignadoPorId: usuarios.propietario.id,
+      titulo: 'Cosecha de frutilla en L-03',
+      descripcion: 'Recolectar frutos maduros con cuidado, seleccionar primera calidad',
+      loteId: lotes[2].id,
+      prioridad: 'URGENTE',
+      estado: 'EN_CURSO',
+      fechaVencimiento: dia(0),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[3].id, // Rosa Copa - tiene consentimiento
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Riego manual en L-04',
+      descripcion: 'Regar el lote de papa durante 4 horas por sistema de gravedad',
+      loteId: lotes[3].id,
+      prioridad: 'MEDIA',
+      estado: 'EN_CURSO',
+      fechaVencimiento: dia(0),
+      notificada: true,
+    }
+  });
+
+  // Tareas COMPLETADAS (terminadas ayer/hoy)
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Poda de plantas de tomate',
+      descripcion: 'Eliminar chupones y hojas bajeras en L-01',
+      loteId: lotes[0].id,
+      prioridad: 'MEDIA',
+      estado: 'COMPLETADA',
+      fechaVencimiento: dia(-1),
+      fechaCompletada: dia(-1),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Inventario de herramientas',
+      descripcion: 'Revisar y contar todas las herramientas del galpón',
+      loteId: null,
+      prioridad: 'BAJA',
+      estado: 'COMPLETADA',
+      fechaVencimiento: dia(-2),
+      fechaCompletada: dia(-2),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[2].id, // Pedro Gutiérrez
+      asignadoPorId: usuarios.propietario.id,
+      titulo: 'Reparación de cerca en L-05',
+      descripcion: 'Arreglar postes y alambre dañados en el perímetro',
+      loteId: lotes[4].id,
+      prioridad: 'ALTA',
+      estado: 'COMPLETADA',
+      fechaVencimiento: dia(-3),
+      fechaCompletada: dia(-2),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[1].id, // María Flores
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Limpieza de canales de riego',
+      descripcion: 'Eliminar obstrucciones y sedimentos de los canales principales',
+      loteId: lotes[0].id,
+      prioridad: 'MEDIA',
+      estado: 'COMPLETADA',
+      fechaVencimiento: dia(0),
+      fechaCompletada: dia(0),
+      notificada: true,
+    }
+  });
+
+  // Tareas CANCELADAS
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[4].id, // Luis Ticona - NO tiene consentimiento
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Aplicación de fungicida en L-03',
+      descripcion: 'Cancelada por condiciones climáticas desfavorables',
+      loteId: lotes[2].id,
+      prioridad: 'ALTA',
+      estado: 'CANCELADA',
+      fechaVencimiento: dia(-5),
+      notificada: false, // no tiene consentimiento
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Capacitación en uso de agroquímicos',
+      descripcion: 'Cancelada - reprogramada para próxima semana',
+      loteId: null,
+      prioridad: 'MEDIA',
+      estado: 'CANCELADA',
+      fechaVencimiento: dia(-1),
+      notificada: true,
+    }
+  });
+
+  // Tareas adicionales para diferentes prioridades
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez - trabajador vinculado
+      asignadoPorId: usuarios.encargado.id,
+      titulo: 'Recolección de muestras de suelo',
+      descripcion: 'Tomar muestras en los 6 lotes para análisis de laboratorio',
+      loteId: null,
+      prioridad: 'BAJA',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(10),
+      notificada: true,
+    }
+  });
+
+  await prisma.tarea.create({
+    data: {
+      trabajadorId: trabajadores[0].id, // Juan Pérez - otra tarea
+      asignadoPorId: usuarios.propietario.id,
+      titulo: 'Informe semanal de actividades',
+      descripcion: 'Preparar reporte de labores realizadas durante la semana',
+      loteId: null,
+      prioridad: 'MEDIA',
+      estado: 'PENDIENTE',
+      fechaVencimiento: dia(5),
+      notificada: true,
+    }
   });
 
   // Conversación de ejemplo por WhatsApp

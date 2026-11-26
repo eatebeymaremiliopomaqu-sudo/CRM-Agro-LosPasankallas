@@ -158,7 +158,7 @@ onMounted(cargar);
         <p style="margin: 4px 0"><strong>Período de carencia:</strong> {{ errorCarencia.detalles.aplicacion.periodoCarenciaDias }} días</p>
         <p style="margin: 4px 0"><strong>Fecha fin de carencia:</strong> {{ fecha(errorCarencia.detalles.fechaFinCarencia) }}</p>
       </div>
-      <div v-if="errorCarencia.detalles?.puedeForrzar && sesion.usuario?.rol === 'PROPIETARIO'" style="margin-top: 16px">
+      <div v-if="errorCarencia.detalles?.puedeForzar && sesion.usuario?.rol === 'PROPIETARIO'" style="margin-top: 16px">
         <p style="color: #856404; font-weight: bold">Como propietario, puede forzar la cosecha bajo su responsabilidad:</p>
         <div class="campo"><label>Justificación (obligatoria)</label><textarea v-model="f.justificacion" rows="3" required minlength="10" placeholder="Ej: Urgencia de mercado - cliente importante esperando entrega..." /></div>
         <div style="display: flex; gap: 8px">
