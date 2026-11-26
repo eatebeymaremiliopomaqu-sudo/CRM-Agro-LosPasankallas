@@ -110,26 +110,19 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Corrige: dosis con nombre comercial no bloqueada (crítico), "tarea hecha 12", detalle de venta 500, destino con nombre del cliente en el QR
 - [x] 247 pruebas backend ✅, 14 frontend ✅
 
-## 📋 PENDIENTE
+### BLOQUE 9 - Documentación final y entregables (main) ✅
+- [x] README.md actualizado (módulos, roles, arranque en Windows, demo, WhatsApp, pruebas)
+- [x] LEEME.txt con integrantes, roles por sprint (plantilla), usuarios, arranque y WhatsApp
+- [x] Swagger 100 %: 66 rutas, verificado por prueba automática (`tests/unit/swagger.test.js`)
+- [x] Informe fuente HTML en `informe/fuente/` + PDF generado por script (Chrome headless)
+- [x] Consultas SQL clave en `codigo/backend/prisma/consultas_clave.sql` (verificadas contra la BD)
+- [x] Diagramas regenerados por script: arquitectura, ER, flujo del agente, flujo de la demo
+- [x] PPTX de 14 láminas con notas del orador para los 3 integrantes y lámina de aprendizajes (fuente pptxgenjs)
+- [x] Evidencias SCRUM: Sprint 0, backlog importable, sprint backlogs 1–3, dailies, reviews, retrospectivas, burndowns, velocidad
+- [x] Guion de exposición 8–10 min con la demo paso a paso
+- [x] 249 pruebas backend ✅ (96 % de líneas), 14 frontend ✅
 
-### BLOQUE 9 - Documentación final y entregables (main)
-- [ ] README.md actualizado con nueva nomenclatura
-- [ ] LEEME.txt con integrantes, roles por sprint, usuarios
-- [ ] Swagger 100% completo
-- [ ] Informe fuente en `informe/fuente/` (Markdown o HTML)
-- [ ] Informe PDF generado automáticamente
-- [ ] Diagramas actualizados (arquitectura, ER, flujos)
-- [ ] Diapositivas fuente con pptxgenjs
-- [ ] PPTX 12-15 láminas con notas del orador
-- [ ] Evidencias SCRUM:
-  - [ ] Sprint 0: entrevista, historias, modelo ER
-  - [ ] Sprint backlogs 1-3
-  - [ ] Notas de daily (plantilla + ejemplos)
-  - [ ] Reviews y retrospectivas
-  - [ ] Burndowns actualizados
-- [ ] Guión de exposición 8-10 min
-- [ ] Lista de verificación final
-- [ ] ZIP final sin node_modules, .env, *.db
+## 📋 PENDIENTE
 
 ## ⚠️ BLOQUEADORES
 

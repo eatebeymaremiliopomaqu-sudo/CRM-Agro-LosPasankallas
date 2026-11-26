@@ -42,7 +42,7 @@
 
 ## Sprint 3 · Review
 
-**Incremento:** WhatsApp real (Twilio/Meta/simulado) con firma, ALTA/BAJA, agente ampliado (cosecha, tarea hecha, pedido de cliente, consultas), políticas por perfil, alertas diarias con bitácora; M6 Vivero; M7 costos, margen, gráficos y CSV; 247 pruebas con 96 % de cobertura y CI; informe, diapositivas y guía de despliegue.
+**Incremento:** WhatsApp real (Twilio/Meta/simulado) con firma, ALTA/BAJA, agente ampliado (cosecha, tarea hecha, pedido de cliente, consultas), políticas por perfil, alertas diarias con bitácora; M6 Vivero; M7 costos, margen, gráficos y CSV; 249 pruebas con 96 % de cobertura y CI; informe, diapositivas y guía de despliegue.
 **Demo:** flujo completo de la exposición desde el celular.
 **Historias:** HU-19 a HU-30 · 63 puntos.
 **Comentarios del PO:** [completar]

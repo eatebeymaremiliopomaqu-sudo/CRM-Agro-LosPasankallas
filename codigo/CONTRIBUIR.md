@@ -8,9 +8,9 @@ El proyecto tiene las siguientes ramas:
 
 - **`main`**: rama principal con el código estable
 - **`sprint-0`**: Sprint 0 (entrevista, historias de usuario, modelo ER inicial)
-- **`sprint-1`**: Sprint 1 (renumeración de módulos, M0, M1 parcial)
-- **`sprint-2`**: Sprint 2 (M1 completo, M2, M3, M4)
-- **`sprint-3`**: Sprint 3 (M5, M6, M7, WhatsApp, despliegue)
+- **`sprint-1`**: Sprint 1 (renumeración M0–M7, roles, campo con calendario y bloqueo por carencia)
+- **`sprint-2`**: Sprint 2 (inventario de productos, ventas y cobros, trazabilidad hasta la venta, tareas)
+- **`sprint-3`**: Sprint 3 (WhatsApp real y agente ampliado, alertas, M6 Vivero, M7 Finanzas, pruebas con Vitest)
 
 ## Flujo de trabajo por sprint
 

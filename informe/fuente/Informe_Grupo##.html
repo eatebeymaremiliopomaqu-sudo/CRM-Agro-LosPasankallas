@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>CRM-Agro · Informe final · Grupo [NÚMERO]</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root { --bosque: #1f3a2b; --hoja: #3e7b4f; --tierra: #c8823a; --tinta: #1d2420; --gris: #4b564f; --linea: #e4dfd2; --suave: #f6f3ea; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Inter, system-ui, sans-serif; color: var(--tinta); font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1, h2, h3 { color: var(--bosque); line-height: 1.2; }
+  h1 { font-size: 20pt; margin: 0 0 6pt; }
+  h2 { font-size: 15pt; border-bottom: 2px solid var(--hoja); padding-bottom: 3pt; margin: 18pt 0 8pt; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 12pt 0 4pt; page-break-after: avoid; }
+  p { margin: 4pt 0 6pt; text-align: justify; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: auto; }
+  th, td { border: 1px solid var(--linea); padding: 3pt 5pt; vertical-align: top; text-align: left; }
+  th { background: var(--suave); color: var(--bosque); }
+  tr { page-break-inside: avoid; }
+  code { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 8.8pt; background: #f1eee6; padding: 0 2pt; border-radius: 2pt; }
+  pre { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 8pt; background: #1d2420; color: #e7f2dc; padding: 7pt 9pt; border-radius: 4pt; white-space: pre-wrap; page-break-inside: avoid; margin: 4pt 0 10pt; }
+  figure { margin: 8pt 0 12pt; text-align: center; page-break-inside: avoid; }
+  figure img { max-width: 100%; border: 1px solid var(--linea); }
+  figcaption { font-size: 8.8pt; color: var(--gris); margin-top: 3pt; }
+  .portada { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; }
+  .portada .marca { color: var(--hoja); font-weight: 700; letter-spacing: 1px; }
+  .portada h1 { font-size: 30pt; margin-top: 40mm; }
+  .portada .sub { font-size: 14pt; color: var(--gris); }
+  .portada table { width: 70%; font-size: 10.5pt; }
+  .indice { page-break-after: always; }
+  .indice ol { line-height: 1.9; }
+  .nota { background: #e1eef6; border-left: 4px solid #1f78b4; padding: 6pt 9pt; margin: 8pt 0; font-size: 9.5pt; }
+  .alerta { background: #fbe4e1; border-left: 4px solid #c0392b; padding: 6pt 9pt; margin: 8pt 0; font-size: 9.5pt; }
+  .salto { page-break-before: always; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <div>
+    <div class="marca">UNIFRANZ · SEDE EL ALTO · INGENIERÍA DE SISTEMAS</div>
+    <h1>CRM-Agro</h1>
+    <div class="sub">CRM modular y de bajo costo para fincas pequeñas, con agente de IA por WhatsApp<br />Informe final del proyecto</div>
+  </div>
+  <table>
+    <tr><th>Grupo</th><td>[NÚMERO]</td></tr>
+    <tr><th>Integrantes</th><td>[Nombre 1] · [Nombre 2] · [Nombre 3]</td></tr>
+    <tr><th>Asignatura</th><td>[NOMBRE]</td></tr>
+    <tr><th>Docente</th><td>[NOMBRE]</td></tr>
+    <tr><th>Hito</th><td>[NÚMERO]</td></tr>
+    <tr><th>Fecha</th><td>Noviembre de 2026</td></tr>
+    <tr><th>Repositorio y despliegue</th><td>Frontend: https://[proyecto].vercel.app · API: https://[servicio].onrender.com/api/docs</td></tr>
+  </table>
+  <p style="font-size:9pt;color:#4b564f">Todos los datos del sistema y de este informe (finca, personas, teléfonos, productos agroquímicos) son <strong>ficticios</strong>.</p>
+</section>
+
+<section class="indice">
+  <h2>Contenido</h2>
+  <ol>
+    <li>Introducción</li>
+    <li>Requisitos funcionales y no funcionales</li>
+    <li>Historias de usuario</li>
+    <li>Arquitectura modular</li>
+    <li>Base de datos: tablas, claves, normalización y consultas clave</li>
+    <li>Explicación del código clave</li>
+    <li>Agente de IA y WhatsApp</li>
+    <li>Gestión con SCRUM (Sprint 0 a 3)</li>
+    <li>Pruebas y métricas de calidad</li>
+    <li>Seguridad y ética</li>
+    <li>Despliegue</li>
+    <li>Costos mensuales</li>
+    <li>Impacto en productores pequeños</li>
+    <li>Declaración de uso de IA</li>
+    <li>Conclusiones y trabajo futuro</li>
+  </ol>
+</section>
+
+<h2>1. Introducción</h2>
+<p>Las fincas pequeñas de frutas, hortalizas y vivero —como la finca ficticia <strong>Los Molles</strong> de Comarapa, con 6,5 ha y ocho trabajadores— registran sus labores en cuadernos y en grupos de WhatsApp. La información se pierde, no se controla bien el <strong>período de carencia</strong> de los agroquímicos, no se sabe si un lote deja ganancia y los compradores empiezan a pedir <strong>trazabilidad</strong>.</p>
+<p><strong>CRM-Agro</strong> es un CRM web <strong>modular y de bajo costo</strong>: la finca empieza con los módulos esenciales y activa los demás cuando los necesita. Funciona en el celular aun sin señal (PWA) y tiene un <strong>agente de IA por WhatsApp</strong> que convierte mensajes como <em>"hoy cosechamos 40 kg de tomate del lote 2"</em> en registros, <strong>siempre con confirmación previa (SI/NO)</strong> y <strong>sin recomendar nunca dosis ni productos</strong>.</p>
+<p><strong>Objetivo general:</strong> construir y desplegar un CRM agrícola modular que cubra el ciclo <em>labor → cosecha → trazabilidad QR → inventario → venta</em>, con un canal de WhatsApp seguro. <strong>Objetivos específicos:</strong> (1) núcleo con roles y módulos activables; (2) control técnico de campo con bloqueo por carencia; (3) trazabilidad pública sin datos personales; (4) inventarios, ventas y cuentas por cobrar; (5) vivero y finanzas; (6) agente de IA con límites verificables por pruebas; (7) calidad medida (pruebas, cobertura, defectos) y despliegue con costo justificado.</p>
+
+<h2>2. Requisitos</h2>
+<h3>2.1 Requisitos funcionales por módulo</h3>
+<table>
+  <tr><th>Módulo</th><th>Requisitos funcionales</th></tr>
+  <tr><td>M0 Núcleo</td><td>RF-01 Iniciar sesión (JWT). RF-02 Roles PROPIETARIO, ENCARGADO, TRABAJADOR. RF-03 Activar/desactivar módulos por finca (tabla <code>ModuloFinca</code>) con dependencias. RF-04 Lotes de campo en mapa y campañas (ciclos de cultivo). RF-05 Usuarios y auditoría.</td></tr>
+  <tr><td>M1 Campo</td><td>RF-06 Calendario de labores con responsable (pendiente/hecha/cancelada). RF-07 Riego programado. RF-08 Aplicaciones fitosanitarias con producto, motivo, fecha, dosis de etiqueta (texto) y período de carencia. RF-09 Bloqueo de cosecha en carencia (409) con forzado auditado del propietario. RF-10 Cosecha por lote. RF-11 Observaciones.</td></tr>
+  <tr><td>M2 Trazabilidad</td><td>RF-12 Lote de cosecha con código correlativo y QR. RF-13 Ficha pública lote → labores → cosecha → venta, sin datos personales. RF-14 Consulta SQL de trazabilidad documentada.</td></tr>
+  <tr><td>M3 Trabajadores</td><td>RF-15 Registro y asistencia idempotente. RF-16 Tareas asignadas y "Mis tareas". RF-17 Jornales y pagos. RF-18 Aviso de tarea por WhatsApp solo con consentimiento.</td></tr>
+  <tr><td>M4 Inventarios</td><td>RF-19 Insumos y productos cosechados con entradas y salidas. RF-20 Cosecha suma, venta descuenta, aplicación descuenta el insumo usado. RF-21 Alerta de stock mínimo.</td></tr>
+  <tr><td>M5 Ventas</td><td>RF-22 Clientes con consentimiento. RF-23 Pedidos (web y WhatsApp). RF-24 Ventas vinculadas al lote de cosecha. RF-25 Cobros parciales y cuentas por cobrar (vencidas a los 7 días).</td></tr>
+  <tr><td>M6 Vivero</td><td>RF-26 Lotes de plantines: siembra, germinación (%), merma, disponibles, precio, costo. RF-27 Venta por M5.</td></tr>
+  <tr><td>M7 Finanzas</td><td>RF-28 Costo por lote (labores + jornales + insumos), ingresos, margen y margen %. RF-29 Filtros por campaña y fechas, gráficos y CSV.</td></tr>
+  <tr><td>WhatsApp + IA</td><td>RF-30 Registrar labores, cosechas, observaciones, asistencia y tareas hechas con SI/NO. RF-31 Consultas: pendientes, carencia de un lote, stock, ventas, cuentas por cobrar. RF-32 Pedidos de clientes. RF-33 ALTA/BAJA. RF-34 Alertas diarias.</td></tr>
+</table>
+<h3>2.2 Requisitos no funcionales</h3>
+<table>
+  <tr><th>Atributo</th><th>Requisito y cómo se cumple</th></tr>
+  <tr><td>Usabilidad móvil</td><td>Diseño móvil primero, barra inferior según el rol, botones ≥ 44 px. PWA instalable.</td></tr>
+  <tr><td>Disponibilidad sin conexión</td><td>Cola local de escrituras (labores, observaciones, asistencia, tareas, cosechas) y caché de lecturas.</td></tr>
+  <tr><td>Seguridad</td><td>JWT, RBAC en la API, Helmet, límite de intentos, validación Zod, firmas de webhooks, auditoría, secretos solo en variables de entorno.</td></tr>
+  <tr><td>Privacidad</td><td>Consentimiento con fecha; ficha QR sin datos personales.</td></tr>
+  <tr><td>Costo</td><td>Plan gratuito posible (Vercel Hobby, Render Free, Twilio Sandbox, agente por reglas); producción &lt; US$ 15/mes.</td></tr>
+  <tr><td>Mantenibilidad</td><td>Un archivo de rutas por módulo, reglas de negocio puras y probadas, 20 ADR documentados, Swagger al 100 %.</td></tr>
+  <tr><td>Calidad</td><td>249 pruebas automatizadas, 96 % de cobertura de líneas, CI en cada push.</td></tr>
+</table>
+
+<h2>3. Historias de usuario</h2>
+<p>El Product Backlog tiene <strong>30 historias (151 puntos)</strong>, en <code>evidencias/scrum/product_backlog.csv</code> (importable en Jira y Trello). Las más representativas:</p>
+<table>
+  <tr><th>ID</th><th>Historia</th><th>Criterio de aceptación</th><th>Pts</th><th>Sprint</th></tr>
+  <tr><td>HU-03</td><td>Como propietario quiero activar o desactivar módulos para usar solo lo que necesito.</td><td>403 en rutas de módulos apagados; dependencias.</td><td>5</td><td>1</td></tr>
+  <tr><td>HU-08</td><td>Como propietario quiero que el sistema impida cosechar un lote en carencia.</td><td>409 con mensaje; forzado solo del propietario con justificación auditada.</td><td>8</td><td>1</td></tr>
+  <tr><td>HU-13</td><td>Como encargado quiero registrar ventas vinculadas al lote de cosecha.</td><td>Valida stock; la ficha QR muestra la venta.</td><td>8</td><td>2</td></tr>
+  <tr><td>HU-15</td><td>Como consumidor quiero escanear el QR y ver el origen hasta la venta.</td><td>Sin nombres, teléfonos ni precios.</td><td>8</td><td>2</td></tr>
+  <tr><td>HU-18</td><td>Como trabajador quiero ver "Mis tareas" y marcarlas hechas.</td><td>Solo sus tareas; sin señal.</td><td>5</td><td>2</td></tr>
+  <tr><td>HU-19</td><td>Como encargado quiero escribir "hoy cosechamos 40 kg de tomate del lote 2" y que se registre tras mi SI.</td><td>Firma del webhook; carencia validada; QR en la respuesta.</td><td>8</td><td>3</td></tr>
+  <tr><td>HU-21</td><td>Como cliente quiero pedir por WhatsApp.</td><td>Solo con consentimiento; SI/NO.</td><td>5</td><td>3</td></tr>
+  <tr><td>HU-24</td><td>Como propietario quiero que el agente nunca recomiende dosis.</td><td>Pruebas automatizadas de rechazo.</td><td>5</td><td>3</td></tr>
+  <tr><td>HU-27</td><td>Como propietario quiero ver costo, ingreso y margen por lote.</td><td>Fórmulas visibles; filtros; CSV.</td><td>8</td><td>3</td></tr>
+</table>
+
+<h2 class="salto">4. Arquitectura modular</h2>
+<figure><img src="../../evidencias/diagramas/arquitectura.png" alt="Arquitectura" /><figcaption>Figura 1. Arquitectura: PWA en Vercel, API en Render, SQLite, WhatsApp por Twilio/Meta y LLM opcional.</figcaption></figure>
+<p>El sistema es un <strong>monolito modular</strong>: un solo backend (fácil y barato de desplegar) con un router por módulo. Cada router se monta detrás de <code>requiereModulo('Mx')</code>, que consulta la tabla <code>ModuloFinca</code>; si el módulo está apagado la API responde 403 y la interfaz oculta el menú. Las dependencias (M2→M1, M5→M4, M7→M1+M4) se validan al activar. WhatsApp y el agente son una <strong>capacidad transversal</strong> (campo <code>Finca.whatsappActivo</code>), porque sirven a varios módulos.</p>
+<table>
+  <tr><th>Capa</th><th>Tecnología</th><th>Motivo</th></tr>
+  <tr><td>Frontend</td><td>Vue 3, Vite, Pinia, Vue Router, vite-plugin-pwa, Leaflet, Chart.js</td><td>Liviano, PWA instalable, mapa sin costo (OSM)</td></tr>
+  <tr><td>Backend</td><td>Node.js, Express, Zod, Helmet, JWT, Prisma</td><td>Un lenguaje en todo el proyecto; validación declarativa</td></tr>
+  <tr><td>Datos</td><td>SQLite</td><td>Sin servidor de BD que pagar; suficiente para una finca</td></tr>
+  <tr><td>Mensajería</td><td>Twilio WhatsApp (Sandbox) o Meta Cloud API</td><td>Abstracción <code>WHATSAPP_PROVIDER</code> (ADR-009)</td></tr>
+  <tr><td>IA</td><td>Intérprete por reglas + LLM opcional (Claude o Groq)</td><td>Funciona gratis y sin internet; el LLM solo mejora la extracción</td></tr>
+</table>
+
+<h2>5. Base de datos</h2>
+<figure><img src="../../evidencias/diagramas/modelo_er.png" alt="Modelo ER" /><figcaption>Figura 2. Modelo entidad-relación (30 tablas). Las entidades con "fincaId" pertenecen a una finca.</figcaption></figure>
+<h3>5.1 Tablas por módulo</h3>
+<table>
+  <tr><th>Módulo</th><th>Tablas</th></tr>
+  <tr><td>M0</td><td>Finca, ModuloFinca, Usuario, Auditoria, Lote, Campania</td></tr>
+  <tr><td>M1</td><td>LaborProgramada, Labor, Aplicacion, Observacion</td></tr>
+  <tr><td>M2</td><td>LoteCosecha, EventoTrazabilidad</td></tr>
+  <tr><td>M3</td><td>Trabajador, Asistencia, Pago, Tarea</td></tr>
+  <tr><td>M4</td><td>Insumo, MovimientoInsumo, ProductoCosechado, MovimientoProducto</td></tr>
+  <tr><td>M5</td><td>Cliente, Pedido, DetallePedido, Venta, DetalleVenta, Cobro</td></tr>
+  <tr><td>M6</td><td>LotePlantin</td></tr>
+  <tr><td>WhatsApp/IA</td><td>MensajeWhatsApp, AccionPendiente (confirmaciones SI/NO), BitacoraAlerta</td></tr>
+</table>
+<h3>5.2 Claves</h3>
+<p>Todas las tablas usan clave primaria entera autoincremental (<code>id</code>). Las claves foráneas expresan la jerarquía <code>Finca → Lote → Campania → Labor → Aplicacion</code> y <code>Campania → LoteCosecha → DetalleVenta → Venta → Cliente</code>. Claves únicas de negocio: <code>Usuario.email</code>, <code>(fincaId, codigo)</code> en Lote y LotePlantin, <code>(fincaId, codigo)</code> en ModuloFinca, <code>LoteCosecha.codigo</code> y <code>LoteCosecha.tokenPublico</code> (el token aleatorio del QR evita exponer ids), <code>(trabajadorId, fecha)</code> en Asistencia (pasar lista dos veces no duplica) y <code>Labor.id</code> único en Aplicacion (1:1).</p>
+<h3>5.3 Normalización hasta 3FN</h3>
+<ul>
+  <li><strong>1FN:</strong> valores atómicos; los módulos activos dejaron de ser un JSON en <code>Finca</code> y pasaron a filas en <code>ModuloFinca</code>; los ítems de pedidos y ventas están en tablas de detalle.</li>
+  <li><strong>2FN:</strong> las tablas de detalle tienen clave simple (<code>id</code>) y cada atributo depende de toda la fila (cantidad, precio y subtotal del ítem), no de la cabecera.</li>
+  <li><strong>3FN:</strong> no hay dependencias transitivas: el cultivo vive en <code>Campania</code> (no se repite en cada labor), el jornal en <code>Trabajador</code>, el costo unitario en <code>Insumo</code>. El stock disponible de plantines se <em>calcula</em> (germinadas − merma − vendidos) en lugar de guardarse.</li>
+  <li><strong>Desnormalizaciones conscientes:</strong> <code>Venta.pagado</code> y <code>Venta.saldo</code> (derivables de <code>Cobro</code>) y el <code>stock</code> de insumos/productos (derivable de los movimientos) se guardan para responder rápido en el celular; se actualizan en la misma transacción que el movimiento o el cobro.</li>
+</ul>
+<h3>5.4 Consultas SQL clave</h3>
+<p><strong>Trazabilidad de un lote de cosecha</strong> (se ejecuta de verdad en <code>GET /api/publico/lotes/:token/sql</code>, con el token como parámetro enlazado para impedir inyección). Prisma guarda las fechas como enteros en milisegundos:</p>
+<pre>-- Origen: lote de cosecha → campaña → lote de campo → finca
+SELECT lc.codigo, lc.cantidadKg, lc.fechaCosecha, c.cultivo, c.variedad,
+       l.codigo AS loteCampo, f.nombre AS finca, f.municipio
+FROM LoteCosecha lc
+JOIN Campania c ON c.id = lc.campaniaId
+JOIN Lote     l ON l.id = c.loteId
+JOIN Finca    f ON f.id = l.fincaId
+WHERE lc.tokenPublico = ?;
+
+-- Labores previas a la cosecha, con su aplicación y si se respetó la carencia
+SELECT lab.tipo, lab.fecha, ap.producto, ap.motivo, ap.periodoCarenciaDias,
+       lab.fecha + COALESCE(ap.periodoCarenciaDias,0)*86400000 AS finCarencia,
+       CASE WHEN ap.id IS NULL THEN NULL
+            WHEN lc.fechaCosecha >= lab.fecha + COALESCE(ap.periodoCarenciaDias,0)*86400000 THEN 1
+            ELSE 0 END AS carenciaRespetada
+FROM LoteCosecha lc
+JOIN Labor lab          ON lab.campaniaId = lc.campaniaId
+LEFT JOIN Aplicacion ap ON ap.laborId = lab.id          -- no toda labor tiene aplicación
+WHERE lc.tokenPublico = ? AND lab.fecha &lt;= lc.fechaCosecha
+ORDER BY lab.fecha;
+
+-- Ventas del lote, anonimizadas: solo el TIPO de cliente
+SELECT v.fecha, dv.cantidad, dv.unidad, cl.tipo AS tipoCliente
+FROM DetalleVenta dv
+JOIN Venta v ON v.id = dv.ventaId
+JOIN Cliente cl ON cl.id = v.clienteId
+JOIN LoteCosecha lc ON lc.id = dv.loteCosechaId
+WHERE lc.tokenPublico = ?;</pre>
+<p><strong>Costo, ingreso y margen por lote</strong> (M7; la API calcula lo mismo en <code>services/finanzas.js</code>, verificado con los datos de la demo):</p>
+<pre>WITH labores AS (
+  SELECT lab.loteId, SUM(lab.costoBs) AS costoLabores,
+         SUM(COALESCE(ap.cantidadUsada,0) * COALESCE(ins.costoUnitBs,0)) AS costoInsumos
+  FROM Labor lab LEFT JOIN Aplicacion ap ON ap.laborId = lab.id
+                 LEFT JOIN Insumo ins    ON ins.id = ap.insumoId
+  GROUP BY lab.loteId),
+jornales AS (
+  SELECT a.loteId, SUM(a.horas / 8.0 * t.jornalBs) AS costoJornales
+  FROM Asistencia a JOIN Trabajador t ON t.id = a.trabajadorId
+  WHERE a.loteId IS NOT NULL GROUP BY a.loteId),
+ingresos AS (
+  SELECT c.loteId, SUM(dv.subtotal) AS ingresos
+  FROM DetalleVenta dv JOIN LoteCosecha lc ON lc.id = dv.loteCosechaId
+                       JOIN Campania c ON c.id = lc.campaniaId
+  GROUP BY c.loteId)
+SELECT l.codigo,
+       COALESCE(lb.costoLabores,0) + COALESCE(j.costoJornales,0) + COALESCE(lb.costoInsumos,0) AS costoTotal,
+       COALESCE(i.ingresos,0) AS ingresos,
+       COALESCE(i.ingresos,0) - (COALESCE(lb.costoLabores,0) + COALESCE(j.costoJornales,0) + COALESCE(lb.costoInsumos,0)) AS margen
+FROM Lote l LEFT JOIN labores lb ON lb.loteId = l.id
+            LEFT JOIN jornales j ON j.loteId = l.id
+            LEFT JOIN ingresos i ON i.loteId = l.id
+WHERE l.fincaId = ?;</pre>
+<p><strong>Cuentas por cobrar por cliente</strong> (M5):</p>
+<pre>SELECT cl.nombre, COUNT(v.id) AS ventasConSaldo, SUM(v.saldo) AS saldoBs,
+       SUM(CASE WHEN v.fecha &lt; (strftime('%s','now') - 7*86400) * 1000 THEN 1 ELSE 0 END) AS vencidas
+FROM Venta v JOIN Cliente cl ON cl.id = v.clienteId
+WHERE cl.fincaId = ? AND v.saldo &gt; 0
+GROUP BY cl.id ORDER BY saldoBs DESC;</pre>
+<p>Las tres consultas están en <code>codigo/backend/prisma/consultas_clave.sql</code> junto con la de "lotes en carencia hoy".</p>
+
+<h2 class="salto">6. Explicación del código clave</h2>
+<h3>6.1 Módulos activables: <code>requiereModulo</code></h3>
+<pre>export const requiereModulo = (modulo) => async (req, _res, next) => {
+  const finca = await prisma.finca.findUnique({ where: { id: req.usuario.fincaId }, include: { modulos: true } });
+  if (!tieneModulo(finca, modulo)) return next(new ErrorHttp(403, `El módulo ${modulo} no está activo para esta finca`));
+  next();
+};
+app.use('/api/vivero', requiereModulo('M6'), vivero);</pre>
+<p><code>tieneModulo</code> y <code>modulosDe</code> son <strong>funciones puras</strong> (reciben la finca con sus módulos), así se prueban sin base de datos (ADR-014).</p>
+<h3>6.2 Control de acceso por rol (RBAC)</h3>
+<p><code>utils/permisos.js</code> tiene la matriz <code>permiso → roles</code> (p. ej. <code>'aplicaciones:escribir': [PROPIETARIO, ENCARGADO]</code>, <code>'finanzas:ver': [PROPIETARIO]</code>). Cada ruta usa <code>autorizar('permiso')</code>. El frontend tiene una copia solo para ocultar botones, y una prueba verifica que ambas matrices sean idénticas.</p>
+<h3>6.3 Período de carencia</h3>
+<pre>// utils/carencia.js (resumen)
+const fin = fechaAplicacion + periodoCarenciaDias días;
+if (hoy &lt; fin) {
+  if (usuario.rol === 'PROPIETARIO' &amp;&amp; forzar) { exigirJustificacion(); auditar('FORZAR_CARENCIA'); return { advertencia }; }
+  throw new CarenciaError('El lote L-05 está en carencia hasta el 06/12/2026 por AgroProtect 50…');   // → HTTP 409
+}</pre>
+<p>La regla se aplica en la web, en el agente de WhatsApp (antes de pedir confirmación y otra vez al confirmar) y al vender un lote de cosecha que se cosechó dentro de la carencia. Solo cuentan las aplicaciones <em>anteriores</em> a la cosecha.</p>
+<h3>6.4 Orquestador del agente</h3>
+<pre>procesarMensaje({ texto, perfil }) {
+  const interpretado = await interpretar(texto);              // reglas + LLM opcional → JSON validado
+  if (CONFIRMAR) return ejecutor.ejecutar(pendiente);        // solo con "SI"
+  if (pideRecomendacionDosis(texto)) return MENSAJE_SIN_DOSIS;
+  if (esPreguntaAgronomica(texto))  return MENSAJE_AGRONOMO;
+  const politica = aplicarPolitica(perfil, intencion, datos); // trabajador y cliente limitados
+  datos = await ejecutor.preparar(intencion, datos);          // valida lote, carencia, tarea, producto
+  crearPendiente(resumen, vence en 10 min);
+  return '📝 Voy a registrar: … ¿Confirmas? SI / NO';
+}</pre>
+<p>El orquestador no conoce la base de datos: recibe el intérprete, el almacén de acciones pendientes y el ejecutor por inyección de dependencias. Por eso sus pruebas son rápidas y deterministas.</p>
+<h3>6.5 Firma del webhook de Twilio</h3>
+<pre>export function firmaTwilio(authToken, url, params) {
+  const datos = Object.keys(params).sort().reduce((acc, k) => acc + k + params[k], url);
+  return crypto.createHmac('sha1', authToken).update(datos).digest('base64');
+}
+// comparación en tiempo constante con crypto.timingSafeEqual; 403 si no coincide</pre>
+<p>La prueba usa el vector oficial de la documentación de Twilio. Meta usa HMAC-SHA256 del cuerpo crudo (<code>X-Hub-Signature-256</code>).</p>
+<h3>6.6 Costos por lote</h3>
+<p><code>calcularCostosPorLote()</code> en <code>services/finanzas.js</code> es una función pura que suma por lote: <strong>labores</strong> (<code>costoBs</code>, gastos directos), <strong>jornales</strong> (horas ÷ 8 × jornal, solo asistencias con lote) e <strong>insumos</strong> (cantidad usada × costo unitario). Ingresos = ventas de los lotes de cosecha de ese lote. <strong>Margen = ingresos − costos</strong>; <strong>margen % = margen ÷ ingresos × 100</strong> (no se calcula si no hubo ventas); <strong>costo/kg = costo ÷ kg cosechados</strong>. Las asistencias sin lote y el vivero se informan aparte para no inventar prorrateos.</p>
+
+<h2>7. Agente de IA y WhatsApp</h2>
+<figure><img src="../../evidencias/diagramas/flujo_agente.png" alt="Flujo del agente" style="max-width:82%" /><figcaption>Figura 3. Flujo de un mensaje: identificación, límites, política, preparación y confirmación.</figcaption></figure>
+<table>
+  <tr><th>Perfil</th><th>Puede por WhatsApp</th><th>No puede</th></tr>
+  <tr><td>Propietario / Encargado</td><td>Labores, aplicaciones ya hechas, cosechas, asistencia, observaciones, tareas; consultas de pendientes, carencia, stock, ventas y cuentas por cobrar</td><td>Pedir recomendaciones de dosis</td></tr>
+  <tr><td>Trabajador</td><td>Labores simples, observaciones, marcar sus tareas, ver sus pendientes y carencias</td><td>Aplicaciones, cosechas, ventas, finanzas</td></tr>
+  <tr><td>Cliente (con consentimiento)</td><td>Ver precios, hacer pedidos</td><td>Todo lo demás</td></tr>
+  <tr><td>Desconocido</td><td>Recibe instrucciones para registrarse</td><td>Todo</td></tr>
+</table>
+<p><strong>Límites del agente:</strong> no reemplaza al agrónomo; no inventa dosis (solo muestra la "dosis de etiqueta registrada" tal como se cargó); siempre confirma antes de guardar. El LLM recibe instrucciones estrictas y su respuesta pasa por una lista blanca de campos; si falla o no está configurado, se usa el intérprete por reglas. <strong>Alertas:</strong> cada día a la hora configurada (07:00 por defecto) se envía a encargados y propietario —y a cada trabajador sus labores— un resumen de riego/labores pendientes, aplicaciones programadas, stock mínimo, lotes que salen de carencia y cobros vencidos; solo a quien dio consentimiento, con bitácora.</p>
+<figure><img src="../../evidencias/diagramas/flujo_venta_trazabilidad.png" alt="Flujo de la demo" /><figcaption>Figura 4. Flujo de la demostración: labor por WhatsApp → cosecha → QR → inventario → venta.</figcaption></figure>
+
+<h2 class="salto">8. Gestión con SCRUM</h2>
+<table>
+  <tr><th>Sprint</th><th>Objetivo</th><th>Historias</th><th>Puntos</th><th>Rama</th></tr>
+  <tr><td>0</td><td>Entrevista (simulada) al productor, backlog, modelo ER, decisiones de arquitectura</td><td>—</td><td>—</td><td>sprint-0</td></tr>
+  <tr><td>1</td><td>Núcleo modular, roles, campo y bloqueo por carencia</td><td>HU-01 a HU-09</td><td>43</td><td>sprint-1</td></tr>
+  <tr><td>2</td><td>Inventario, ventas, cuentas por cobrar, trazabilidad hasta la venta y tareas</td><td>HU-10 a HU-18</td><td>45</td><td>sprint-2</td></tr>
+  <tr><td>3</td><td>WhatsApp real, agente ampliado, alertas, vivero, finanzas, calidad y entrega</td><td>HU-19 a HU-30</td><td>63</td><td>sprint-3</td></tr>
+</table>
+<div class="dos">
+  <figure><img src="../../evidencias/scrum/velocidad.png" alt="Velocidad" /><figcaption>Figura 5. Velocidad por sprint.</figcaption></figure>
+  <figure><img src="../../evidencias/scrum/burndown_sprint3.png" alt="Burndown" /><figcaption>Figura 6. Burndown del Sprint 3.</figcaption></figure>
+</div>
+<p>Artefactos en <code>evidencias/scrum/</code>: Sprint 0 (entrevista, épicas, Definition of Done), backlog importable, sprint backlogs 1–3, notas de daily (plantilla y ejemplos), reviews y retrospectivas con acciones de mejora, burndowns y velocidad. Roles: [Integrante 1] Product Owner, [Integrante 2] Scrum Master, [Integrante 3] desarrollo (los tres desarrollan). Cada integrante hace commits con su propio usuario de Git en la rama del sprint (<code>codigo/CONTRIBUIR.md</code>).</p>
+
+<h2>9. Pruebas y métricas</h2>
+<figure><img src="../../evidencias/pruebas/metricas.png" alt="Métricas" /><figcaption>Figura 7. Defectos por severidad y cobertura de líneas por área.</figcaption></figure>
+<table>
+  <tr><th>Tipo</th><th>Herramienta</th><th>Qué cubre</th><th>Resultado</th></tr>
+  <tr><td>Unitarias</td><td>Vitest</td><td>Guardrails, intérprete, orquestador, políticas, carencia, tareas, vivero, finanzas, firmas de WhatsApp, alertas, nómina</td><td rowspan="2">249 en verde · 96 % de líneas · 95 % de funciones</td></tr>
+  <tr><td>API (integración)</td><td>Vitest + supertest sobre SQLite de prueba creada automáticamente</td><td>Roles, módulos, carencia (409 y forzado), ventas y cobros, trazabilidad pública y SQL, tareas, webhooks Twilio/Meta (firma válida e inválida), alertas, vivero, reportes, agente por simulador</td></tr>
+  <tr><td>Frontend</td><td>Vitest (jsdom)</td><td>Cola offline, permisos (igual al backend), CSV, vencimiento de tareas</td><td>14 en verde · 94 % de líneas de la lógica</td></tr>
+  <tr><td>Aceptación (UAT)</td><td>Guion con usuario simulado "Don Hilario, encargado de la Finca Los Molles"</td><td>8 escenarios del flujo de la demo y límites</td><td>8 aceptados</td></tr>
+  <tr><td>Manuales</td><td>Plan de pruebas</td><td>PWA en Android, QR impreso, WhatsApp real, responsividad</td><td>Pendientes en el despliegue</td></tr>
+</table>
+<p>Se registraron <strong>32 defectos</strong> (3 críticos, 11 altos, 11 medios, 7 bajos), todos cerrados o mitigados. Los críticos: una pregunta de dosis con nombre comercial que no se bloqueaba (DEF-17), un webhook que rechazaba todos los mensajes (DEF-23) y la cosecha por WhatsApp sin validar carencia (DEF-24). La mayoría se encontraron al escribir las pruebas de API: es la principal lección de calidad del proyecto. Umbrales de cobertura fijados en el CI: ≥ 85 % global y ≥ 90–95 % en la lógica crítica.</p>
+
+<h2>10. Seguridad y ética</h2>
+<ul>
+  <li><strong>Autenticación y autorización:</strong> JWT de 8 h, contraseñas con bcrypt, máx. 10 intentos de login cada 15 min, RBAC en cada ruta, auditoría.</li>
+  <li><strong>Entradas:</strong> validación Zod; consultas parametrizadas (Prisma y SQL con <code>?</code>); escape de HTML en el mapa y la etiqueta imprimible.</li>
+  <li><strong>Webhooks:</strong> firma <code>X-Twilio-Signature</code> y <code>X-Hub-Signature-256</code>; en producción la validación es obligatoria.</li>
+  <li><strong>Secretos:</strong> solo en <code>.env</code> (no se sube) y variables de Render/Vercel; <code>.env.example</code> con valores vacíos.</li>
+  <li><strong>Consentimiento de WhatsApp</strong> para trabajadores, usuarios y clientes, con fecha y comandos ALTA/BAJA; nunca se envían avisos sin consentimiento (probado).</li>
+  <li><strong>Privacidad del QR:</strong> la ficha pública no muestra nombres, teléfonos, precios ni responsables; el token es aleatorio.</li>
+  <li><strong>Respeto de la carencia:</strong> bloqueo de cosecha y venta; el forzado deja justificación en auditoría.</li>
+  <li><strong>IA responsable:</strong> el agente no recomienda dosis, productos ni mezclas, deriva al agrónomo y siempre pide confirmación. La guía tenía una errata ("debe recomendar dosis"); se aplicó el requisito correcto.</li>
+  <li><strong>Datos ficticios</strong> en todo el proyecto.</li>
+</ul>
+
+<h2>11. Despliegue</h2>
+<p>Frontend en <strong>Vercel</strong> (build de Vite, reescritura SPA, variable <code>VITE_API_URL</code>). Backend en <strong>Render</strong> con Blueprint (<code>render.yaml</code>): <code>npm ci</code>, <code>prisma generate</code>, al iniciar <code>prisma db push</code> y carga de la demo si la BD está vacía; health check <code>/api/salud</code>. Variables protegidas: <code>JWT_SECRET</code> (generada), credenciales de Twilio/Meta y LLM. El CI de GitHub Actions ejecuta pruebas con cobertura y build en cada push y, en <code>main</code>, dispara el deploy. Paso a paso en <code>codigo/docs/DESPLIEGUE.md</code>; WhatsApp en <code>codigo/docs/WHATSAPP_TWILIO.md</code>.</p>
+<p class="nota">URLs públicas: Frontend https://[proyecto].vercel.app · API https://[servicio].onrender.com/api/docs (completar tras desplegar).</p>
+
+<h2>12. Costos mensuales</h2>
+<table>
+  <tr><th>Servicio</th><th>Demo / académico</th><th>Producción para una finca</th><th>Justificación</th></tr>
+  <tr><td>Vercel (frontend)</td><td>US$ 0 (Hobby)</td><td>US$ 0</td><td>Sitio estático + PWA; tráfico bajo</td></tr>
+  <tr><td>Render (API)</td><td>US$ 0 (Free: duerme tras 15 min, disco efímero)</td><td>US$ 7 (Starter) + ~US$ 0,25 (disco 1 GB)</td><td>Siempre encendido y SQLite persistente</td></tr>
+  <tr><td>Base de datos</td><td>Incluida (SQLite)</td><td>Incluida</td><td>No se paga un servidor de BD</td></tr>
+  <tr><td>WhatsApp</td><td>US$ 0 (Twilio Sandbox)</td><td>~US$ 3–6 (≈ 500 mensajes al mes)</td><td>Tarifa por mensaje de Twilio + conversación de Meta; verificar tarifas vigentes</td></tr>
+  <tr><td>LLM</td><td>US$ 0 (modo reglas)</td><td>US$ 0–2</td><td>Mensajes cortos; Groq tiene plan gratuito; el modo reglas funciona sin LLM</td></tr>
+  <tr><td>Dominio (opcional)</td><td>—</td><td>~US$ 1</td><td>Anual prorrateado</td></tr>
+  <tr><th>Total</th><th>US$ 0</th><th>≈ US$ 11–16 / mes (≈ Bs 77–112)</th><th>Menos que el jornal de un día de un trabajador (Bs 110)</th></tr>
+</table>
+<p>Tipo de cambio de referencia: Bs 6,96 por dólar. Los precios de servicios externos cambian: verificar en sus sitios antes de contratar.</p>
+
+<h2>13. Impacto en productores pequeños</h2>
+<ul>
+  <li><strong>Inocuidad:</strong> el bloqueo por carencia evita cosechar y vender producto con residuos, protegiendo al consumidor y al productor.</li>
+  <li><strong>Acceso a mercados:</strong> el QR responde al pedido de trazabilidad de supermercados y restaurantes.</li>
+  <li><strong>Decisiones con números:</strong> el margen por lote muestra qué cultivos convienen (en la demo, frutilla con 54 % de margen y pimentón con margen negativo).</li>
+  <li><strong>Adopción:</strong> se usa desde WhatsApp, que el productor ya conoce; funciona sin señal; cuesta menos que un jornal al mes y crece por módulos.</li>
+  <li><strong>Trabajadores:</strong> tareas claras y avisos solo a quien los aceptó.</li>
+</ul>
+
+<h2>14. Declaración de uso de IA</h2>
+<p>El equipo usó <strong>Claude (Anthropic)</strong> como asistente de programación para generar borradores de código, pruebas, diagramas, este informe y las diapositivas. Todo el material fue revisado, ejecutado y probado por el equipo; las decisiones están registradas en <code>DECISIONES.md</code>. Dentro del producto, el agente puede usar la API de Claude o de Groq <em>solo</em> para extraer datos estructurados de los mensajes; nunca guarda sin la confirmación del usuario ni recomienda dosis. Sin clave de API, el sistema funciona con el intérprete por reglas.</p>
+
+<h2>15. Conclusiones y trabajo futuro</h2>
+<ol>
+  <li>Se construyó un CRM agrícola <strong>modular real</strong>: ocho módulos activables por finca, con la API respondiendo 403 cuando un módulo está apagado.</li>
+  <li>El flujo completo <strong>labor por WhatsApp → cosecha → QR → inventario → venta</strong> funciona y está verificado por pruebas automáticas y casos UAT.</li>
+  <li>Un agente de IA seguro depende más del <strong>diseño del sistema</strong> que del modelo: confirmación SI/NO, políticas por perfil, validación de carencia y guardrails probados.</li>
+  <li>Las pruebas de API fueron decisivas: encontraron defectos críticos que las unitarias no detectaban.</li>
+  <li>El costo de producción estimado (≈ US$ 11–16/mes) es accesible para una finca pequeña.</li>
+</ol>
+<p><strong>Trabajo futuro:</strong> notas de voz de WhatsApp, números escritos en letras ("lote dos"), fotos en la ficha QR, plantillas aprobadas de WhatsApp para alertas fuera de la ventana de 24 h, y migración a PostgreSQL si se atienden varias fincas.</p>
+
+<h3>Anexo · Usuarios de demostración</h3>
+<table>
+  <tr><th>Correo</th><th>Rol</th><th>Clave</th></tr>
+  <tr><td>propietario@finca.test</td><td>PROPIETARIO</td><td rowspan="3">Agro2026!</td></tr>
+  <tr><td>encargado@finca.test</td><td>ENCARGADO</td></tr>
+  <tr><td>trabajador@finca.test</td><td>TRABAJADOR</td></tr>
+</table>
+</body>
+</html>

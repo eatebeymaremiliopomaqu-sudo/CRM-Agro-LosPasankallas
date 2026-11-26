@@ -4,7 +4,7 @@
 
  ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > yo, finca y tablero
  ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > configurar WhatsApp y alertas de la finca
- ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > usuarios: crear con consentimiento (guarda fecha) y no auto-desactivarse 324ms
+ ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > usuarios: crear con consentimiento (guarda fecha) y no auto-desactivarse
 stdout | tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > lotes: crear, ver, editar, campaña y baja lógica
 prisma:error 
 Invalid `prisma.lote.create()` invocation in
@@ -17,17 +17,17 @@ C:\Users\Intel Jasper Lake\Desktop\TAREA H5\CRM_Agro_PASANKALLAS\codigo\backend\
 Unique constraint failed on the fields: (`fincaId`,`codigo`)
 
  ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > lotes: crear, ver, editar, campaña y baja lógica
- ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > registra labor y la lista con filtros
+ ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > registra labor y la lista con filtros 385ms
  ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > la aplicación con insumo descuenta el stock
  ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > observaciones
  ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > calendario: programar, marcar hecha (crea la labor) y cancelar
- ✓ tests/integracion/flujos.test.js > M2 · Trazabilidad privada (CP-M2-11) > lista, detalle con QR, SVG y eventos 430ms
- ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > alta, consentimiento con fecha, asistencia idempotente, planilla y pago
- ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > tareas: iniciar, editar y cancelar
- ✓ tests/integracion/flujos.test.js > M4 · Inventarios (CP-M4-01) > insumos y productos con movimientos
- ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > cliente: alta con consentimiento, edición, filtro y baja lógica
- ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > pedido: crear, ver, confirmar y entregar
- ✓ tests/integracion/flujos.test.js > M6 · Vivero (CP-M6-02) > lote de plantines: alta, avance y venta por M5
+ ✓ tests/integracion/flujos.test.js > M2 · Trazabilidad privada (CP-M2-11) > lista, detalle con QR, SVG y eventos 561ms
+ ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > alta, consentimiento con fecha, asistencia idempotente, planilla y pago 539ms
+ ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > tareas: iniciar, editar y cancelar 604ms
+ ✓ tests/integracion/flujos.test.js > M4 · Inventarios (CP-M4-01) > insumos y productos con movimientos 428ms
+ ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > cliente: alta con consentimiento, edición, filtro y baja lógica 334ms
+ ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > pedido: crear, ver, confirmar y entregar 453ms
+ ✓ tests/integracion/flujos.test.js > M6 · Vivero (CP-M6-02) > lote de plantines: alta, avance y venta por M5 891ms
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "resumen de hoy"
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "cuántos trabajadores vinieron hoy?"
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "labores pendientes"
@@ -40,10 +40,10 @@ Unique constraint failed on the fields: (`fincaId`,`codigo`)
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "ventas de la semana"
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "ventas del mes"
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "cuentas por cobrar"
- ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > registro de asistencia y observación con confirmación 343ms
- ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > fumigación registrada por el encargado descuenta el insumo del mismo nombre
- ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > el trabajador ve sus tareas y marca una por número
- ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > cliente con consentimiento: precios y pedido por WhatsApp; ALTA/BAJA 384ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > registro de asistencia y observación con confirmación 491ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > fumigación registrada por el encargado descuenta el insumo del mismo nombre 1008ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > el trabajador ve sus tareas y marca una por número 518ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > cliente con consentimiento: precios y pedido por WhatsApp; ALTA/BAJA 548ms
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > trabajador sin cuenta de usuario también puede usar el agente
  ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > canal web y bitácoras
  ✓ tests/integracion/api.test.js > Autenticación y validación (CP-SEG-02) > credenciales incorrectas → 401 con mensaje genérico
@@ -260,36 +260,38 @@ Unique constraint failed on the fields: (`fincaId`,`codigo`)
  ✓ tests/unit/guardrails.test.js > Filtro de salida del LLM (CP-AG-03) > reemplaza la respuesta peligrosa por el mensaje seguro
  ✓ tests/unit/guardrails.test.js > Sanitización e inyección (CP-SEG-04) > quita caracteres de control y recorta el largo
  ✓ tests/unit/guardrails.test.js > Sanitización e inyección (CP-SEG-04) > detecta intentos de cambiar las reglas
+ ✓ tests/unit/swagger.test.js > Swagger 100 % (CP-DOC-01) > cada endpoint de la API está documentado en /api/docs
+ ✓ tests/unit/swagger.test.js > Swagger 100 % (CP-DOC-01) > no hay rutas documentadas que no existan
 
- Test Files  11 passed (11)
-      Tests  247 passed (247)
-   Start at  23:47:42
-   Duration  41.80s (transform 911ms, setup 0ms, collect 6.27s, tests 8.11s, environment 6ms, prepare 3.52s)
+ Test Files  12 passed (12)
+      Tests  249 passed (249)
+   Start at  00:14:24
+   Duration  40.67s (transform 930ms, setup 0ms, collect 7.33s, tests 12.83s, environment 6ms, prepare 3.08s)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------
 File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -------------------|---------|----------|---------|---------|-------------------
-All files          |   95.97 |    79.94 |   95.13 |   95.97 |                   
- src               |   88.63 |       25 |      60 |   88.63 |                   
-  app.js           |   95.91 |    71.42 |     100 |   95.91 | 47-48             
-  config.js        |    87.5 |     6.25 |       0 |    87.5 | 4-9               
+All files          |   96.23 |    79.95 |   95.13 |   96.23 |                   
+ src               |   91.17 |       25 |      60 |   91.17 |                   
+  app.js           |   97.59 |    71.42 |     100 |   97.59 | 47-48             
+  config.js        |   88.46 |     6.25 |       0 |   88.46 | 4-9               
   constantes.js    |     100 |      100 |     100 |     100 |                   
   db.js            |      50 |        0 |       0 |      50 | 10-16             
- src/agente        |   92.52 |    83.87 |   95.16 |   92.52 |                   
+ src/agente        |   93.35 |     83.9 |   95.16 |   93.35 |                   
   agente.js        |     100 |    87.09 |     100 |     100 | ...70,172,188-189 
   guardrails.js    |     100 |      100 |     100 |     100 |                   
-  llm.js           |    44.7 |    45.45 |   33.33 |    44.7 | 30-71,88-91,93-94 
-  parser.js        |   98.79 |    94.35 |     100 |   98.79 | 92,281-282        
+  llm.js           |   51.04 |    45.45 |   33.33 |   51.04 | ...71,88-91,93-94 
+  parser.js        |   98.94 |    94.38 |     100 |   98.94 | 92,281-282        
   politicas.js     |     100 |      100 |     100 |     100 |                   
-  repositorio.js   |   91.92 |    67.05 |   93.75 |   91.92 | ...20,191-198,232 
-  validacionLLM.js |   95.91 |    89.18 |     100 |   95.91 | 28-29             
+  repositorio.js   |   92.63 |    67.05 |   93.75 |   92.63 | ...20,191-198,232 
+  validacionLLM.js |   96.22 |    89.18 |     100 |   96.22 | 28-29             
  src/middleware    |   90.58 |    80.55 |   85.71 |   90.58 |                   
   auth.js          |      96 |    93.75 |     100 |      96 | 48-49             
   errores.js       |      75 |       60 |      50 |      75 | 4-5,15-16,18-19   
   validar.js       |     100 |      100 |     100 |     100 |                   
- src/routes        |   97.81 |    68.75 |     100 |   97.81 |                   
-  agente.js        |   88.29 |    65.51 |     100 |   88.29 | 74,84-90,114-116  
+ src/routes        |   97.84 |    68.75 |     100 |   97.84 |                   
+  agente.js        |   90.75 |    65.51 |     100 |   90.75 | 74,84-90,114-116  
   alertas.js       |     100 |      100 |     100 |     100 |                   
   auth.js          |   92.98 |       80 |     100 |   92.98 | 51-54             
   campo.js         |    97.9 |    46.15 |     100 |    97.9 | 90-94             
@@ -306,18 +308,18 @@ All files          |   95.97 |    79.94 |   95.13 |   95.97 |
   trazabilidad.js  |     100 |    83.33 |     100 |     100 | 24,52,113         
   ventas.js        |   96.68 |    66.66 |     100 |   96.68 | ...65-166,253-256 
   vivero.js        |     100 |       50 |     100 |     100 | 30,41,55-59       
- src/services      |   96.82 |    84.34 |   96.49 |   96.82 |                   
-  alertas.js       |   86.76 |    81.66 |      90 |   86.76 | 139-156           
-  ...onWhatsApp.js |   97.93 |    86.88 |     100 |   97.93 | 79,81             
+ src/services      |    97.1 |    84.34 |   96.49 |    97.1 |                   
+  alertas.js       |   88.46 |    81.66 |      90 |   88.46 | 139-156           
+  ...onWhatsApp.js |   98.24 |    86.88 |     100 |   98.24 | 79,81             
   finanzas.js      |     100 |     72.3 |     100 |     100 | ...05-115,130-135 
   inventario.js    |     100 |    83.33 |     100 |     100 | 5,27,30,40        
   lotes.js         |     100 |    85.71 |     100 |     100 | 17                
   nomina.js        |     100 |      100 |     100 |     100 |                   
   trazabilidad.js  |     100 |    94.59 |     100 |     100 | 62-66             
-  whatsapp.js      |   96.07 |    86.48 |   94.73 |   96.07 | ...48-149,169-171 
- src/utils         |   97.93 |    89.51 |   97.05 |   97.93 |                   
+  whatsapp.js      |   96.64 |    86.48 |   94.73 |   96.64 | ...48-149,169-171 
+ src/utils         |   98.11 |    89.51 |   97.05 |   98.11 |                   
   auditoria.js     |   88.88 |       75 |     100 |   88.88 | 17-18             
-  carencia.js      |   95.83 |       80 |   85.71 |   95.83 | 66-69,163-164     
+  carencia.js      |   96.34 |       80 |   85.71 |   96.34 | 66-69,163-164     
   codigos.js       |     100 |      100 |     100 |     100 |                   
   errores.js       |     100 |      100 |     100 |     100 |                   
   permisos.js      |     100 |      100 |     100 |     100 |                   
@@ -326,8 +328,8 @@ All files          |   95.97 |    79.94 |   95.13 |   95.97 |
 -------------------|---------|----------|---------|---------|-------------------
 
 =============================== Coverage summary ===============================
-Statements   : 95.97% ( 4216/4393 )
-Branches     : 79.94% ( 1120/1401 )
+Statements   : 96.23% ( 4523/4700 )
+Branches     : 79.95% ( 1121/1402 )
 Functions    : 95.13% ( 176/185 )
-Lines        : 95.97% ( 4216/4393 )
+Lines        : 96.23% ( 4523/4700 )
 ================================================================================

@@ -1,6 +1,6 @@
 # Métricas de calidad · CRM-Agro
 
-Generado con `node evidencias/pruebas/fuente/generar_metricas.mjs` el 2026-11-25 a partir de los reportes reales de cobertura y del reporte de defectos.
+Generado con `node evidencias/pruebas/fuente/generar_metricas.mjs` el 2026-11-26 a partir de los reportes reales de cobertura y del reporte de defectos.
 
 ![Defectos por severidad y cobertura](metricas.png)
 
@@ -8,17 +8,17 @@ Generado con `node evidencias/pruebas/fuente/generar_metricas.mjs` el 2026-11-25
 
 | Suite | Herramienta | Pruebas | Resultado |
 |---|---|---|---|
-| Backend: unitarias + API (supertest sobre SQLite de prueba) | Vitest + @vitest/coverage-v8 | 247 | ✅ todas en verde (`resultado_pruebas_backend.txt`) |
+| Backend: unitarias + API (supertest sobre SQLite de prueba) | Vitest + @vitest/coverage-v8 | 249 | ✅ todas en verde (`resultado_pruebas_backend.txt`) |
 | Frontend: utilidades, cola offline, permisos, CSV | Vitest (jsdom) | 14 | ✅ todas en verde (`resultado_pruebas_frontend.txt`) |
 
 ## Cobertura del backend
 
 | Métrica | Valor | Meta |
 |---|---|---|
-| Líneas | **95.97 %** | ≥ 80 % |
-| Sentencias | 95.97 % | — |
+| Líneas | **96.23 %** | ≥ 80 % |
+| Sentencias | 96.23 % | — |
 | Funciones | 95.13 % | ≥ 85 % |
-| Ramas | 79.92 % | ≥ 75 % |
+| Ramas | 79.95 % | ≥ 75 % |
 
 Lógica crítica (umbral ≥ 90 % de líneas fijado en `vitest.config.js`; si baja, el CI falla):
 
@@ -26,9 +26,9 @@ Lógica crítica (umbral ≥ 90 % de líneas fijado en `vitest.config.js`; si ba
 |---|---|
 | `src/agente/agente.js` | 100 % |
 | `src/agente/guardrails.js` | 100 % |
-| `src/agente/parser.js` | 98.79 % |
+| `src/agente/parser.js` | 98.94 % |
 | `src/agente/politicas.js` | 100 % |
-| `src/utils/carencia.js` | 95.83 % |
+| `src/utils/carencia.js` | 96.34 % |
 | `src/utils/tareas.js` | 100 % |
 | `src/utils/vivero.js` | 100 % |
 | `src/services/finanzas.js` | 100 % |
@@ -39,12 +39,12 @@ Por área:
 
 | Área | Líneas |
 |---|---|
-| Reglas de negocio (carencia, tareas…) | 97.9 % |
+| Reglas de negocio (carencia, tareas…) | 98.1 % |
 | Rutas de la API | 97.8 % |
-| Servicios (WhatsApp, alertas, finanzas…) | 96.8 % |
-| Agente IA y guardrails | 92.5 % |
+| Servicios (WhatsApp, alertas, finanzas…) | 97.1 % |
+| Agente IA y guardrails | 93.4 % |
+| Arranque y configuración | 91.2 % |
 | Middleware (JWT, módulos) | 90.6 % |
-| Arranque y configuración | 88.6 % |
 | Frontend (utilidades, cola offline, permisos) | 93.66 % |
 
 > La cobertura del frontend mide la lógica (`src/utils`). Las vistas Vue se validan con los casos de aceptación (`casos_uat.md`) y las pruebas manuales del plan.
