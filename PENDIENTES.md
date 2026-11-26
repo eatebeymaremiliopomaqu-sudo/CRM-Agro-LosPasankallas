@@ -122,16 +122,33 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Guion de exposición 8–10 min con la demo paso a paso
 - [x] 249 pruebas backend ✅ (96 % de líneas), 14 frontend ✅
 
-## 📋 PENDIENTE
+### BLOQUE 10 - Despliegue y cierre (main) ✅
+- [x] `render.yaml` movido a la raíz del repositorio (Render lo busca ahí) con variables de WhatsApp, Twilio y alertas
+- [x] `vercel.json` revisado (Root Directory `codigo/frontend`, reescrituras de la SPA)
+- [x] `codigo/docs/DESPLIEGUE.md` paso a paso (GitHub, Render, Vercel, Twilio, CI, verificación, costos)
+- [x] API probada en modo producción (`NODE_ENV=production`)
+- [x] Checklist de la guía marcado con evidencias: `evidencias/checklist_guia.md`
+- [x] ZIP `entrega/CRM_Agro_Grupo##.zip` generado con `git archive` (sin node_modules, .env ni *.db)
+
+## 📋 PENDIENTE (requiere cuentas o datos del equipo)
+
+- [ ] Reemplazar los [ ] de LEEME.txt, informe (portada), diapositivas (portada y pie) y documentos SCRUM con número de grupo, nombres, asignatura y docente; luego regenerar: `node informe/fuente/generar_pdf.mjs` y `cd diapositivas/fuente ; node generar_diapositivas.js`
+- [ ] Renombrar la carpeta si contiene `#` antes de ejecutar el frontend (Vite)
+- [ ] Subir a GitHub y desplegar en Render y Vercel (`codigo/docs/DESPLIEGUE.md`); anotar las URL públicas en LEEME.txt e informe
+- [ ] Conectar el celular del equipo al Sandbox de Twilio (`codigo/docs/WHATSAPP_TWILIO.md`) y ejecutar CP-MAN-03 / UAT-01 a 06 con el celular real
+- [ ] Commits de cada integrante con su propio usuario de Git en las ramas de sprint (`codigo/CONTRIBUIR.md`)
+- [ ] Importar `evidencias/scrum/product_backlog.csv` en Jira o Trello y guardar una captura del tablero
+- [ ] Completar dailies, comentarios del PO y retrospectivas con lo ocurrido realmente; reemplazar el avance diario de plantilla de los burndowns (`evidencias/scrum/fuente/generar_scrum.mjs`)
+- [ ] Capturas reales de la app desplegada en `evidencias/capturas/` y pruebas manuales CP-MAN-01, 02 y 04
+- [ ] Volver a generar el ZIP después de esos cambios: `git archive --format=zip -o entrega/CRM_Agro_Grupo##.zip HEAD`
 
 ## ⚠️ BLOQUEADORES
 
-Ninguno por el momento.
+Ninguno técnico. Los pendientes de arriba dependen de cuentas externas (GitHub, Render, Vercel, Twilio, Jira) o de datos del grupo que no deben inventarse.
 
 ## 📝 NOTAS
 
-- Los módulos M5 (Ventas), M6 (Vivero) y M7 (Reportes) están comentados en router.js y App.vue hasta su implementación en bloques posteriores.
-- Los datos son 100% ficticios y deben permanecer así.
-- El agente NUNCA recomienda dosis, productos ni mezclas.
-- Siempre pide confirmación SI/NO antes de guardar.
-- Todas las pruebas deben estar en verde antes de cada commit.
+- Los datos son 100 % ficticios y deben permanecer así.
+- El agente NUNCA recomienda dosis, productos ni mezclas, y siempre pide confirmación SI/NO antes de guardar.
+- Todas las pruebas deben estar en verde antes de cada commit (`npm test` en backend y frontend).
+- Para liberar un puerto usar el PID exacto (`netstat -ano | findstr :3000` → `taskkill /PID <n> /F`), nunca `taskkill /IM node.exe`.

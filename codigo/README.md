@@ -114,8 +114,7 @@ codigo/
 │   └── vitest.config.js
 ├── frontend/                Vue 3 + Vite + Pinia + Vue Router + PWA (cola sin conexión), Leaflet, Chart.js
 ├── docs/                    WHATSAPP_TWILIO.md · WHATSAPP_META.md · DESPLIEGUE.md
-├── render.yaml              Blueprint del backend en Render
-└── (en la raíz del repositorio) .github/workflows/ci.yml   CI/CD con GitHub Actions
+└── (raíz del repositorio)    render.yaml (Blueprint de Render) · .github/workflows/ci.yml (CI/CD)
 ```
 
 ## Despliegue

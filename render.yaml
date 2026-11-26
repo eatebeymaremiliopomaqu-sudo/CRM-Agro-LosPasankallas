@@ -1,0 +1,64 @@
+# Blueprint de Render (raíz del repositorio): crea la API de CRM-Agro con un clic (New > Blueprint).
+# Guía paso a paso: codigo/docs/DESPLIEGUE.md
+services:
+  - type: web
+    name: crm-agro-api
+    runtime: node
+    rootDir: codigo/backend
+    plan: free              # demo. Para datos persistentes: "starter" + el disco de abajo
+    region: oregon
+    buildCommand: npm ci && npm run build
+    # Crea/actualiza las tablas y, si la BD está vacía, carga los datos ficticios de la demo
+    startCommand: npm run start:render
+    healthCheckPath: /api/salud
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        value: file:./prod.db            # con disco (starter): file:/var/data/crm-agro.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      # URL de Vercel (sin barra final). Se completa después del primer deploy del frontend
+      - key: CORS_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      # Agente de IA: "reglas" no necesita clave. Para "claude" o "groq" cargar la API key
+      - key: AI_PROVIDER
+        value: reglas
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      # WhatsApp: simulado | twilio | meta (ver codigo/docs/WHATSAPP_TWILIO.md)
+      - key: WHATSAPP_PROVIDER
+        value: simulado
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        value: whatsapp:+14155238886
+      - key: TWILIO_WEBHOOK_URL
+        sync: false                      # https://<servicio>.onrender.com/api/webhooks/twilio
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: crm-agro-verify
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: ALERTAS_ACTIVAS
+        value: "true"
+      - key: ZONA_HORARIA_MIN
+        value: "-240"
+    # disk:                              # descomentar con plan starter (SQLite persistente)
+    #   name: datos
+    #   mountPath: /var/data
+    #   sizeGB: 1
