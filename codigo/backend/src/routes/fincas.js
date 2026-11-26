@@ -28,6 +28,9 @@ const esquemaFinca = z.object({
   lng: z.number().min(-180).max(180).optional().nullable(),
   hectareas: z.number().min(0).max(10000).optional(),
   telefonoWa: z.string().max(20).optional().nullable(),
+  whatsappActivo: z.boolean().optional(),
+  alertasActivas: z.boolean().optional(),
+  horaAlertas: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato HH:MM').optional(),
 });
 
 r.patch('/finca', autorizar('finca:configurar'), validar(esquemaFinca), asyncH(async (req, res) => {
@@ -71,7 +74,7 @@ r.put('/finca/modulos', autorizar('modulos:gestionar'), validar(z.object({ modul
 }));
 
 // Usuarios de la finca
-const seleccionUsuario = { id: true, nombre: true, email: true, rol: true, telefono: true, activo: true, creadoEn: true };
+const seleccionUsuario = { id: true, nombre: true, email: true, rol: true, telefono: true, activo: true, consentimientoWhatsapp: true, fechaConsentimiento: true, trabajadorId: true, creadoEn: true };
 
 r.get('/usuarios', autorizar('usuarios:gestionar'), asyncH(async (req, res) => {
   res.json(await prisma.usuario.findMany({ where: { fincaId: req.usuario.fincaId }, select: seleccionUsuario, orderBy: { nombre: 'asc' } }));
@@ -83,12 +86,19 @@ const esquemaUsuario = z.object({
   password: z.string().min(8).max(100),
   rol: z.enum(['PROPIETARIO', 'ENCARGADO', 'TRABAJADOR']),
   telefono: z.string().max(20).optional().nullable(),
+  consentimientoWhatsapp: z.boolean().optional(),
+  trabajadorId: z.number().int().positive().nullable().optional(),
 });
+
+const conFechaConsentimiento = (datos, previo = null) => {
+  if (datos.consentimientoWhatsapp === undefined || datos.consentimientoWhatsapp === previo?.consentimientoWhatsapp) return datos;
+  return { ...datos, fechaConsentimiento: datos.consentimientoWhatsapp ? new Date() : null };
+};
 
 r.post('/usuarios', autorizar('usuarios:gestionar'), validar(esquemaUsuario), asyncH(async (req, res) => {
   const { password, ...resto } = req.body;
   const u = await prisma.usuario.create({
-    data: { ...resto, passwordHash: await bcrypt.hash(password, 10), fincaId: req.usuario.fincaId },
+    data: { ...conFechaConsentimiento(resto), passwordHash: await bcrypt.hash(password, 10), fincaId: req.usuario.fincaId },
     select: seleccionUsuario,
   });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'Usuario', entidadId: u.id });
@@ -103,7 +113,7 @@ r.patch('/usuarios/:id', autorizar('usuarios:gestionar'), validar(esquemaUsuario
     throw new ErrorHttp(400, 'No puede desactivarse ni quitarse el rol de propietario a sí mismo');
   }
   const { password, ...resto } = req.body;
-  const data = { ...resto, ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}) };
+  const data = { ...conFechaConsentimiento(resto, existe), ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}) };
   const u = await prisma.usuario.update({ where: { id }, data, select: seleccionUsuario });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'ACTUALIZAR', entidad: 'Usuario', entidadId: id });
   res.json(u);

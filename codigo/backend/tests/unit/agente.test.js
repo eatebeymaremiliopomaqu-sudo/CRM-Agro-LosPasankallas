@@ -9,7 +9,7 @@ let ahora;
 let almacen;
 let ejecutados;
 let agente;
-const base = { fincaId: 1, canal: 'WHATSAPP', remitente: '59170000003' };
+const base = { fincaId: 1, canal: 'WHATSAPP', remitente: '59170000002', usuario: { id: 2, nombre: 'Encargado', rol: 'ENCARGADO' } };
 
 function nuevoAgente({ falla = false, interpretar } = {}) {
   ejecutados = [];

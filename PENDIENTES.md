@@ -55,29 +55,22 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Correcciones: forzar carencia (justificación se perdía en Zod), orden de tareas, `/api/lotes` en M0
 - [x] 121 pruebas backend ✅, 7 pruebas frontend ✅, build OK
 
-## 📋 PENDIENTE
+### BLOQUE 5 - WhatsApp real (Twilio + Meta) (sprint-3) ✅
+- [x] Abstracción `WHATSAPP_PROVIDER` (twilio | meta | simulado)
+- [x] Webhook Twilio `POST /api/webhooks/twilio` (form-urlencoded, firma X-Twilio-Signature, respuesta TwiML)
+- [x] Normalización de números (`whatsapp:+591…` → `591…`)
+- [x] Identificación del remitente: usuario, trabajador, cliente o desconocido
+- [x] Comandos de consentimiento ALTA / BAJA (usuario, trabajador y cliente)
+- [x] Intenciones nuevas con confirmación SI/NO: cosecha, tarea hecha, pedido de cliente
+- [x] Consultas: labores pendientes, aplicaciones y carencia de un lote (solo lo registrado), stock, ventas día/semana/mes, cuentas por cobrar, precios, mis tareas
+- [x] Políticas por perfil (trabajador y cliente limitados) y derivación de preguntas agronómicas
+- [x] Carencia también por WhatsApp y en ventas (409)
+- [x] Alertas automáticas diarias (setInterval, hora configurable) + botón "Enviar ahora" + bitácora
+- [x] Guías `codigo/docs/WHATSAPP_TWILIO.md` y `WHATSAPP_META.md` (cloudflared, ngrok y Render)
+- [x] Correcciones: prompt del LLM usaba "parcela", webhook revisaba un módulo inexistente, permisos del frontend sin `tareas:*`
+- [x] 167 pruebas backend ✅ (vector oficial de firma de Twilio incluido), 11 frontend ✅, build OK
 
-### BLOQUE 5 - WhatsApp real (Twilio + Meta) (sprint-3)
-- [ ] Abstracción `WHATSAPP_PROVIDER` (twilio | meta | simulado)
-- [ ] Webhook Twilio: `POST /api/webhooks/twilio` con firma X-Twilio-Signature
-- [ ] Normalización de números (whatsapp:+591... → 591...)
-- [ ] Identificación remitente: usuario, cliente o desconocido
-- [ ] Comandos consentimiento: ALTA / BAJA por WhatsApp
-- [ ] Nuevas intenciones agente:
-  - [ ] REGISTRAR_COSECHA
-  - [ ] MARCAR_TAREA_HECHA
-  - [ ] PEDIDO_CLIENTE
-  - [ ] Consultas: lote/carencia, stock, ventas, cuentas por cobrar
-- [ ] Alertas automáticas (node-cron):
-  - [ ] Riego y labores pendientes
-  - [ ] Aplicaciones programadas
-  - [ ] Stock bajo mínimo
-  - [ ] Lotes que salen de carencia
-  - [ ] Cuentas por cobrar vencidas
-- [ ] Endpoint para disparar alertas manualmente (demo)
-- [ ] Bitácora de alertas enviadas
-- [ ] Guías: `WHATSAPP_TWILIO.md` y `WHATSAPP_META.md`
-- [ ] Instrucciones para túnel local (cloudflared/ngrok)
+## 📋 PENDIENTE
 
 ### BLOQUE 6 - Seed completo y pantallas faltantes (sprint-3)
 - [ ] Seed con historia para demo: labor→cosecha→QR→inventario→venta

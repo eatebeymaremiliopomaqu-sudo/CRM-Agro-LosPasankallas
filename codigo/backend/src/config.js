@@ -27,10 +27,26 @@ export const config = {
     minutosConfirmacion: 10,
   },
   whatsapp: {
+    // twilio | meta | simulado. Si falta alguna credencial del proveedor elegido, se usa "simulado".
+    proveedor: (process.env.WHATSAPP_PROVIDER || 'simulado').toLowerCase(),
+    // Meta Cloud API
     token: process.env.WHATSAPP_TOKEN || '',
     phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
     verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'crm-agro-verify',
     appSecret: process.env.WHATSAPP_APP_SECRET || '',
+    // Twilio (Sandbox o número aprobado)
+    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || '',
+    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || '',
+    twilioFrom: process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886',
+    // URL pública EXACTA configurada en Twilio (para validar X-Twilio-Signature detrás de túneles/proxies)
+    twilioWebhookUrl: process.env.TWILIO_WEBHOOK_URL || '',
+    // En desarrollo se puede desactivar la validación de firma (NUNCA en producción)
+    twilioValidarFirma: process.env.TWILIO_VALIDAR_FIRMA !== 'false',
+  },
+  alertas: {
+    // Programador interno (setInterval). Se desactiva en pruebas.
+    activas: process.env.ALERTAS_ACTIVAS !== 'false' && process.env.NODE_ENV !== 'test',
+    zonaHorariaMin: Number(process.env.ZONA_HORARIA_MIN ?? -240), // Bolivia UTC-4
   },
 };
 

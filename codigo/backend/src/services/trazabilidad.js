@@ -41,7 +41,9 @@ export function finCarencia(fechaAplicacion, dias) {
  */
 export function armarFichaPublica(lc, ahora = new Date()) {
   const { campania } = lc;
-  const labores = campania.labores.map((l) => {
+  const cosecha = new Date(lc.fechaCosecha);
+  // Solo el manejo HASTA la cosecha forma parte de la historia de este lote de cosecha.
+  const labores = campania.labores.filter((l) => new Date(l.fecha) <= cosecha).map((l) => {
     const fin = finCarencia(l.fecha, l.aplicacion?.periodoCarenciaDias);
     return {
       tipo: l.tipo,
@@ -141,6 +143,7 @@ JOIN Labor lab           ON lab.campaniaId = lc.campaniaId
 LEFT JOIN Aplicacion ap  ON ap.laborId = lab.id
 WHERE lc.tokenPublico = ?
   AND lab.tipo IN ('SIEMBRA','RIEGO','FERTILIZACION','FUMIGACION','DESHIERBE','PODA','COSECHA','MONITOREO')
+  AND lab.fecha <= lc.fechaCosecha          -- solo el manejo previo a esta cosecha
 ORDER BY lab.fecha;`,
   },
   {

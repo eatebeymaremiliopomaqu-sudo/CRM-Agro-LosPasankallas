@@ -2,6 +2,19 @@
 // como respaldo cuando la API del LLM falla. Entiende español coloquial de campo.
 import { normalizar } from './guardrails.js';
 
+// Temas de consulta: el agente responde SOLO con datos registrados en la BD.
+export const TEMAS = Object.freeze({
+  GENERAL: 'GENERAL',
+  TRABAJADORES: 'TRABAJADORES',
+  LABORES_PENDIENTES: 'LABORES_PENDIENTES',
+  MIS_TAREAS: 'MIS_TAREAS',
+  CARENCIA_LOTE: 'CARENCIA_LOTE',
+  STOCK: 'STOCK',
+  VENTAS: 'VENTAS',
+  CUENTAS_POR_COBRAR: 'CUENTAS_POR_COBRAR',
+  PRECIOS: 'PRECIOS',
+});
+
 export const INTENCIONES = Object.freeze({
   CONFIRMAR: 'CONFIRMAR',
   CANCELAR: 'CANCELAR',
@@ -11,6 +24,8 @@ export const INTENCIONES = Object.freeze({
   REGISTRAR_ASISTENCIA: 'REGISTRAR_ASISTENCIA',
   REGISTRAR_OBSERVACION: 'REGISTRAR_OBSERVACION',
   REGISTRAR_COSECHA: 'REGISTRAR_COSECHA',
+  MARCAR_TAREA_HECHA: 'MARCAR_TAREA_HECHA',
+  PEDIDO_CLIENTE: 'PEDIDO_CLIENTE',
   DESCONOCIDA: 'DESCONOCIDA',
 });
 
@@ -101,10 +116,16 @@ export function extraerTrabajador(t) {
   return titulo(nombre);
 }
 
+// Las fechas del mensaje se interpretan en hora de Bolivia (UTC-4): a las 21:00 locales sigue siendo "hoy".
+export const ZONA_HORARIA_MIN = -240;
+export const aHoraLocal = (ahora = new Date(), offsetMin = ZONA_HORARIA_MIN) => new Date(new Date(ahora).getTime() + offsetMin * 60000);
+/** Fecha local "YYYY-MM-DD" de un instante. */
+export const fechaLocalISO = (ahora = new Date(), offsetMin = ZONA_HORARIA_MIN) => aHoraLocal(ahora, offsetMin).toISOString().slice(0, 10);
+
 export function extraerFecha(t, ahora = new Date()) {
-  const d = new Date(ahora);
-  if (/\b(anteayer|antier)\b/.test(t)) d.setDate(d.getDate() - 2);
-  else if (/\bayer\b/.test(t)) d.setDate(d.getDate() - 1);
+  const d = aHoraLocal(ahora);
+  if (/\b(anteayer|antier)\b/.test(t)) d.setUTCDate(d.getUTCDate() - 2);
+  else if (/\bayer\b/.test(t)) d.setUTCDate(d.getUTCDate() - 1);
   return d.toISOString().slice(0, 10);
 }
 
@@ -126,6 +147,65 @@ export function tipoObservacion(t) {
   return null;
 }
 
+const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+const isoDia = (d) => d.toISOString().slice(0, 10);
+
+/** Fecha de entrega de un pedido: "mañana", "pasado mañana", "el viernes", "30/11". */
+export function extraerFechaEntrega(t, ahora = new Date()) {
+  const d = aHoraLocal(ahora);
+  if (/\bpasado manana\b/.test(t)) return isoDia(new Date(d.getTime() + 2 * 86400000));
+  if (/\bmanana\b/.test(t)) return isoDia(new Date(d.getTime() + 86400000));
+  if (/\bhoy\b/.test(t)) return isoDia(d);
+  const m = t.match(/\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b/);
+  if (m) {
+    let anio = m[3] ? Number(m[3].length === 2 ? `20${m[3]}` : m[3]) : d.getUTCFullYear();
+    const f = new Date(Date.UTC(anio, Number(m[2]) - 1, Number(m[1]), 12));
+    if (!m[3] && f < d) f.setUTCFullYear(anio + 1);
+    return Number.isNaN(f.getTime()) ? null : isoDia(f);
+  }
+  const dia = DIAS_SEMANA.findIndex((n) => new RegExp(`\\b${n}\\b`).test(t));
+  if (dia >= 0) {
+    let delta = (dia - d.getUTCDay() + 7) % 7;
+    if (delta === 0) delta = 7; // "el viernes" dicho un viernes = el próximo
+    return isoDia(new Date(d.getTime() + delta * 86400000));
+  }
+  return null;
+}
+
+const UNIDADES_PEDIDO = '(cajas?|kg|kilos?|bolsas?|unidades?|docenas?|arrobas?|qq|quintales?|bandejas?|plantines?|atados?|mallas?)';
+
+/** Pedido de cliente: "quiero 3 cajas de frutilla para el viernes". */
+export function extraerPedido(t, ahora = new Date()) {
+  const m = t.match(new RegExp(`(\\d+(?:[.,]\\d+)?)\\s*${UNIDADES_PEDIDO}\\s+de\\s+([a-z][a-z ]{1,40}?)(?=\\s+(?:para|el|la|hasta|por|y|a|manana|hoy|pasado|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\\b|[,.;!?]|$)`));
+  if (!m) return null;
+  let unidad = m[2];
+  if (/^kilo/.test(unidad)) unidad = 'kg';
+  else if (/^(qq|quintal)/.test(unidad)) unidad = 'qq';
+  else unidad = unidad.replace(/es$|s$/, '') || unidad;
+  return { cantidad: num(m[1]), unidad, producto: titulo(m[3].trim()), fechaEntrega: extraerFechaEntrega(t, ahora) };
+}
+
+const ES_PREGUNTA = /^(que|cual|cuales|cuanto|cuanta|cuantos|cuantas|como|cuando|hasta cuando|quien|quienes|dime|muestrame|ver|consulta|consultar|stock|inventario|ventas|resumen|lista|mis tareas|pendientes|labores|riegos|cuentas|precios?)\b/;
+
+/** Clasifica una consulta en un tema. Devuelve null si el texto no parece consulta. */
+export function temaConsulta(t, textoOriginal = '') {
+  const pregunta = ES_PREGUNTA.test(t) || /\?/.test(textoOriginal);
+  if (/\bmis tareas\b|\bque tareas tengo\b|\btareas pendientes\b/.test(t)) return { tema: TEMAS.MIS_TAREAS };
+  if (/\b(cuentas? por cobrar|por cobrar|nos deben|quien(es)? (nos )?debe|deudas?|cobros? pendientes?|saldos?)\b/.test(t)) return { tema: TEMAS.CUENTAS_POR_COBRAR };
+  if (!pregunta) return null;
+  const lote = extraerLote(t);
+  if (/\b(carencia|se aplico|aplicaron|aplicaciones?|fumigaron|se fumigo|dosis registrada|dosis de etiqueta|que se le (aplico|puso|echo))\b/.test(t)) return { tema: TEMAS.CARENCIA_LOTE, lote };
+  if (/\b(precios?|cuanto (cuesta|vale|esta)|que (tienen|venden|hay para vender)|lista de precios|disponible)\b/.test(t)) return { tema: TEMAS.PRECIOS };
+  if (/\b(stock|inventario|existencias?|cuanto (hay|queda|quedan|tenemos)|cuant[oa]s? (hay|quedan|tenemos)|bodega|almacen)\b/.test(t)) {
+    const prod = (t.match(/\b(?:stock|inventario|existencias?|queda|quedan|hay|tenemos)\s+(?:de|del)\s+([a-z][a-z ]{1,30}?)(?=[?.!,]|$|\s+(?:en|hoy)\b)/) || [])[1];
+    return { tema: TEMAS.STOCK, producto: prod ? prod.trim() : null };
+  }
+  if (/\b(ventas?|vendimos|vendido|vendieron|facturamos)\b/.test(t)) return { tema: TEMAS.VENTAS, periodo: /\bmes\b/.test(t) ? 'MES' : /\bsemana\b/.test(t) ? 'SEMANA' : 'DIA' };
+  if (/\b(pendientes?|que (hay que|toca|falta) hacer|labores (de hoy|programadas)|programad\w*|calendario|riegos? (de hoy|pendientes?))\b/.test(t)) return { tema: TEMAS.LABORES_PENDIENTES };
+  if (/\b(trabajador\w*|asistencia|personal|vinieron|vino|gente)\b/.test(t)) return { tema: TEMAS.TRABAJADORES };
+  return { tema: TEMAS.GENERAL };
+}
+
 function tipoLabor(t) {
   for (const [tipo, re] of VERBOS_LABOR) if (re.test(t)) return tipo;
   return null;
@@ -141,10 +221,21 @@ export function interpretarPorReglas(texto, ahora = new Date()) {
   if (/^(no|n|cancelar|cancela|anular|anula|olvidalo|negativo)[.! ]*$/.test(t)) return r(INTENCIONES.CANCELAR);
   if (/^(hola|ayuda|menu|help|buenas|buenos dias|buenas tardes|buenas noches|\?)\b/.test(t) && t.length < 25) return r(INTENCIONES.AYUDA);
 
-  // Preguntas ("¿cuántos vinieron hoy?") son consultas, no registros
-  if (/^(cuant[oa]s?|quien(es)?|como va|como vamos)\b/.test(t)) {
-    return r(INTENCIONES.CONSULTA, { tema: /trabajador|asistencia|personal|vinieron|vino|gente/.test(t) ? 'TRABAJADORES' : 'GENERAL' });
+  // Tarea hecha: "tarea hecha", "terminé la tarea 12", "ya completé la tarea"
+  if (/\btareas?\b/.test(t) && /\b(hecha|hecho|lista|listo|terminad\w*|termine|terminamos|complet\w*|acabad\w*|acabe|finalic\w*|hice)\b/.test(t)) {
+    const id = (t.match(/\btarea\s*(?:n(?:ro|o|um)?\.?|#)?\s*(\d{1,6})\b/) || t.match(/#\s*(\d{1,6})\b/) || [])[1];
+    return r(INTENCIONES.MARCAR_TAREA_HECHA, { tareaId: id ? Number(id) : null });
   }
+
+  // Pedido de cliente: verbo de pedido + cantidad + "de" + producto
+  if (/\b(quiero|quisiera|queria|necesito|necesitamos|pedido|pedir|pido|encargar|encargo|reservar|reserva|mandame|enviame|me (puede|pueden|podria|podrian) (enviar|mandar|traer|vender))\b/.test(t)) {
+    const pedido = extraerPedido(t, ahora);
+    if (pedido) return r(INTENCIONES.PEDIDO_CLIENTE, pedido);
+  }
+
+  // Preguntas ("¿qué se aplicó en el lote 2?") son consultas, no registros
+  const consulta = temaConsulta(t, texto);
+  if (consulta) return r(INTENCIONES.CONSULTA, consulta);
 
   const fecha = extraerFecha(t, ahora);
   const lote = extraerLote(t);
@@ -185,8 +276,8 @@ export function interpretarPorReglas(texto, ahora = new Date()) {
     return r(INTENCIONES.REGISTRAR_OBSERVACION, datos, lote ? [] : ['lote']);
   }
 
-  if (/\b(resumen|reporte|informe|cuantos|cuantas|estado|como va|como vamos|pendientes)\b/.test(t)) {
-    return r(INTENCIONES.CONSULTA, { tema: /trabajador|asistencia|personal|vinieron|gente/.test(t) ? 'TRABAJADORES' : 'GENERAL' });
+  if (/\b(resumen|reporte|informe|cuantos|cuantas|estado|como va|como vamos)\b/.test(t)) {
+    return r(INTENCIONES.CONSULTA, { tema: /trabajador|asistencia|personal|vinieron|gente/.test(t) ? TEMAS.TRABAJADORES : TEMAS.GENERAL });
   }
 
   return r(INTENCIONES.DESCONOCIDA);

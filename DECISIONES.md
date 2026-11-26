@@ -521,6 +521,40 @@ Durante la implementación aparecieron detalles que la guía no fija. Se eligió
 
 ---
 
+## ADR-018: WhatsApp real, perfiles del agente y alertas (bloque 5)
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+**Decisión tomada por**: Equipo de desarrollo
+
+### Contexto
+
+La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosechas con mensajes simples, consultas, alertas y pedidos de clientes con consentimiento.
+
+### Decisión
+
+| # | Decisión | Motivo |
+|---|---|---|
+| 18.1 | `WHATSAPP_PROVIDER=twilio\|meta\|simulado`. Si faltan credenciales del proveedor elegido se usa `simulado` (todo queda en la bitácora). | La app funciona igual sin cuentas. |
+| 18.2 | Twilio responde con **TwiML** en la misma petición; los avisos proactivos (alertas, tareas, pedidos) usan la API REST. | Las respuestas no dependen de la ventana de 24 h ni de credenciales REST. |
+| 18.3 | La firma `X-Twilio-Signature` se valida con `TWILIO_WEBHOOK_URL` (URL exacta configurada en Twilio). En producción la validación es obligatoria. | Detrás de túneles/proxies la URL reconstruida puede no coincidir. |
+| 18.4 | Remitente: usuario → perfil de su rol; trabajador sin usuario → perfil TRABAJADOR; cliente → perfil CLIENTE (solo con consentimiento); desconocido → mensaje de registro. | Lo pide la guía. |
+| 18.5 | `ALTA`/`BAJA` (también "acepto"/"stop") cambian el consentimiento de usuario, trabajador y cliente con ese número. `Usuario` también tiene `consentimientoWhatsapp`. | Nunca enviar alertas a quien no aceptó (ADR-011). |
+| 18.6 | Políticas por perfil en `agente/politicas.js` (funciones puras): el trabajador no registra aplicaciones, cosechas ni asistencia, ni consulta ventas; el cliente solo pide y ve precios. | ADR-015. |
+| 18.7 | El ejecutor tiene un paso `preparar` antes de pedir SI/NO: valida lote, **carencia** (también por WhatsApp, sin opción de forzar), resuelve la tarea y el producto/precio del pedido. | El usuario no confirma algo que luego fallará. |
+| 18.8 | "¿Qué dosis se aplicó…?" (pasado/registro) es una consulta y muestra la *dosis de etiqueta registrada* tal cual; "¿qué dosis le echo…?" sigue bloqueado. Preguntas de diagnóstico se derivan al ingeniero agrónomo. | Punto 5 de la guía. |
+| 18.9 | Alertas con `setInterval` (cada minuto compara la hora local de Bolivia con `Finca.horaAlertas`), una vez por día; botón "Enviar ahora" para la demo; bitácora `BitacoraAlerta`. | Sin dependencias nuevas (la guía acepta node-cron o setInterval). |
+| 18.10 | Fechas de los mensajes en hora local de Bolivia (UTC-4). | A las 21:00 locales sigue siendo "hoy". |
+| 18.11 | Venta de un lote de cosecha cosechado dentro de su carencia → 409 (PROPIETARIO puede forzar con justificación). Solo cuentan aplicaciones anteriores a la cosecha. | ADR-010. |
+| 18.12 | `/api/agente` y `/api/alertas` no dependen de un módulo (capacidad transversal). | ADR-004. |
+
+### Consecuencias
+
+- ✅ Mismo agente para web, Twilio, Meta y simulador
+- ⚠️ Twilio Sandbox: los avisos proactivos solo llegan dentro de las 24 h siguientes al último mensaje del usuario
+
+---
+
 ## Plantilla para nuevas decisiones
 
 ```markdown

@@ -27,6 +27,8 @@ export const PERMISOS = Object.freeze({
   'ventas:escribir': [PROPIETARIO, ENCARGADO],
   'tareas:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
   'tareas:escribir': [PROPIETARIO, ENCARGADO],
+  'alertas:ver': [PROPIETARIO, ENCARGADO],
+  'alertas:enviar': [PROPIETARIO, ENCARGADO],
 });
 
 export function puede(rol, permiso) {

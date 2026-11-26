@@ -123,3 +123,19 @@ describe('Inventario · clave de cultivo', () => {
     assert.equal(claveCultivo(''), 'OTRO');
   });
 });
+
+describe('Trazabilidad · aplicaciones posteriores a la cosecha', () => {
+  it('no forman parte de la historia ni rompen la carencia de ese lote', () => {
+    const base = {
+      codigo: 'X', calidad: 'PRIMERA', cantidadKg: 1, fechaCosecha: new Date('2026-11-10T12:00:00Z'), eventos: [], detallesVenta: [],
+      campania: {
+        cultivo: 'Papa', variedad: null, fechaSiembra: new Date('2026-08-01T12:00:00Z'),
+        lote: { codigo: 'L-04', nombre: 'Molle', areaHa: 1, finca: { nombre: 'F', municipio: 'M', departamento: 'D' } },
+        labores: [{ tipo: 'FUMIGACION', fecha: new Date('2026-11-20T12:00:00Z'), aplicacion: { producto: 'P', periodoCarenciaDias: 14 } }],
+      },
+    };
+    const f = armarFichaPublica(base);
+    assert.equal(f.labores.length, 0);
+    assert.equal(f.resumen.carenciaRespetada, true);
+  });
+});

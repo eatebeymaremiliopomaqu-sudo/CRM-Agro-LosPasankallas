@@ -434,6 +434,7 @@ onMounted(cargar);
           <div>
             <strong>{{ p.cliente.nombre }}</strong>
             <span :class="`insignia ${badgePedido(p.estado)}`" style="margin-left: 8px">{{ ESTADOS_PEDIDO[p.estado] }}</span>
+            <span v-if="p.origen === 'WHATSAPP'" class="insignia azul" style="margin-left: 6px" title="Pedido recibido por WhatsApp">WhatsApp</span>
             <div style="font-size: 0.85rem; color: #666; margin-top: 4px">
               {{ fecha(p.fecha) }}
               <span v-if="p.fechaEntrega"> · Entrega: {{ fecha(p.fechaEntrega) }}</span>

@@ -56,6 +56,23 @@ async function guardarFinca() {
     ui.error(e);
   }
 }
+async function guardarWhatsapp() {
+  try {
+    const { whatsappActivo, alertasActivas, horaAlertas, telefonoWa } = finca.value;
+    await api.patch('/finca', { whatsappActivo, alertasActivas, horaAlertas, telefonoWa: telefonoWa || null });
+    ui.avisar('Configuración de WhatsApp guardada');
+  } catch (e) {
+    ui.error(e);
+  }
+}
+async function alternarConsentimiento(x) {
+  try {
+    await api.patch(`/usuarios/${x.id}`, { consentimientoWhatsapp: !x.consentimientoWhatsapp });
+    cargarUsuarios();
+  } catch (e) {
+    ui.error(e);
+  }
+}
 async function cargarUsuarios() {
   try {
     usuarios.value = await api.get('/usuarios');
@@ -71,7 +88,7 @@ async function cargarAuditoria() {
   }
 }
 function nuevoUsuario() {
-  Object.assign(u, { nombre: '', email: '', password: '', rol: 'TRABAJADOR', telefono: '' });
+  Object.assign(u, { nombre: '', email: '', password: '', rol: 'TRABAJADOR', telefono: '', consentimientoWhatsapp: false });
   modal.value = true;
 }
 async function crearUsuario() {
@@ -108,6 +125,7 @@ onMounted(cargar);
     <div class="pestanas">
       <button :class="{ activa: pestana === 'modulos' }" @click="pestana = 'modulos'">Módulos</button>
       <button :class="{ activa: pestana === 'finca' }" @click="pestana = 'finca'">Finca</button>
+      <button :class="{ activa: pestana === 'whatsapp' }" @click="pestana = 'whatsapp'">WhatsApp y alertas</button>
       <button :class="{ activa: pestana === 'usuarios' }" @click="pestana = 'usuarios'">Usuarios y roles</button>
       <button :class="{ activa: pestana === 'auditoria' }" @click="pestana = 'auditoria'">Auditoría</button>
     </div>
@@ -143,17 +161,44 @@ onMounted(cargar);
       <button class="btn">Guardar</button>
     </form>
 
+    <form v-else-if="pestana === 'whatsapp' && finca" @submit.prevent="guardarWhatsapp">
+      <p class="apagado" style="margin-top: 0">
+        WhatsApp es una capacidad transversal: el agente atiende al personal (labores, cosechas, tareas, consultas) y a los clientes (pedidos).
+        Las alertas automáticas solo se envían a quienes dieron su consentimiento (comandos ALTA / BAJA).
+      </p>
+      <label class="modulo-fila" style="cursor: pointer">
+        <span class="codigo"><Icono nombre="whatsapp" :tam="18" /></span>
+        <div style="flex: 1"><strong>Canal de WhatsApp activo</strong><br /><small>Si se apaga, el número responde que el canal no está disponible.</small></div>
+        <span class="interruptor"><input v-model="finca.whatsappActivo" type="checkbox" aria-label="WhatsApp activo" /><span /></span>
+      </label>
+      <label class="modulo-fila" style="cursor: pointer">
+        <span class="codigo"><Icono nombre="campana" :tam="18" /></span>
+        <div style="flex: 1"><strong>Alertas automáticas diarias</strong><br /><small>Riego y labores pendientes, aplicaciones programadas, stock mínimo, fin de carencia y cobros vencidos.</small></div>
+        <span class="interruptor"><input v-model="finca.alertasActivas" type="checkbox" aria-label="Alertas activas" /><span /></span>
+      </label>
+      <div class="fila-campos" style="margin-top: 14px">
+        <div class="campo"><label>Hora de envío (hora de Bolivia)</label><input v-model="finca.horaAlertas" type="time" required /></div>
+        <div class="campo"><label>Número de WhatsApp de la finca</label><input v-model="finca.telefonoWa" placeholder="59170000000" /></div>
+      </div>
+      <button class="btn">Guardar</button>
+    </form>
+
     <template v-else-if="pestana === 'usuarios'">
       <div style="display: flex; justify-content: flex-end; margin-bottom: 10px"><button class="btn" @click="nuevoUsuario"><Icono nombre="mas" /> Nuevo usuario</button></div>
       <div class="tabla-envoltura">
         <table>
-          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Teléfono (WhatsApp)</th><th>Estado</th><th /></tr></thead>
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Teléfono (WhatsApp)</th><th>Alertas WhatsApp</th><th>Estado</th><th /></tr></thead>
           <tbody>
             <tr v-for="x in usuarios" :key="x.id">
               <td><strong>{{ x.nombre }}</strong></td>
               <td>{{ x.email }}</td>
               <td><span class="insignia azul">{{ ETIQUETAS_ROL[x.rol] }}</span></td>
               <td>{{ x.telefono || '—' }}</td>
+              <td>
+                <label class="interruptor" :title="x.fechaConsentimiento ? `Aceptó el ${fechaHora(x.fechaConsentimiento)}` : 'Sin consentimiento'">
+                  <input type="checkbox" :checked="x.consentimientoWhatsapp" :aria-label="`Consentimiento de ${x.nombre}`" @change="alternarConsentimiento(x)" /><span />
+                </label>
+              </td>
               <td><span class="insignia" :class="x.activo ? '' : 'gris'">{{ x.activo ? 'Activo' : 'Inactivo' }}</span></td>
               <td style="text-align: right"><button v-if="x.id !== sesion.usuario?.id" class="btn fantasma chico" @click="alternarUsuario(x)">{{ x.activo ? 'Desactivar' : 'Activar' }}</button></td>
             </tr>
@@ -191,6 +236,7 @@ onMounted(cargar);
         <div class="campo"><label>Rol</label><select v-model="u.rol"><option v-for="(t, k) in ETIQUETAS_ROL" :key="k" :value="k">{{ t }}</option></select></div>
         <div class="campo"><label>Teléfono WhatsApp</label><input v-model="u.telefono" placeholder="59170000000" /></div>
       </div>
+      <label style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px"><span class="interruptor"><input v-model="u.consentimientoWhatsapp" type="checkbox" /><span /></span> Aceptó recibir alertas por WhatsApp (consentimiento informado)</label>
       <div class="acciones"><button type="button" class="btn secundario" @click="modal = false">Cancelar</button><button class="btn">Crear</button></div>
     </form>
   </Modal>

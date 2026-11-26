@@ -19,7 +19,7 @@ const dia = (offset) => {
 async function main() {
   console.log('🌱 Limpiando datos…');
   // Eliminar en orden inverso a las dependencias
-  for (const m of ['cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'productoCosechado', 'movimientoInsumo', 'insumo', 'cliente', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'tarea', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
+  for (const m of ['cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'productoCosechado', 'movimientoInsumo', 'insumo', 'cliente', 'bitacoraAlerta', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'tarea', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
     await prisma[m].deleteMany();
   }
 
@@ -77,7 +77,10 @@ async function main() {
         rol,
         telefono: tel,
         fincaId: finca.id,
-        trabajadorId
+        trabajadorId,
+        // Aceptaron recibir alertas por WhatsApp (ADR-011)
+        consentimientoWhatsapp: true,
+        fechaConsentimiento: dia(-30),
       }
     });
   }

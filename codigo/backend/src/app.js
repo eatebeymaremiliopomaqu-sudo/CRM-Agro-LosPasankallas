@@ -16,7 +16,8 @@ import campo from './routes/campo.js';
 import { privado as trazaPrivado, publico as trazaPublico } from './routes/trazabilidad.js';
 import trabajadores from './routes/trabajadores.js';
 import tareas from './routes/tareas.js';
-import { agenteRouter, webhookRouter } from './routes/agente.js';
+import { agenteRouter, webhookRouter, twilioRouter } from './routes/agente.js';
+import alertas from './routes/alertas.js';
 import insumos from './routes/insumos.js';
 import productos from './routes/productos.js';
 import clientes from './routes/clientes.js';
@@ -52,7 +53,8 @@ export function crearApp() {
   // Rutas públicas
   app.use('/api/auth', auth);
   app.use('/api/publico/lotes', trazaPublico);
-  app.use('/api/webhooks/whatsapp', webhookRouter);
+  app.use('/api/webhooks/whatsapp', webhookRouter); // Meta Cloud API
+  app.use('/api/webhooks/twilio', twilioRouter); // Twilio (form-urlencoded + X-Twilio-Signature)
 
   // Rutas protegidas (JWT + módulo activo)
   app.use('/api', autenticar);
@@ -63,7 +65,8 @@ export function crearApp() {
   app.use('/api/trazabilidad', requiereModulo('M2'), trazaPrivado);
   app.use('/api/trabajadores', requiereModulo('M3'), trabajadores);
   app.use('/api/tareas', requiereModulo('M3'), tareas);
-  app.use('/api/agente', requiereModulo('M1'), agenteRouter);
+  app.use('/api/agente', agenteRouter); // capacidad transversal (ADR-004)
+  app.use('/api/alertas', alertas);
   app.use('/api/insumos', requiereModulo('M4'), insumos);
   app.use('/api/productos', requiereModulo('M5'), productos);
   app.use('/api/clientes', requiereModulo('M5'), clientes);

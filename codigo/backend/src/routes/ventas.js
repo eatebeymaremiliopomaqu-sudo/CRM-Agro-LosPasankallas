@@ -6,6 +6,7 @@ import { autorizar } from '../middleware/auth.js';
 import { validar } from '../middleware/validar.js';
 import { asyncH, noEncontrado, solicitudInvalida } from '../utils/errores.js';
 import { auditar } from '../utils/auditoria.js';
+import { loteCosechaEnCarencia } from '../utils/carencia.js';
 
 const r = Router();
 
@@ -24,6 +25,7 @@ const esquemaVenta = z.object({
   fecha: z.coerce.date().optional(),
   notas: z.string().max(500).nullable().optional(),
   detalles: z.array(esquemaDetalleVenta).min(1),
+  justificacion: z.string().max(500).optional(), // solo PROPIETARIO, para vender un lote cosechado en carencia
 });
 
 async function ventaPropia(fincaId, id) {
@@ -124,6 +126,19 @@ r.post('/', autorizar('ventas:escribir'), validar(esquemaVenta), asyncH(async (r
     where: { id: req.body.clienteId, fincaId: req.usuario.fincaId },
   });
   if (!cliente) throw noEncontrado('Cliente');
+
+  // ADR-010: no se vende un lote de cosecha que se cosechó dentro de la carencia (salvo PROPIETARIO con justificación)
+  for (const d of req.body.detalles) {
+    if (!d.loteCosechaId) continue;
+    const lc = await prisma.loteCosecha.findFirst({ where: { id: d.loteCosechaId, campania: { lote: { fincaId: req.usuario.fincaId } } } });
+    if (!lc) throw noEncontrado(`Lote de cosecha ${d.loteCosechaId}`);
+    const c = await loteCosechaEnCarencia(lc.id);
+    if (!c.enCarencia) continue;
+    const forzar = req.query.forzar === 'true' && req.usuario.rol === 'PROPIETARIO';
+    if (!forzar) return res.status(409).json({ error: 'CARENCIA_VIGENTE', mensaje: c.mensaje, detalles: { loteCosecha: c.codigo, puedeForzar: req.usuario.rol === 'PROPIETARIO' } });
+    if (!req.body.justificacion || req.body.justificacion.trim().length < 10) throw solicitudInvalida('Justificación requerida (mínimo 10 caracteres) para vender un lote cosechado en carencia');
+    await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'FORZAR_CARENCIA', entidad: 'Venta', detalle: `${c.mensaje} Justificación: ${req.body.justificacion}` });
+  }
 
   const total = req.body.detalles.reduce((sum, d) => sum + d.subtotal, 0);
   const fecha = req.body.fecha || new Date();

@@ -1,6 +1,14 @@
 // Validación de período de carencia de aplicaciones fitosanitarias
 import { prisma } from '../db.js';
 import { auditar } from './auditoria.js';
+import { ErrorHttp } from './errores.js';
+
+const ddmmaaaa = (f) => new Date(f).toLocaleDateString('es-BO', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+/** Mensaje de la guía: "El lote L-02 está en carencia hasta el 30/11/2026 por FitoVerde". */
+export function mensajeCarencia({ codigoLote, producto, fechaAplicacion, dias, fechaFin }) {
+  return `El lote ${codigoLote} está en carencia hasta el ${ddmmaaaa(fechaFin)} por ${producto} (aplicado el ${ddmmaaaa(fechaAplicacion)}, carencia de ${dias} días).`;
+}
 
 /**
  * Calcula si un lote está en período de carencia por aplicaciones fitosanitarias.
@@ -76,14 +84,18 @@ export async function validarCarenciaParaCosecha(loteId, usuario, forzar = false
   }
 
   // Lote en carencia
-  const mensaje = `El lote está en período de carencia hasta ${resultado.fechaFinCarencia.toISOString().split('T')[0]}. ` +
-    `Producto: ${resultado.aplicacion.producto}, aplicado el ${resultado.aplicacion.fechaAplicacion.toISOString().split('T')[0]}. ` +
-    `Período de carencia: ${resultado.aplicacion.periodoCarenciaDias} días.`;
+  const mensaje = mensajeCarencia({
+    codigoLote: resultado.aplicacion.lote?.codigo ?? `#${loteId}`,
+    producto: resultado.aplicacion.producto,
+    fechaAplicacion: resultado.aplicacion.fechaAplicacion,
+    dias: resultado.aplicacion.periodoCarenciaDias,
+    fechaFin: resultado.fechaFinCarencia,
+  });
 
   // Si es PROPIETARIO y quiere forzar
   if (usuario.rol === 'PROPIETARIO' && forzar) {
     if (!justificacion || justificacion.trim().length < 10) {
-      throw new Error('Justificación requerida (mínimo 10 caracteres) para forzar cosecha en período de carencia');
+      throw new ErrorHttp(400, 'Justificación requerida (mínimo 10 caracteres) para forzar cosecha en período de carencia');
     }
 
     // Auditar la operación forzada
@@ -116,4 +128,37 @@ export class CarenciaError extends Error {
     this.statusCode = 409; // Conflict
     this.detalles = detalles;
   }
+}
+
+/**
+ * ADR-010 · Venta: un lote de cosecha "está en carencia" si se cosechó antes de que terminara
+ * la carencia de alguna aplicación de su campaña (solo pasa si el propietario forzó la cosecha).
+ * @returns {Promise<{ enCarencia: boolean, mensaje?: string, codigo?: string }>}
+ */
+export async function loteCosechaEnCarencia(loteCosechaId) {
+  const lc = await prisma.loteCosecha.findUnique({
+    where: { id: loteCosechaId },
+    include: {
+      campania: {
+        include: {
+          lote: { select: { codigo: true } },
+          labores: { where: { aplicacion: { periodoCarenciaDias: { gt: 0 } } }, include: { aplicacion: true } },
+        },
+      },
+    },
+  });
+  if (!lc) return { enCarencia: false };
+  const cosecha = new Date(lc.fechaCosecha);
+  for (const l of lc.campania.labores) {
+    if (new Date(l.fecha) > cosecha) continue; // aplicación posterior: no afecta a esta cosecha
+    const fin = new Date(new Date(l.fecha).getTime() + l.aplicacion.periodoCarenciaDias * 86400000);
+    if (cosecha < fin) {
+      return {
+        enCarencia: true,
+        codigo: lc.codigo,
+        mensaje: `El lote de cosecha ${lc.codigo} se cosechó dentro de la carencia. ` + mensajeCarencia({ codigoLote: lc.campania.lote.codigo, producto: l.aplicacion.producto, fechaAplicacion: l.fecha, dias: l.aplicacion.periodoCarenciaDias, fechaFin: fin }),
+      };
+    }
+  }
+  return { enCarencia: false };
 }
