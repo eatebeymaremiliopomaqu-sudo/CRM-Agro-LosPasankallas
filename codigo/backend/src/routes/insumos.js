@@ -1,4 +1,4 @@
-// M6 (opcional) · Inventario de insumos con alerta de stock mínimo
+// M4 · Inventario de insumos con alerta de stock mínimo
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';

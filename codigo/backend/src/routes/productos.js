@@ -1,4 +1,4 @@
-// M5 · Inventario de productos cosechados
+// M4 · Inventario de productos cosechados (entradas por cosecha, salidas por venta o merma)
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -18,7 +18,7 @@ const esquemaProducto = z.object({
   precioVentaBs: z.number().min(0).optional(),
 });
 
-r.get('/', autorizar('ventas:leer'), asyncH(async (req, res) => {
+r.get('/', autorizar('insumos:leer'), asyncH(async (req, res) => {
   const lista = await prisma.productoCosechado.findMany({
     where: { fincaId: req.usuario.fincaId },
     orderBy: { nombre: 'asc' },
@@ -26,7 +26,7 @@ r.get('/', autorizar('ventas:leer'), asyncH(async (req, res) => {
   res.json(lista.map((p) => ({ ...p, bajoMinimo: p.stock <= p.stockMinimo })));
 }));
 
-r.post('/', autorizar('ventas:escribir'), validar(esquemaProducto), asyncH(async (req, res) => {
+r.post('/', autorizar('insumos:escribir'), validar(esquemaProducto), asyncH(async (req, res) => {
   const p = await prisma.productoCosechado.create({
     data: { ...req.body, fincaId: req.usuario.fincaId },
   });
@@ -40,7 +40,7 @@ r.post('/', autorizar('ventas:escribir'), validar(esquemaProducto), asyncH(async
   res.status(201).json(p);
 }));
 
-r.put('/:id', autorizar('ventas:escribir'), validar(esquemaProducto.partial()), asyncH(async (req, res) => {
+r.put('/:id', autorizar('insumos:escribir'), validar(esquemaProducto.partial()), asyncH(async (req, res) => {
   const p0 = await prisma.productoCosechado.findFirst({
     where: { id: Number(req.params.id), fincaId: req.usuario.fincaId },
   });
@@ -59,7 +59,7 @@ r.put('/:id', autorizar('ventas:escribir'), validar(esquemaProducto.partial()), 
   res.json(p);
 }));
 
-r.get('/movimientos', autorizar('ventas:leer'), asyncH(async (req, res) => {
+r.get('/movimientos', autorizar('insumos:leer'), asyncH(async (req, res) => {
   const where = {
     producto: { fincaId: req.usuario.fincaId },
   };
@@ -82,7 +82,7 @@ const esquemaMovimiento = z.object({
   referencia: z.string().max(60).optional(),
 });
 
-r.post('/movimientos', autorizar('ventas:escribir'), validar(esquemaMovimiento.extend({
+r.post('/movimientos', autorizar('insumos:escribir'), validar(esquemaMovimiento.extend({
   productoId: z.number().int().positive(),
 })), asyncH(async (req, res) => {
   const p = await prisma.productoCosechado.findFirst({

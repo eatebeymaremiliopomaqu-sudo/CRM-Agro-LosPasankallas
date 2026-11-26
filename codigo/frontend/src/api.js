@@ -5,10 +5,11 @@ export const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 export const cola = crearCola();
 
 export class ErrorApi extends Error {
-  constructor(status, mensaje, detalles) {
+  constructor(status, mensaje, detalles, datos = null) {
     super(mensaje);
     this.status = status;
     this.detalles = detalles;
+    this.datos = datos; // cuerpo completo de la respuesta (p. ej. { error: 'CARENCIA_VIGENTE', mensaje, detalles })
   }
 }
 
@@ -33,7 +34,7 @@ async function enviar(metodo, ruta, cuerpo) {
   const datos = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detalle = Array.isArray(datos.detalles) ? `: ${datos.detalles.map((d) => (typeof d === 'string' ? d : `${d.campo} ${d.mensaje}`)).join(', ')}` : '';
-    throw new ErrorApi(res.status, (datos.error || `Error ${res.status}`) + detalle, datos.detalles);
+    throw new ErrorApi(res.status, (datos.mensaje || datos.error || `Error ${res.status}`) + detalle, datos.detalles, datos);
   }
   return datos;
 }

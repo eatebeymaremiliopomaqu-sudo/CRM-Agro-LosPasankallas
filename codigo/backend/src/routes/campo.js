@@ -1,4 +1,4 @@
-// M2 · Control técnico de campo: labores, aplicaciones registradas y observaciones.
+// M1 · Control técnico de campo: labores, aplicaciones registradas y observaciones.
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';

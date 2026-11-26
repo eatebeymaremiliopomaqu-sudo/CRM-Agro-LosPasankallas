@@ -115,8 +115,8 @@ Escribe al número del Sandbox (como **encargado**):
 | `ayuda` | Lista de cosas que el agente puede hacer |
 | `regué el lote 3 por 2 horas` | "📝 Voy a registrar… ¿Confirmas?" |
 | `SI` | "✅ Registrado. Labor #… guardada en L-03" |
-| `hoy cosechamos 25 kg de frutilla del lote 3` → `SI` | Lote de cosecha con código y enlace del QR |
-| `hoy cosechamos 40 kg de tomate del lote 2` | 🚫 Bloqueo si el lote está en carencia |
+| `hoy cosechamos 40 kg de tomate del lote 2` → `SI` | Lote de cosecha con código, enlace del QR y entrada al inventario |
+| `hoy cosechamos 20 kg de cebolla del lote 5` | 🚫 Bloqueo: L-05 está en carencia (datos de demo) |
 | `¿qué se aplicó en el lote 5 y hasta cuándo es la carencia?` | Lo registrado y la fecha de fin de carencia |
 | `¿qué dosis le echo al lote 5?` | ⚠️ Rechazo: no recomienda dosis |
 | `labores pendientes` · `stock de frutilla` · `ventas de la semana` · `cuentas por cobrar` | Consultas con datos reales |

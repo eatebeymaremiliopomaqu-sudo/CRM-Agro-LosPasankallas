@@ -1,813 +1,338 @@
-// Datos 100% FICTICIOS para demostración. Ningún nombre, documento o teléfono es real.
+// Datos 100 % FICTICIOS para demostración. Ningún nombre, documento ni teléfono es real.
+// Historia de la demo (fechas relativas a "hoy"):
+//   L-02 Tomate  → sin carencia: se puede cosechar por WhatsApp ("hoy cosechamos 40 kg de tomate del lote 2")
+//   L-05 Cebolla → en carencia (fumigación hace 3 días, 14 d): el sistema bloquea la cosecha (409)
+//   L-04 Papa    → sale de carencia mañana (alerta FIN_CARENCIA); su cosecha anterior fue antes de la aplicación
+//   Cosechas pasadas respetaron siempre la carencia → fichas QR con "✔ carencia respetada"
+//   Ventas con cobros completos, parciales y vencidos; stock bajo en frutilla y en un agroquímico
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
 const prisma = new PrismaClient();
 
-// Generador pseudoaleatorio determinista (siempre los mismos datos)
+// Pseudoaleatorio determinista (siempre los mismos datos)
 let semilla = 42;
 const azar = () => ((semilla = (semilla * 16807) % 2147483647) - 1) / 2147483646;
-const elegir = (arr) => arr[Math.floor(azar() * arr.length)];
-const dia = (offset) => {
-  const d = new Date();
-  d.setUTCHours(12, 0, 0, 0);
-  d.setUTCDate(d.getUTCDate() + offset);
-  return d;
-};
+/** Fecha relativa al día de HOY en Bolivia (UTC-4), a las 12:00 UTC (08:00 locales). */
+const hoyLocal = new Date(Date.now() - 4 * 3600000);
+const dia = (offset, hora = 12) => new Date(Date.UTC(hoyLocal.getUTCFullYear(), hoyLocal.getUTCMonth(), hoyLocal.getUTCDate() + offset, hora));
+const iniciales = 'FLM'; // Finca Los Molles
+
+async function limpiar() {
+  // Orden inverso a las dependencias
+  const modelos = [
+    'cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'movimientoInsumo',
+    'bitacoraAlerta', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'productoCosechado',
+    'aplicacion', 'laborProgramada', 'labor', 'insumo', 'cliente', 'observacion', 'pago', 'asistencia', 'tarea',
+    'campania', 'lote', 'auditoria', 'usuario', 'trabajador', 'moduloFinca', 'finca',
+  ];
+  for (const m of modelos) if (prisma[m]) await prisma[m].deleteMany();
+}
 
 async function main() {
   console.log('🌱 Limpiando datos…');
-  // Eliminar en orden inverso a las dependencias
-  for (const m of ['cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'productoCosechado', 'movimientoInsumo', 'insumo', 'cliente', 'bitacoraAlerta', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'aplicacion', 'laborProgramada', 'labor', 'observacion', 'pago', 'asistencia', 'tarea', 'campania', 'lote', 'trabajador', 'auditoria', 'usuario', 'moduloFinca', 'finca']) {
-    await prisma[m].deleteMany();
-  }
+  await limpiar();
 
+  // ───────────── M0 · Finca, módulos, trabajadores y usuarios ─────────────
   const finca = await prisma.finca.create({
     data: {
-      nombre: 'Finca Los Molles',
-      municipio: 'Comarapa',
-      departamento: 'Santa Cruz',
-      lat: -17.9135,
-      lng: -64.5312,
-      hectareas: 6.5,
-      whatsappActivo: true,
-      telefonoWa: '59170000000',
+      nombre: 'Finca Los Molles', municipio: 'Comarapa', departamento: 'Santa Cruz', lat: -17.9135, lng: -64.5312, hectareas: 6.5,
+      whatsappActivo: true, telefonoWa: '59170000000', alertasActivas: true, horaAlertas: '07:00',
     },
   });
-
-  // Activar módulos M1-M5 (funcionalidades actuales implementadas)
-  for (const codigo of ['M1', 'M2', 'M3', 'M4', 'M5']) {
-    await prisma.moduloFinca.create({ data: { fincaId: finca.id, codigo, activo: true } });
-  }
+  for (const codigo of ['M1', 'M2', 'M3', 'M4', 'M5']) await prisma.moduloFinca.create({ data: { fincaId: finca.id, codigo, activo: true } });
 
   const hash = await bcrypt.hash('Agro2026!', 10);
-
-  // Crear trabajadores primero (para vincular usuarios)
-  const nombres = ['Juan Pérez Choque', 'María Flores Condori', 'Pedro Gutiérrez Mamani', 'Rosa Copa Huanca', 'Luis Ticona Apaza', 'Elena Cruz Saavedra', 'Marcos Limachi Ríos', 'Sofía Arce Velasco'];
-  const cargos = ['CAPATAZ', 'JORNALERO', 'TRACTORISTA', 'JORNALERO', 'REGADOR', 'JORNALERO', 'JORNALERO', 'JORNALERO'];
+  const defTrab = [
+    ['Juan Pérez Choque', 'CAPATAZ', 150, true],
+    ['María Flores Condori', 'JORNALERO', 110, true],
+    ['Pedro Gutiérrez Mamani', 'TRACTORISTA', 140, true],
+    ['Rosa Copa Huanca', 'JORNALERO', 110, true],
+    ['Luis Ticona Apaza', 'REGADOR', 110, false],
+    ['Elena Cruz Saavedra', 'JORNALERO', 110, false],
+    ['Marcos Limachi Ríos', 'JORNALERO', 110, true],
+    ['Sofía Arce Velasco', 'JORNALERO', 110, false],
+  ];
   const trabajadores = [];
-  for (const [i, nombre] of nombres.entries()) {
+  for (const [i, [nombre, cargo, jornalBs, consiente]] of defTrab.entries()) {
     trabajadores.push(await prisma.trabajador.create({
       data: {
-        fincaId: finca.id,
-        nombre,
-        documento: `FICT-${1000 + i}`,
-        telefono: `5917100${String(i).padStart(4, '0')}`,
-        cargo: cargos[i],
-        jornalBs: cargos[i] === 'CAPATAZ' ? 150 : cargos[i] === 'TRACTORISTA' ? 140 : 110,
-        consentimientoWhatsapp: i < 4, // primeros 4 dan consentimiento
-        fechaConsentimiento: i < 4 ? dia(-15) : null,
+        fincaId: finca.id, nombre, cargo, jornalBs, documento: `FICT-${1000 + i}`, telefono: `5917100${String(i).padStart(4, '0')}`,
+        consentimientoWhatsapp: consiente, fechaConsentimiento: consiente ? dia(-40) : null,
       },
     }));
   }
+  const [juan, maria, pedro, rosa, luis] = trabajadores;
 
-  // Usuarios con nuevos roles
   const usuarios = {};
   for (const [clave, nombre, rol, tel, trabajadorId] of [
     ['propietario', 'Ana Quispe (Propietaria)', 'PROPIETARIO', '59170000001', null],
     ['encargado', 'Ing. Bruno Rojas (Encargado)', 'ENCARGADO', '59170000002', null],
-    ['trabajador', 'Juan Pérez (Capataz)', 'TRABAJADOR', '59170000003', trabajadores[0].id], // vinculado al capataz
+    ['trabajador', 'Juan Pérez (Capataz)', 'TRABAJADOR', '59170000003', juan.id],
   ]) {
     usuarios[clave] = await prisma.usuario.create({
-      data: {
-        nombre,
-        email: `${clave}@finca.test`,
-        passwordHash: hash,
-        rol,
-        telefono: tel,
-        fincaId: finca.id,
-        trabajadorId,
-        // Aceptaron recibir alertas por WhatsApp (ADR-011)
-        consentimientoWhatsapp: true,
-        fechaConsentimiento: dia(-30),
-      }
+      data: { nombre, email: `${clave}@finca.test`, passwordHash: hash, rol, telefono: tel, fincaId: finca.id, trabajadorId, consentimientoWhatsapp: true, fechaConsentimiento: dia(-40) },
     });
   }
 
-  // Lotes de campo (antes "Parcelas")
+  // ───────────── M0 · Lotes de campo y campañas ─────────────
   const defLotes = [
-    ['L-01', 'Bajío del río', 1.2, 'Franco arenoso', 'GOTEO', 'Tomate', 'Santa Cruz Kada', -95],
-    ['L-02', 'Ladera norte', 0.9, 'Franco', 'ASPERSION', 'Pimentón', 'California Wonder', -80],
-    ['L-03', 'Media luna', 1.0, 'Franco arcilloso', 'GOTEO', 'Frutilla', 'Albión', -150],
-    ['L-04', 'El molle grande', 1.5, 'Franco', 'GRAVEDAD', 'Papa', 'Desirée', -110],
-    ['L-05', 'Potrero chico', 0.8, 'Arenoso', 'ASPERSION', 'Cebolla', 'Roja arequipeña', -70],
-    ['L-06', 'La esquina', 1.1, 'Franco limoso', 'SECANO', 'Maíz choclo', 'Blanco Comarapa', -60],
+    ['L-01', 'Bajío del río', 1.2, 'Franco arenoso', 'GOTEO', 'Frutilla', 'Albión', -150],
+    ['L-02', 'Ladera norte', 0.9, 'Franco', 'ASPERSION', 'Tomate', 'Santa Cruz Kada', -100],
+    ['L-03', 'Media luna', 1.0, 'Franco arcilloso', 'GOTEO', 'Pimentón', 'California Wonder', -95],
+    ['L-04', 'El molle grande', 1.5, 'Franco', 'GRAVEDAD', 'Papa', 'Desirée', -120],
+    ['L-05', 'Potrero chico', 0.8, 'Arenoso', 'ASPERSION', 'Cebolla', 'Roja arequipeña', -85],
+    ['L-06', 'La esquina', 1.1, 'Franco limoso', 'SECANO', 'Maíz choclo', 'Blanco Comarapa', -30],
   ];
-  const lotes = [];
-  for (const [i, [codigo, nombre, areaHa, tipoSuelo, riego, cultivo, variedad, hace]] of defLotes.entries()) {
+  const lotes = {};
+  for (const [i, [codigo, nombre, areaHa, tipoSuelo, riego, cultivo, variedad, siembra]] of defLotes.entries()) {
     const l = await prisma.lote.create({
       data: {
         fincaId: finca.id, codigo, nombre, areaHa, tipoSuelo, riego,
-        lat: -17.9135 + (Math.floor(i / 3) - 0.5) * 0.0024 + (azar() - 0.5) * 0.0006,
-        lng: -64.5312 + ((i % 3) - 1) * 0.0028 + (azar() - 0.5) * 0.0006,
+        lat: -17.9135 + (Math.floor(i / 3) - 0.5) * 0.0024, lng: -64.5312 + ((i % 3) - 1) * 0.0028,
       },
     });
-    const c = await prisma.campania.create({
-      data: {
-        loteId: l.id,
-        cultivo,
-        variedad,
-        fechaSiembra: dia(hace),
-        fechaCosechaEst: dia(hace + 120)
-      }
-    });
-    lotes.push({ ...l, campania: c });
+    const c = await prisma.campania.create({ data: { loteId: l.id, cultivo, variedad, fechaSiembra: dia(siembra), fechaCosechaEst: dia(siembra + 120) } });
+    lotes[codigo] = { ...l, campania: c, siembra };
   }
 
-  // Asistencias de los últimos 30 días (lunes a sábado)
-  for (let d = -30; d <= 0; d++) {
+  // ───────────── M4 · Insumos (con costo para valorizar en M7) ─────────────
+  const insumos = {};
+  for (const [clave, nombre, categoria, unidad, stock, stockMinimo, costoUnitBs] of [
+    ['semTomate', 'Semilla de tomate (sobre 1000 u)', 'SEMILLA', 'sobre', 6, 2, 180],
+    ['npk', 'NutriSuelo 15-15-15 (ficticio)', 'FERTILIZANTE', 'kg', 120, 50, 9.5],
+    ['agroProtect', 'AgroProtect 50 (ficticio)', 'AGROQUIMICO', 'L', 3, 5, 145],
+    ['fitoVerde', 'FitoVerde SC (ficticio)', 'AGROQUIMICO', 'L', 8, 2, 210],
+    ['cinta', 'Cinta de goteo 16 mm', 'OTRO', 'rollo', 4, 1, 650],
+    ['cajas', 'Cajas plásticas 20 kg', 'OTRO', 'u', 90, 40, 35],
+    ['mochila', 'Mochila fumigadora 20 L', 'HERRAMIENTA', 'u', 3, 2, 420],
+  ]) {
+    insumos[clave] = await prisma.insumo.create({ data: { fincaId: finca.id, nombre, categoria, unidad, stock, stockMinimo, costoUnitBs } });
+  }
+  for (const [ins, tipo, cantidad, motivo, d] of [
+    ['npk', 'ENTRADA', 150, 'Compra a proveedor (ficticio)', -60],
+    ['agroProtect', 'ENTRADA', 10, 'Compra a proveedor (ficticio)', -40],
+    ['fitoVerde', 'ENTRADA', 12, 'Compra a proveedor (ficticio)', -40],
+    ['cajas', 'ENTRADA', 100, 'Compra de cajas', -20],
+  ]) await prisma.movimientoInsumo.create({ data: { insumoId: insumos[ins].id, tipo, cantidad, motivo, fecha: dia(d) } });
+
+  // ───────────── M1 · Labores realizadas ─────────────
+  const crearLabor = async (cod, tipo, d, { horas = 3, costoBs = 0, trabajador = null, descripcion, origen = 'WEB', aplicacion = null } = {}) => {
+    const l = lotes[cod];
+    return prisma.labor.create({
+      data: {
+        loteId: l.id, campaniaId: l.campania.id, tipo, fecha: dia(d), horas, costoBs, trabajadorId: trabajador?.id ?? null,
+        descripcion: descripcion || `${tipo.toLowerCase()} en ${l.nombre}`, origen, registradoPorId: usuarios.encargado.id,
+        ...(aplicacion ? { aplicacion: { create: { responsableTecnico: usuarios.encargado.nombre, ...aplicacion } } } : {}),
+      },
+    });
+  };
+  const responsables = [juan, maria, pedro, rosa, luis];
+  for (const [n, cod] of Object.keys(lotes).entries()) {
+    const l = lotes[cod];
+    await crearLabor(cod, 'SIEMBRA', l.siembra, { horas: 8, costoBs: 120, trabajador: pedro, descripcion: `Siembra/trasplante de ${l.campania.cultivo}` });
+    // Riegos cada 6 días en los últimos 60 días (secano no se riega)
+    if (l.riego !== 'SECANO') {
+      for (let d = Math.max(l.siembra + 3, -60) + n; d <= -1; d += 6) await crearLabor(cod, 'RIEGO', d, { horas: 2, trabajador: luis, origen: d % 4 === 0 ? 'WHATSAPP' : 'WEB' });
+    }
+    await crearLabor(cod, 'FERTILIZACION', Math.max(l.siembra + 20, -50), { horas: 3, trabajador: maria, aplicacion: { producto: insumos.npk.nombre, cantidadUsada: Math.round(l.areaHa * 25), unidad: 'kg' } });
+    await crearLabor(cod, 'DESHIERBE', Math.max(l.siembra + 30, -20), { horas: 6, trabajador: rosa });
+    await crearLabor(cod, 'MONITOREO', -7 - n, { horas: 1, trabajador: juan, descripcion: 'Recorrido de monitoreo fitosanitario' });
+  }
+  // Aplicaciones fitosanitarias (fechas pensadas para que las cosechas respeten la carencia)
+  const fum = (producto, motivo, dias, cantidadUsada, dosisEtiqueta, ingredienteActivo) => ({ producto, motivo, periodoCarenciaDias: dias, cantidadUsada, unidad: 'L', dosisEtiqueta, ingredienteActivo });
+  for (const [cod, d, ap, desc] of [
+    ['L-01', -22, fum(insumos.fitoVerde.nombre, 'Ácaros', 7, 0.8, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de ácaros en frutilla'],
+    ['L-02', -25, fum(insumos.agroProtect.nombre, 'Polilla del tomate', 14, 1.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de polilla'],
+    ['L-02', -16, fum(insumos.fitoVerde.nombre, 'Mosca blanca', 7, 0.9, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de mosca blanca'],
+    ['L-03', -14, fum(insumos.fitoVerde.nombre, 'Pulgón', 7, 0.7, null, 'Ingrediente B'), 'Control de pulgón'],
+    ['L-04', -30, fum(insumos.agroProtect.nombre, 'Gusano blanco', 14, 2.0, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano blanco'],
+    ['L-04', -13, fum(insumos.agroProtect.nombre, 'Tizón tardío', 14, 2.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Aplicación preventiva de tizón (después de la cosecha)'],
+    ['L-05', -12, fum(insumos.fitoVerde.nombre, 'Trips', 7, 0.6, null, 'Ingrediente B'), 'Control de trips'],
+    ['L-05', -3, fum(insumos.agroProtect.nombre, 'Gusano cogollero', 14, 1.4, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano cogollero'],
+  ]) await crearLabor(cod, 'FUMIGACION', d, { horas: 3, costoBs: 30, trabajador: juan, descripcion: desc, aplicacion: ap });
+
+  // ───────────── M1 · Calendario de labores (programadas) ─────────────
+  for (const [cod, tipo, d, resp, desc] of [
+    ['L-02', 'RIEGO', 0, juan, 'Riego por aspersión 2 h'],
+    ['L-01', 'RIEGO', 0, maria, 'Revisar goteros antes de regar'],
+    ['L-05', 'MONITOREO', 0, juan, 'Revisar daño de cogollero tras la aplicación'],
+    ['L-03', 'DESHIERBE', -2, pedro, 'Deshierbe entre surcos (atrasado por lluvia)'],
+    ['L-04', 'RIEGO', 1, luis, 'Riego por gravedad'],
+    ['L-02', 'FUMIGACION', 2, null, 'Aplicación programada por el encargado (ver etiqueta)'],
+    ['L-06', 'FERTILIZACION', 3, maria, 'Primera fertilización del maíz'],
+    ['L-03', 'PODA', 5, rosa, 'Poda de brotes laterales'],
+    ['L-01', 'MONITOREO', 7, juan, 'Monitoreo semanal'],
+  ]) await prisma.laborProgramada.create({ data: { loteId: lotes[cod].id, tipo, fechaProgramada: dia(d), responsableId: resp?.id ?? null, estado: 'PENDIENTE', descripcion: desc } });
+  for (const [cod, tipo, d] of [['L-02', 'RIEGO', -7], ['L-01', 'RIEGO', -6], ['L-03', 'MONITOREO', -9]]) {
+    const labor = await crearLabor(cod, tipo, d, { horas: 2, trabajador: luis, descripcion: 'Realizada desde el calendario' });
+    await prisma.laborProgramada.create({ data: { loteId: lotes[cod].id, tipo, fechaProgramada: dia(d), responsableId: luis.id, estado: 'HECHA', descripcion: 'Programada', laborRealizadaId: labor.id } });
+  }
+  for (const [cod, tipo, d] of [['L-04', 'PODA', -4], ['L-06', 'DESHIERBE', -1]]) {
+    await prisma.laborProgramada.create({ data: { loteId: lotes[cod].id, tipo, fechaProgramada: dia(d), estado: 'CANCELADA', descripcion: 'Cancelada por lluvia' } });
+  }
+
+  // ───────────── M1 · Observaciones ─────────────
+  for (const [cod, tipo, severidad, nota, d, origen] of [
+    ['L-05', 'PLAGA', 4, 'Daño de gusano cogollero en 30 % de plantas', -4, 'WHATSAPP'],
+    ['L-02', 'PLAGA', 2, 'Pocas moscas blancas en el envés', -10, 'WEB'],
+    ['L-01', 'ENFERMEDAD', 3, 'Síntomas iniciales de oídio en frutilla', -6, 'WEB'],
+    ['L-04', 'ENFERMEDAD', 3, 'Manchas de tizón en hojas bajeras', -14, 'WHATSAPP'],
+    ['L-03', 'CLIMA', 2, 'Granizada leve, hojas perforadas', -9, 'WEB'],
+    ['L-06', 'SUELO', 2, 'Encharcamiento en la cabecera', -2, 'WEB'],
+  ]) await prisma.observacion.create({ data: { loteId: lotes[cod].id, tipo, severidad, nota, fecha: dia(d), origen } });
+
+  // ───────────── M3 · Asistencias (últimos 30 días, lunes a sábado) ─────────────
+  const codigos = Object.keys(lotes);
+  for (let d = -30; d <= -1; d++) {
     const fecha = dia(d);
-    if (fecha.getUTCDay() === 0) continue; // sin domingos
-    for (const t of trabajadores) {
-      if (azar() < 0.15) continue; // 15% de faltas
-      await prisma.asistencia.create({
-        data: {
-          trabajadorId: t.id,
-          fecha,
-          horas: elegir([8, 8, 8, 6, 4, 9]),
-          tarea: elegir(['RIEGO', 'DESHIERBE', 'COSECHA', 'PODA', 'FUMIGACION']),
-          loteId: elegir(lotes).id
-        }
-      });
+    if (fecha.getUTCDay() === 0) continue;
+    for (const [i, t] of trabajadores.entries()) {
+      if (azar() < 0.12) continue;
+      const cod = codigos[(i + d + 60) % codigos.length];
+      await prisma.asistencia.create({ data: { trabajadorId: t.id, fecha, horas: azar() < 0.2 ? 4 : 8, tarea: ['RIEGO', 'DESHIERBE', 'COSECHA', 'PODA', 'MONITOREO'][(i + d + 60) % 5], loteId: lotes[cod].id } });
     }
   }
+  await prisma.pago.create({ data: { trabajadorId: juan.id, desde: dia(-30), hasta: dia(-16), dias: 12, montoBs: 1800, estado: 'PAGADO' } });
+  await prisma.pago.create({ data: { trabajadorId: maria.id, desde: dia(-30), hasta: dia(-16), dias: 11, montoBs: 1210, estado: 'PAGADO' } });
 
-  // Labores de campo
-  const tipos = ['RIEGO', 'RIEGO', 'DESHIERBE', 'FERTILIZACION', 'FUMIGACION', 'PODA', 'MONITOREO'];
-  const productosFicticios = [
-    ['AgroProtect 50 (ficticio)', 'Ingrediente A', 14],
-    ['FitoVerde SC (ficticio)', 'Ingrediente B', 7],
-    ['NutriSuelo 15-15-15 (ficticio)', null, null]
-  ];
-  const motivosPlagas = ['Pulgón', 'Mosca blanca', 'Gusano cogollero', 'Ácaros', 'Trips', null];
-  const laboresRealizadas = [];
-  for (let k = 0; k < 70; k++) {
-    const l = elegir(lotes);
-    const tipo = elegir(tipos);
-    const conAplicacion = tipo === 'FUMIGACION' || tipo === 'FERTILIZACION';
-    const prod = tipo === 'FERTILIZACION' ? productosFicticios[2] : elegir(productosFicticios.slice(0, 2));
-    const labor = await prisma.labor.create({
-      data: {
-        loteId: l.id,
-        campaniaId: l.campania.id,
-        tipo,
-        fecha: dia(-Math.floor(azar() * 45)),
-        horas: elegir([2, 3, 4, 6, 8]),
-        costoBs: Math.round(50 + azar() * 250),
-        trabajadorId: elegir(trabajadores).id,
-        descripcion: `${tipo.toLowerCase()} de rutina en ${l.nombre}`,
-        origen: elegir(['WEB', 'WEB', 'WEB', 'WHATSAPP']),
-        registradoPorId: elegir([usuarios.encargado.id, usuarios.trabajador.id]),
-        ...(conAplicacion ? {
-          aplicacion: {
-            create: {
-              producto: prod[0],
-              motivo: tipo === 'FUMIGACION' ? elegir(motivosPlagas) : null,
-              dosisEtiqueta: tipo === 'FUMIGACION' ? (azar() > 0.5 ? '2.5 L/ha según etiqueta del producto' : null) : null,
-              ingredienteActivo: prod[1],
-              cantidadUsada: Math.round(azar() * 40) / 10 + 0.5,
-              unidad: tipo === 'FERTILIZACION' ? 'kg' : 'L',
-              periodoCarenciaDias: prod[2],
-              responsableTecnico: usuarios.encargado.nombre
-            }
-          }
-        } : {}),
-      },
-    });
-    laboresRealizadas.push(labor);
-  }
+  // ───────────── M2 · Lotes de cosecha (QR) + M4 · entradas al inventario ─────────────
+  const productos = {};
+  for (const [clave, nombre, cultivo, unidad, stockMinimo, precioVentaBs] of [
+    ['FRUTILLA', 'Frutilla Primera', 'FRUTILLA', 'kg', 30, 22],
+    ['TOMATE', 'Tomate Santa Cruz', 'TOMATE', 'kg', 50, 7],
+    ['PIMENTON', 'Pimentón Rojo', 'PIMENTON', 'kg', 20, 9],
+    ['PAPA', 'Papa Desirée', 'PAPA', 'kg', 80, 3.5],
+  ]) productos[clave] = await prisma.productoCosechado.create({ data: { fincaId: finca.id, nombre, cultivo, unidad, stock: 0, stockMinimo, precioVentaBs } });
 
-  // Aplicación reciente con carencia vigente en el primer lote (hace 3 días, carencia 14 días)
-  const aplicacionCarencia = await prisma.labor.create({
-    data: {
-      loteId: lotes[0].id,
-      campaniaId: lotes[0].campania.id,
-      tipo: 'FUMIGACION',
-      fecha: dia(-3),
-      horas: 4,
-      costoBs: 180,
-      trabajadorId: trabajadores[0].id,
-      descripcion: 'Aplicación de fungicida contra tizón',
-      origen: 'WEB',
-      registradoPorId: usuarios.encargado.id,
-      aplicacion: {
-        create: {
-          producto: 'FungiProtect Ultra (ficticio)',
-          motivo: 'Tizón tardío',
-          dosisEtiqueta: '3.0 L/ha según etiqueta del producto',
-          ingredienteActivo: 'Ingrediente C',
-          cantidadUsada: 3.0,
-          unidad: 'L',
-          periodoCarenciaDias: 14,
-          responsableTecnico: usuarios.encargado.nombre
-        }
-      }
-    },
-  });
-  laboresRealizadas.push(aplicacionCarencia);
-
-  // Labores programadas (calendario)
-  const tiposProgramadas = ['RIEGO', 'FERTILIZACION', 'FUMIGACION', 'DESHIERBE', 'PODA', 'MONITOREO'];
-  const estadosProgramadas = ['PENDIENTE', 'HECHA', 'CANCELADA'];
-
-  // Labores programadas pendientes
-  for (let k = 0; k < 8; k++) {
-    await prisma.laborProgramada.create({
-      data: {
-        loteId: elegir(lotes).id,
-        tipo: elegir(tiposProgramadas),
-        fechaProgramada: dia(Math.floor(azar() * 20) + 1), // futuras
-        responsableId: azar() > 0.3 ? elegir(trabajadores).id : null,
-        estado: 'PENDIENTE',
-        descripcion: `${elegir(tiposProgramadas).toLowerCase()} programado`,
-      },
-    });
-  }
-
-  // Labores programadas ya realizadas (con laborRealizadaId)
-  for (let k = 0; k < 4; k++) {
-    const labor = laboresRealizadas[k];
-    await prisma.laborProgramada.create({
-      data: {
-        loteId: labor.loteId,
-        tipo: labor.tipo,
-        fechaProgramada: new Date(labor.fecha.getTime() - 24 * 3600000), // programada 1 día antes
-        responsableId: labor.trabajadorId,
-        estado: 'HECHA',
-        descripcion: labor.descripcion,
-        laborRealizadaId: labor.id,
-      },
-    });
-  }
-
-  // Labores programadas canceladas
-  for (let k = 0; k < 3; k++) {
-    await prisma.laborProgramada.create({
-      data: {
-        loteId: elegir(lotes).id,
-        tipo: elegir(tiposProgramadas),
-        fechaProgramada: dia(-Math.floor(azar() * 10) - 1), // pasadas
-        responsableId: azar() > 0.5 ? elegir(trabajadores).id : null,
-        estado: 'CANCELADA',
-        descripcion: 'Cancelada por condiciones climáticas',
-      },
-    });
-  }
-
-  // Observaciones fitosanitarias
-  const obs = [
-    ['PLAGA', 'Presencia de pulgón en el envés de las hojas'],
-    ['ENFERMEDAD', 'Manchas de tizón en hojas bajeras'],
-    ['PLAGA', 'Daño de gusano cogollero'],
-    ['CLIMA', 'Granizada leve, hojas perforadas'],
-    ['ENFERMEDAD', 'Síntomas de oídio en frutilla'],
-    ['SUELO', 'Encharcamiento en la cabecera']
-  ];
-  for (let k = 0; k < 12; k++) {
-    const [tipo, nota] = elegir(obs);
-    await prisma.observacion.create({
-      data: {
-        loteId: elegir(lotes).id,
-        tipo,
-        nota,
-        severidad: 1 + Math.floor(azar() * 5),
-        fecha: dia(-Math.floor(azar() * 20)),
-        origen: elegir(['WEB', 'WHATSAPP'])
-      }
-    });
-  }
-
-  // Lotes de cosecha con trazabilidad (QR)
-  const cosechas = [
-    [1, 380, 'Mercado Abasto Santa Cruz', -12],
-    [1, 260, 'Feria de Comarapa', -5],
-    [3, 520, 'Supermercado (ficticio)', -8],
-    [3, 410, 'Mercado Abasto Santa Cruz', -2],
-    [0, 300, 'Intermediario local', -3]
-  ];
-  const lotesCosecha = [];
-  for (const [n, [li, kg, destino, d]] of cosechas.entries()) {
-    const l = lotes[li];
+  const cosechas = {};
+  let correlativo = 0;
+  for (const [clave, cod, producto, kg, d, destino, calidad] of [
+    ['papa1', 'L-04', 'PAPA', 900, -15, 'Mercado Abasto Santa Cruz', 'PRIMERA'],
+    ['frut1', 'L-01', 'FRUTILLA', 180, -12, 'Supermercado El Frutero', 'PRIMERA'],
+    ['tom1', 'L-02', 'TOMATE', 420, -8, 'Mercado Abasto Santa Cruz', 'PRIMERA'],
+    ['pim1', 'L-03', 'PIMENTON', 160, -6, 'Restaurante La Quinta', 'PRIMERA'],
+    ['frut2', 'L-01', 'FRUTILLA', 60, -5, 'Venta directa', 'PRIMERA'],
+    ['tom2', 'L-02', 'TOMATE', 300, -2, 'Por despachar', 'SEGUNDA'],
+  ]) {
     const f = dia(d);
+    const l = lotes[cod];
     const lc = await prisma.loteCosecha.create({
       data: {
-        codigo: `FLM-${f.getUTCFullYear()}-${String(n + 1).padStart(4, '0')}`,
-        campaniaId: l.campania.id,
-        fechaCosecha: f,
-        cantidadKg: kg,
-        calidad: n === 4 ? 'SEGUNDA' : 'PRIMERA',
-        destino,
-        tokenPublico: crypto.randomBytes(12).toString('base64url'),
+        codigo: `${iniciales}-${f.getUTCFullYear()}-${String(++correlativo).padStart(4, '0')}`,
+        campaniaId: l.campania.id, fechaCosecha: f, cantidadKg: kg, calidad, destino, tokenPublico: crypto.randomBytes(12).toString('base64url'),
         eventos: {
           create: [
-            { tipo: 'COSECHA', fecha: f, detalle: `Cosecha manual en ${l.codigo}` },
-            { tipo: 'ACOPIO', fecha: new Date(f.getTime() + 3 * 3600000), detalle: 'Acopio en galpón de la finca' },
-            { tipo: 'EMPAQUE', fecha: new Date(f.getTime() + 6 * 3600000), detalle: 'Cajas de 20 kg, etiqueta con QR' },
-            ...(d < -3 ? [{ tipo: 'DESPACHO', fecha: new Date(f.getTime() + 24 * 3600000), detalle: `Despachado a ${destino}` }] : []),
-          ]
+            { tipo: 'COSECHA', fecha: f, detalle: `Cosecha de ${kg} kg en ${cod}` },
+            { tipo: 'ACOPIO', fecha: dia(d, 15), detalle: 'Acopio en el galpón de la finca' },
+            { tipo: 'EMPAQUE', fecha: dia(d, 18), detalle: 'Cajas de 20 kg con etiqueta QR' },
+            ...(d <= -3 ? [{ tipo: 'DESPACHO', fecha: dia(d + 1, 11), detalle: `Despachado a ${destino}` }] : []),
+          ],
         },
       },
     });
-    lotesCosecha.push(lc);
+    cosechas[clave] = lc;
+    await prisma.movimientoProducto.create({ data: { productoId: productos[producto].id, tipo: 'ENTRADA', cantidad: kg, motivo: 'COSECHA', referencia: lc.codigo, fecha: f } });
+    await prisma.productoCosechado.update({ where: { id: productos[producto].id }, data: { stock: { increment: kg } } });
   }
+  await prisma.movimientoProducto.create({ data: { productoId: productos.TOMATE.id, tipo: 'SALIDA', cantidad: 12, motivo: 'MERMA', referencia: 'Fruta dañada en transporte', fecha: dia(-7) } });
+  await prisma.productoCosechado.update({ where: { id: productos.TOMATE.id }, data: { stock: { decrement: 12 } } });
 
-  // M4 Inventario de insumos
-  for (const [nombre, categoria, unidad, stock, stockMinimo, costoUnitBs] of [
-    ['Semilla de tomate (sobre 1000 u)', 'SEMILLA', 'sobre', 6, 2, 180],
-    ['NutriSuelo 15-15-15 (ficticio)', 'FERTILIZANTE', 'kg', 120, 50, 9.5],
-    ['AgroProtect 50 (ficticio)', 'AGROQUIMICO', 'L', 3, 5, 145],
-    ['FitoVerde SC (ficticio)', 'AGROQUIMICO', 'L', 8, 2, 210],
-    ['Cinta de goteo 16 mm', 'OTRO', 'rollo', 4, 1, 650],
-    ['Cajas plásticas 20 kg', 'OTRO', 'u', 90, 40, 35],
-    ['Mochila fumigadora 20 L', 'HERRAMIENTA', 'u', 3, 2, 420],
+  // ───────────── M5 · Clientes ─────────────
+  const clientes = {};
+  for (const [clave, nombre, tipo, telefono, consiente, direccion, nit] of [
+    ['abasto', 'Mercado Abasto Santa Cruz (ficticio)', 'MAYORISTA', '59133445566', true, 'Av. Irala #245, Santa Cruz', 'FICT-10345678'],
+    ['frutero', 'Supermercado El Frutero (ficticio)', 'MAYORISTA', '59144556677', true, 'Calle Libertad #890, Comarapa', 'FICT-20456789'],
+    ['quinta', 'Restaurante La Quinta (ficticio)', 'RESTAURANTE', '59155667788', true, 'Plaza Principal s/n, Comarapa', 'FICT-30567890'],
+    ['feria', 'Feria de Comarapa', 'MERCADO', null, false, 'Plaza de la Feria, Comarapa', null],
+    ['gonzalez', 'María González (minorista)', 'MINORISTA', '59166778899', false, null, null],
+    ['suarez', 'Pedro Suárez (intermediario)', 'MINORISTA', '59177889900', true, null, null],
   ]) {
-    await prisma.insumo.create({ data: { fincaId: finca.id, nombre, categoria, unidad, stock, stockMinimo, costoUnitBs } });
+    clientes[clave] = await prisma.cliente.create({ data: { fincaId: finca.id, nombre, tipo, telefono, consentimientoWhatsapp: consiente, fechaConsentimiento: consiente ? dia(-25) : null, direccion, nit } });
   }
 
-  // M4 Inventario de productos cosechados
-  const productos = [];
-  for (const [nombre, cultivo, unidad, stock, stockMinimo, precioVentaBs] of [
-    ['Tomate Cherry', 'TOMATE', 'kg', 85, 20, 28],
-    ['Pimentón Rojo', 'PIMENTON', 'kg', 45, 15, 22],
-    ['Frutilla Primera', 'FRUTILLA', 'kg', 12, 5, 45],
-    ['Papa Desirée', 'PAPA', 'kg', 180, 50, 8],
-    ['Cebolla Roja', 'CEBOLLA', 'kg', 55, 20, 12],
-  ]) {
-    productos.push(await prisma.productoCosechado.create({
-      data: { fincaId: finca.id, nombre, cultivo, unidad, stock, stockMinimo, precioVentaBs }
-    }));
-  }
+  // ───────────── M5 · Pedidos ─────────────
+  const pedido = (cli, d, entrega, estado, origen, notas, detalles) =>
+    prisma.pedido.create({
+      data: { clienteId: clientes[cli].id, fecha: dia(d), fechaEntrega: entrega == null ? null : dia(entrega), estado, origen, notas, total: detalles.reduce((s, x) => s + x.cantidad * x.precioBs, 0), detalles: { create: detalles.map((x) => ({ ...x, subtotal: Math.round(x.cantidad * x.precioBs * 100) / 100 })) } },
+    });
+  await pedido('abasto', -16, -15, 'ENTREGADO', 'WEB', 'Entrega 6:00 AM', [{ producto: 'Papa Desirée', cantidad: 600, unidad: 'kg', precioBs: 3.5 }]);
+  await pedido('frutero', -2, 2, 'CONFIRMADO', 'WEB', 'Entrega entre 10 y 12', [{ producto: 'Tomate Santa Cruz', cantidad: 80, unidad: 'kg', precioBs: 7 }, { producto: 'Frutilla Primera', cantidad: 10, unidad: 'kg', precioBs: 22 }]);
+  await pedido('quinta', -1, 1, 'PENDIENTE', 'WEB', 'Productos frescos para el fin de semana', [{ producto: 'Pimentón Rojo', cantidad: 15, unidad: 'kg', precioBs: 9 }]);
+  await pedido('suarez', 0, 2, 'PENDIENTE', 'WHATSAPP', 'Pedido recibido por WhatsApp: 3 caja de Frutilla Primera', [{ producto: 'Frutilla Primera', cantidad: 3, unidad: 'caja', precioBs: 0 }]);
 
-  // Movimientos de inventario de productos (entradas por cosecha)
-  for (let i = 0; i < lotesCosecha.length; i++) {
-    const lc = lotesCosecha[i];
-    const producto = productos[i % productos.length];
-    await prisma.movimientoProducto.create({
+  // ───────────── M5 · Ventas (vinculadas a lotes de cosecha), cobros y salidas de inventario ─────────────
+  const LIMITE_VENCIMIENTO = 7;
+  const venta = async (cli, d, items, pagos, notas) => {
+    const total = items.reduce((s, x) => s + x.cantidad * x.precioBs, 0);
+    const pagado = pagos.reduce((s, p) => s + p.montoBs, 0);
+    const estado = pagado >= total ? 'PAGADO' : d < -LIMITE_VENCIMIENTO ? 'VENCIDO' : 'PENDIENTE';
+    const v = await prisma.venta.create({
       data: {
-        productoId: producto.id,
-        tipo: 'ENTRADA',
-        cantidad: lc.cantidadKg,
-        motivo: 'COSECHA',
-        referencia: `LC-${lc.id}`,
-        fecha: lc.fechaCosecha
-      }
+        clienteId: clientes[cli].id, fecha: dia(d), total, pagado, saldo: total - pagado, estado, notas,
+        detalles: { create: items.map((x) => ({ producto: productos[x.p].nombre, cantidad: x.cantidad, unidad: 'kg', precioBs: x.precioBs, subtotal: x.cantidad * x.precioBs, loteCosechaId: cosechas[x.lc]?.id ?? null })) },
+        cobros: { create: pagos.map((p) => ({ ...p, fecha: dia(p.d), d: undefined })) },
+      },
+    });
+    for (const x of items) {
+      await prisma.movimientoProducto.create({ data: { productoId: productos[x.p].id, tipo: 'SALIDA', cantidad: x.cantidad, motivo: 'VENTA', referencia: `Venta #${v.id}`, fecha: dia(d) } });
+      await prisma.productoCosechado.update({ where: { id: productos[x.p].id }, data: { stock: { decrement: x.cantidad } } });
+    }
+    await prisma.eventoTrazabilidad.createMany({ data: [...new Set(items.map((x) => x.lc).filter(Boolean))].map((lc) => ({ loteId: cosechas[lc].id, tipo: 'VENTA', fecha: dia(d, 16), detalle: `Venta a cliente ${clientes[cli].tipo.toLowerCase()}` })) });
+    return v;
+  };
+  await venta('abasto', -15, [{ p: 'PAPA', cantidad: 600, precioBs: 3.5, lc: 'papa1' }], [{ d: -15, montoBs: 2100, metodo: 'TRANSFERENCIA', recibo: 'TRF-0101' }], 'Pago al contado');
+  await venta('frutero', -11, [{ p: 'FRUTILLA', cantidad: 150, precioBs: 22, lc: 'frut1' }], [{ d: -11, montoBs: 2000, metodo: 'EFECTIVO', recibo: 'REC-0201' }], 'Crédito a 7 días: saldo pendiente');
+  await venta('suarez', -9, [{ p: 'PAPA', cantidad: 200, precioBs: 3.5, lc: 'papa1' }], [{ d: -9, montoBs: 300, metodo: 'QR', recibo: 'QR-0301' }], 'Intermediario: pago parcial');
+  await venta('quinta', -5, [{ p: 'TOMATE', cantidad: 120, precioBs: 7, lc: 'tom1' }, { p: 'PIMENTON', cantidad: 40, precioBs: 9, lc: 'pim1' }], [{ d: -5, montoBs: 1200, metodo: 'EFECTIVO', recibo: 'REC-0202' }], 'Pago en efectivo');
+  await venta('abasto', -4, [{ p: 'TOMATE', cantidad: 250, precioBs: 6.5, lc: 'tom1' }], [], 'Crédito a 7 días');
+  await venta('quinta', -2, [{ p: 'FRUTILLA', cantidad: 45, precioBs: 24, lc: 'frut2' }], [{ d: -1, montoBs: 500, metodo: 'TRANSFERENCIA', recibo: 'TRF-0102' }], 'Pago parcial');
+  await venta('gonzalez', -1, [{ p: 'FRUTILLA', cantidad: 30, precioBs: 25, lc: 'frut1' }], [{ d: -1, montoBs: 750, metodo: 'EFECTIVO', recibo: null }], 'Venta directa en la finca');
+
+  // ───────────── M3 · Tareas asignadas ─────────────
+  for (const [t, por, titulo, descripcion, cod, prioridad, estado, venc, notificada] of [
+    [juan, 'encargado', 'Revisar sistema de riego en L-01', 'Verificar goteros y fugas antes del riego', 'L-01', 'ALTA', 'PENDIENTE', 1, true],
+    [juan, 'encargado', 'Monitoreo fitosanitario semanal', 'Recorrer todos los lotes y anotar plagas', null, 'ALTA', 'EN_CURSO', 0, true],
+    [juan, 'propietario', 'Preparar cajas para el pedido del supermercado', '80 kg de tomate y 10 kg de frutilla', 'L-02', 'URGENTE', 'PENDIENTE', 2, true],
+    [juan, 'encargado', 'Señalizar L-05 en carencia', 'Poner cartel "No cosechar" hasta fin de carencia', 'L-05', 'URGENTE', 'PENDIENTE', 0, true],
+    [juan, 'encargado', 'Recolectar muestras de suelo', 'Para análisis de fertilidad', 'L-06', 'BAJA', 'PENDIENTE', 10, true],
+    [juan, 'encargado', 'Limpieza del galpón de acopio', null, null, 'MEDIA', 'COMPLETADA', -2, true],
+    [maria, 'encargado', 'Deshierbe en L-03', 'Eliminar malezas entre surcos', 'L-03', 'MEDIA', 'PENDIENTE', 1, true],
+    [maria, 'propietario', 'Cosecha de frutilla en L-01', 'Solo fruta madura, primera calidad', 'L-01', 'ALTA', 'COMPLETADA', -5, true],
+    [pedro, 'encargado', 'Preparar terreno de L-06', 'Arado y nivelación', 'L-06', 'BAJA', 'EN_CURSO', 4, true],
+    [rosa, 'encargado', 'Poda de brotes en L-03', null, 'L-03', 'MEDIA', 'PENDIENTE', 5, true],
+    [luis, 'encargado', 'Riego por gravedad en L-04', 'Luis no dio consentimiento: aviso solo en persona', 'L-04', 'MEDIA', 'PENDIENTE', 1, false],
+    [rosa, 'encargado', 'Revisión de mochilas fumigadoras', null, null, 'BAJA', 'CANCELADA', -3, true],
+  ]) {
+    await prisma.tarea.create({
+      data: {
+        trabajadorId: t.id, asignadoPorId: usuarios[por].id, titulo, descripcion, loteId: cod ? lotes[cod].id : null, prioridad, estado,
+        fechaAsignacion: dia(Math.min(venc, 0) - 2), fechaVencimiento: dia(venc), fechaCompletada: estado === 'COMPLETADA' ? dia(venc) : null, notificada,
+      },
     });
   }
 
-  // M5 Clientes (nuevos)
-  const clientes = [];
-  for (const [nombre, tipo, telefono, consentimiento, direccion, nit] of [
-    ['Mercado Abasto Santa Cruz', 'MAYORISTA', '59133445566', true, 'Av. Irala #245, Santa Cruz', 'FICT-10345678'],
-    ['Supermercado El Frutero (ficticio)', 'MAYORISTA', '59144556677', true, 'Calle Libertad #890, Comarapa', 'FICT-20456789'],
-    ['Restaurante La Quinta (ficticio)', 'RESTAURANTE', '59155667788', true, 'Plaza Principal s/n, Comarapa', 'FICT-30567890'],
-    ['Feria de Comarapa', 'MERCADO', null, false, 'Plaza de la Feria, Comarapa', null],
-    ['María González (minorista)', 'MINORISTA', '59166778899', false, null, null],
-    ['Pedro Suárez (intermediario)', 'MINORISTA', '59177889900', true, null, null],
-  ]) {
-    clientes.push(await prisma.cliente.create({
-      data: {
-        fincaId: finca.id,
-        nombre,
-        tipo,
-        telefono,
-        consentimientoWhatsapp: consentimiento,
-        fechaConsentimiento: consentimiento ? dia(-20) : null,
-        direccion,
-        nit,
-      }
-    }));
+  // ───────────── WhatsApp: conversación de ejemplo y bitácora de alertas ─────────────
+  for (const [h, direccion, texto] of [
+    [9, 'ENTRANTE', 'regué el lote 2 por 2 horas'],
+    [9, 'SALIENTE', '📝 Voy a registrar:\nLabor *RIEGO* en L-02, 2 h.\n¿Confirmas? Responde *SI* para guardar o *NO* para cancelar.'],
+    [9, 'ENTRANTE', 'si'],
+    [9, 'SALIENTE', '✅ Registrado. Labor guardada en L-02.'],
+    [10, 'ENTRANTE', 'cuánto AgroProtect le echo a la mochila?'],
+    [10, 'SALIENTE', '⚠️ No puedo recomendar productos, dosis ni mezclas de agroquímicos. Esa decisión corresponde al ingeniero agrónomo responsable.'],
+  ]) await prisma.mensajeWhatsApp.create({ data: { fincaId: finca.id, telefono: '59170000002', direccion, texto, fecha: dia(-1, h + 4) } });
+  for (const u of [usuarios.propietario, usuarios.encargado]) {
+    await prisma.bitacoraAlerta.create({ data: { fincaId: finca.id, tipo: 'RESUMEN_DIARIO', disparo: 'PROGRAMADO', destinatario: `${u.nombre} (${u.rol})`, telefono: u.telefono, mensaje: '🔔 Alertas Finca Los Molles (ejemplo del día anterior)', cantidad: 4, estado: 'SIMULADO', fecha: dia(-1, 11) } });
   }
 
-  // M5 Pedidos (algunos pendientes, otros entregados)
-  const pedidos = [];
-  pedidos.push(await prisma.pedido.create({
-    data: {
-      clienteId: clientes[0].id, // Mercado Abasto
-      fecha: dia(-10),
-      fechaEntrega: dia(-8),
-      estado: 'ENTREGADO',
-      total: 2800,
-      notas: 'Entrega temprana, 6:00 AM',
-      detalles: {
-        create: [
-          { producto: 'Tomate Cherry', cantidad: 50, unidad: 'kg', precioBs: 28, subtotal: 1400 },
-          { producto: 'Pimentón Rojo', cantidad: 40, unidad: 'kg', precioBs: 22, subtotal: 880 },
-          { producto: 'Cebolla Roja', cantidad: 50, unidad: 'kg', precioBs: 10.4, subtotal: 520 },
-        ]
-      }
-    }
-  }));
-
-  pedidos.push(await prisma.pedido.create({
-    data: {
-      clienteId: clientes[1].id, // Supermercado
-      fecha: dia(-3),
-      fechaEntrega: dia(2),
-      estado: 'CONFIRMADO',
-      total: 1980,
-      notas: 'Entrega entre 10-12 PM',
-      detalles: {
-        create: [
-          { producto: 'Frutilla Primera', cantidad: 20, unidad: 'kg', precioBs: 45, subtotal: 900 },
-          { producto: 'Tomate Cherry', cantidad: 30, unidad: 'kg', precioBs: 28, subtotal: 840 },
-          { producto: 'Papa Desirée', cantidad: 30, unidad: 'kg', precioBs: 8, subtotal: 240 },
-        ]
-      }
-    }
-  }));
-
-  pedidos.push(await prisma.pedido.create({
-    data: {
-      clienteId: clientes[2].id, // Restaurante
-      fecha: dia(-1),
-      fechaEntrega: dia(1),
-      estado: 'PENDIENTE',
-      total: 650,
-      notas: 'Productos frescos para el fin de semana',
-      detalles: {
-        create: [
-          { producto: 'Tomate Cherry', cantidad: 10, unidad: 'kg', precioBs: 28, subtotal: 280 },
-          { producto: 'Pimentón Rojo', cantidad: 10, unidad: 'kg', precioBs: 22, subtotal: 220 },
-          { producto: 'Cebolla Roja', cantidad: 15, unidad: 'kg', precioBs: 10, subtotal: 150 },
-        ]
-      }
-    }
-  }));
-
-  // M5 Ventas con detalles vinculados a lotes de cosecha y cobros
-  const ventas = [];
-
-  // Venta 1: Totalmente pagada (hace 10 días)
-  ventas.push(await prisma.venta.create({
-    data: {
-      clienteId: clientes[0].id, // Mercado Abasto
-      fecha: dia(-10),
-      total: 10640,
-      pagado: 10640,
-      saldo: 0,
-      estado: 'PAGADO',
-      notas: 'Pago al contado',
-      detalles: {
-        create: [
-          { producto: 'Tomate Cherry', cantidad: 380, unidad: 'kg', precioBs: 28, subtotal: 10640, loteCosechaId: lotesCosecha[0].id }
-        ]
-      },
-      cobros: {
-        create: [
-          { fecha: dia(-10), montoBs: 10640, metodo: 'TRANSFERENCIA', recibo: 'TRF-001-2026' }
-        ]
-      }
-    }
-  }));
-
-  // Venta 2: Pago parcial (hace 7 días, vencida)
-  ventas.push(await prisma.venta.create({
-    data: {
-      clienteId: clientes[1].id, // Supermercado
-      fecha: dia(-7),
-      total: 11440,
-      pagado: 6000,
-      saldo: 5440,
-      estado: 'VENCIDO',
-      notas: 'Crédito a 5 días, pendiente saldo',
-      detalles: {
-        create: [
-          { producto: 'Frutilla Primera', cantidad: 260, unidad: 'kg', precioBs: 44, subtotal: 11440, loteCosechaId: lotesCosecha[1].id }
-        ]
-      },
-      cobros: {
-        create: [
-          { fecha: dia(-7), montoBs: 6000, metodo: 'EFECTIVO', recibo: 'REC-001' }
-        ]
-      }
-    }
-  }));
-
-  // Venta 3: Totalmente pagada (hace 6 días)
-  ventas.push(await prisma.venta.create({
-    data: {
-      clienteId: clientes[2].id, // Restaurante
-      fecha: dia(-6),
-      total: 23400,
-      pagado: 23400,
-      saldo: 0,
-      estado: 'PAGADO',
-      notas: 'Pago en efectivo',
-      detalles: {
-        create: [
-          { producto: 'Frutilla Primera', cantidad: 520, unidad: 'kg', precioBs: 45, subtotal: 23400, loteCosechaId: lotesCosecha[2].id }
-        ]
-      },
-      cobros: {
-        create: [
-          { fecha: dia(-6), montoBs: 23400, metodo: 'EFECTIVO', recibo: 'REC-002' }
-        ]
-      }
-    }
-  }));
-
-  // Venta 4: Sin pago todavía (hace 3 días, aún no vencida)
-  ventas.push(await prisma.venta.create({
-    data: {
-      clienteId: clientes[0].id, // Mercado Abasto
-      fecha: dia(-3),
-      total: 9020,
-      pagado: 0,
-      saldo: 9020,
-      estado: 'PENDIENTE',
-      notas: 'Crédito a 7 días',
-      detalles: {
-        create: [
-          { producto: 'Frutilla Primera', cantidad: 410, unidad: 'kg', precioBs: 22, subtotal: 9020, loteCosechaId: lotesCosecha[3].id }
-        ]
-      }
-    }
-  }));
-
-  // Venta 5: Sin trazabilidad (producto genérico)
-  ventas.push(await prisma.venta.create({
-    data: {
-      clienteId: clientes[4].id, // María González (minorista)
-      fecha: dia(-2),
-      total: 560,
-      pagado: 560,
-      saldo: 0,
-      estado: 'PAGADO',
-      notas: 'Venta directa en finca',
-      detalles: {
-        create: [
-          { producto: 'Tomate Cherry', cantidad: 10, unidad: 'kg', precioBs: 28, subtotal: 280, loteCosechaId: null },
-          { producto: 'Pimentón Rojo', cantidad: 8, unidad: 'kg', precioBs: 22, subtotal: 176, loteCosechaId: null },
-          { producto: 'Papa Desirée', cantidad: 13, unidad: 'kg', precioBs: 8, subtotal: 104, loteCosechaId: null },
-        ]
-      },
-      cobros: {
-        create: [
-          { fecha: dia(-2), montoBs: 560, metodo: 'EFECTIVO', recibo: null }
-        ]
-      }
-    }
-  }));
-
-  // Movimientos de salida por ventas
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[0].id, tipo: 'SALIDA', cantidad: 380, motivo: 'VENTA', referencia: `V-${ventas[0].id}`, fecha: dia(-10) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[2].id, tipo: 'SALIDA', cantidad: 260, motivo: 'VENTA', referencia: `V-${ventas[1].id}`, fecha: dia(-7) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[2].id, tipo: 'SALIDA', cantidad: 520, motivo: 'VENTA', referencia: `V-${ventas[2].id}`, fecha: dia(-6) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[2].id, tipo: 'SALIDA', cantidad: 410, motivo: 'VENTA', referencia: `V-${ventas[3].id}`, fecha: dia(-3) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[0].id, tipo: 'SALIDA', cantidad: 10, motivo: 'VENTA', referencia: `V-${ventas[4].id}`, fecha: dia(-2) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[1].id, tipo: 'SALIDA', cantidad: 8, motivo: 'VENTA', referencia: `V-${ventas[4].id}`, fecha: dia(-2) }
-  });
-  await prisma.movimientoProducto.create({
-    data: { productoId: productos[3].id, tipo: 'SALIDA', cantidad: 13, motivo: 'VENTA', referencia: `V-${ventas[4].id}`, fecha: dia(-2) }
-  });
-
-  // M3 Tareas para trabajadores (gestión de asignaciones)
-  // Tareas PENDIENTES (futuras, para trabajadores con consentimiento)
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez (Capataz) - tiene consentimiento
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Revisar sistema de riego en L-01',
-      descripcion: 'Verificar que todos los goteros funcionen correctamente y no haya fugas',
-      loteId: lotes[0].id,
-      prioridad: 'ALTA',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(2),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[1].id, // María Flores - tiene consentimiento
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Deshierbe en L-02',
-      descripcion: 'Eliminar malezas alrededor de las plantas de pimentón',
-      loteId: lotes[1].id,
-      prioridad: 'MEDIA',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(3),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[2].id, // Pedro Gutiérrez - tiene consentimiento
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Preparar terreno para nueva siembra',
-      descripcion: 'Arar y nivelar el lote L-06 para la próxima campaña',
-      loteId: lotes[5].id,
-      prioridad: 'BAJA',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(7),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez - más tareas para el trabajador vinculado
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Supervisar aplicación de fertilizante',
-      descripcion: 'Coordinar y supervisar la fertilización en todos los lotes de tomate',
-      loteId: null,
-      prioridad: 'URGENTE',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(1),
-      notificada: true,
-    }
-  });
-
-  // Tareas EN_CURSO (siendo trabajadas actualmente)
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Monitoreo fitosanitario semanal',
-      descripcion: 'Revisar todos los lotes en busca de plagas o enfermedades',
-      loteId: null,
-      prioridad: 'ALTA',
-      estado: 'EN_CURSO',
-      fechaVencimiento: dia(0),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[1].id, // María Flores
-      asignadoPorId: usuarios.propietario.id,
-      titulo: 'Cosecha de frutilla en L-03',
-      descripcion: 'Recolectar frutos maduros con cuidado, seleccionar primera calidad',
-      loteId: lotes[2].id,
-      prioridad: 'URGENTE',
-      estado: 'EN_CURSO',
-      fechaVencimiento: dia(0),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[3].id, // Rosa Copa - tiene consentimiento
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Riego manual en L-04',
-      descripcion: 'Regar el lote de papa durante 4 horas por sistema de gravedad',
-      loteId: lotes[3].id,
-      prioridad: 'MEDIA',
-      estado: 'EN_CURSO',
-      fechaVencimiento: dia(0),
-      notificada: true,
-    }
-  });
-
-  // Tareas COMPLETADAS (terminadas ayer/hoy)
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Poda de plantas de tomate',
-      descripcion: 'Eliminar chupones y hojas bajeras en L-01',
-      loteId: lotes[0].id,
-      prioridad: 'MEDIA',
-      estado: 'COMPLETADA',
-      fechaVencimiento: dia(-1),
-      fechaCompletada: dia(-1),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Inventario de herramientas',
-      descripcion: 'Revisar y contar todas las herramientas del galpón',
-      loteId: null,
-      prioridad: 'BAJA',
-      estado: 'COMPLETADA',
-      fechaVencimiento: dia(-2),
-      fechaCompletada: dia(-2),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[2].id, // Pedro Gutiérrez
-      asignadoPorId: usuarios.propietario.id,
-      titulo: 'Reparación de cerca en L-05',
-      descripcion: 'Arreglar postes y alambre dañados en el perímetro',
-      loteId: lotes[4].id,
-      prioridad: 'ALTA',
-      estado: 'COMPLETADA',
-      fechaVencimiento: dia(-3),
-      fechaCompletada: dia(-2),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[1].id, // María Flores
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Limpieza de canales de riego',
-      descripcion: 'Eliminar obstrucciones y sedimentos de los canales principales',
-      loteId: lotes[0].id,
-      prioridad: 'MEDIA',
-      estado: 'COMPLETADA',
-      fechaVencimiento: dia(0),
-      fechaCompletada: dia(0),
-      notificada: true,
-    }
-  });
-
-  // Tareas CANCELADAS
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[4].id, // Luis Ticona - NO tiene consentimiento
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Aplicación de fungicida en L-03',
-      descripcion: 'Cancelada por condiciones climáticas desfavorables',
-      loteId: lotes[2].id,
-      prioridad: 'ALTA',
-      estado: 'CANCELADA',
-      fechaVencimiento: dia(-5),
-      notificada: false, // no tiene consentimiento
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Capacitación en uso de agroquímicos',
-      descripcion: 'Cancelada - reprogramada para próxima semana',
-      loteId: null,
-      prioridad: 'MEDIA',
-      estado: 'CANCELADA',
-      fechaVencimiento: dia(-1),
-      notificada: true,
-    }
-  });
-
-  // Tareas adicionales para diferentes prioridades
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez - trabajador vinculado
-      asignadoPorId: usuarios.encargado.id,
-      titulo: 'Recolección de muestras de suelo',
-      descripcion: 'Tomar muestras en los 6 lotes para análisis de laboratorio',
-      loteId: null,
-      prioridad: 'BAJA',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(10),
-      notificada: true,
-    }
-  });
-
-  await prisma.tarea.create({
-    data: {
-      trabajadorId: trabajadores[0].id, // Juan Pérez - otra tarea
-      asignadoPorId: usuarios.propietario.id,
-      titulo: 'Informe semanal de actividades',
-      descripcion: 'Preparar reporte de labores realizadas durante la semana',
-      loteId: null,
-      prioridad: 'MEDIA',
-      estado: 'PENDIENTE',
-      fechaVencimiento: dia(5),
-      notificada: true,
-    }
-  });
-
-  // Conversación de ejemplo por WhatsApp
-  for (const [direccion, texto] of [
-    ['ENTRANTE', 'regué el lote 1 por 3 horas'],
-    ['SALIENTE', '📝 Voy a registrar:\nLabor *RIEGO* en L-01, 3 h.\n¿Confirmas? Responde *SI* para guardar o *NO* para cancelar.'],
-    ['ENTRANTE', 'si'],
-    ['SALIENTE', '✅ Registrado. Labor guardada en L-01.'],
-    ['ENTRANTE', 'cuánto mancozeb le echo a la mochila?'],
-    ['SALIENTE', '⚠️ No puedo recomendar productos, dosis ni mezclas de agroquímicos. Consulte al ingeniero agrónomo responsable.'],
-  ]) {
-    await prisma.mensajeWhatsApp.create({ data: { fincaId: finca.id, telefono: '59170000003', direccion, texto } });
-  }
-
+  const totales = {
+    labores: await prisma.labor.count(), cosechas: await prisma.loteCosecha.count(), ventas: await prisma.venta.count(), tareas: await prisma.tarea.count(),
+  };
   console.log('✅ Datos ficticios cargados.');
   console.log('   Usuarios: propietario|encargado|trabajador @finca.test · clave: Agro2026!');
-  console.log('   Módulos activos: M1-M5 (Control campo, Trazabilidad, Trabajadores, Inventarios, Ventas)');
+  console.log(`   ${totales.labores} labores · ${totales.cosechas} lotes de cosecha · ${totales.ventas} ventas · ${totales.tareas} tareas`);
+  console.log('   Demo: L-02 (tomate) libre para cosechar · L-05 (cebolla) en carencia · L-04 sale de carencia mañana');
 }
 
 main()

@@ -58,7 +58,14 @@ async function crearLote(forzar = false) {
     if (forzar && f.justificacion) {
       cuerpo.justificacion = f.justificacion;
     }
-    const l = await api.post(url, cuerpo);
+    // Sin señal en el campo: la cosecha queda en la cola y se envía al volver la conexión
+    // (si al sincronizar el lote está en carencia, el servidor la rechaza y se avisa).
+    const l = forzar ? await api.post(url, cuerpo) : await api.postOffline(url, cuerpo, `Cosecha de ${cuerpo.cantidadKg} kg`);
+    if (l?.encolado) {
+      ui.avisar('📴 Cosecha guardada sin conexión: el código QR se generará al sincronizar');
+      modal.value = null;
+      return;
+    }
     if (l.advertencia) {
       ui.avisar(`⚠️ ${l.advertencia}`, 'alerta', 10000);
     } else {
@@ -68,8 +75,8 @@ async function crearLote(forzar = false) {
     await cargar();
     abrir(l);
   } catch (e) {
-    if (e.response?.status === 409 && e.response?.data?.error === 'CARENCIA_VIGENTE') {
-      errorCarencia.value = e.response.data;
+    if (e.status === 409 && e.datos?.error === 'CARENCIA_VIGENTE') {
+      errorCarencia.value = e.datos;
       return;
     }
     ui.error(e);

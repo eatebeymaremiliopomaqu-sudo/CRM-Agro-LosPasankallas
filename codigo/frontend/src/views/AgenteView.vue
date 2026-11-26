@@ -30,7 +30,7 @@ const esCliente = computed(() => canal.value === 'WHATSAPP' && remitente.value?.
 const SUGERENCIAS_EQUIPO = [
   'regué el lote 1 por 3 horas',
   'hoy cosechamos 40 kg de tomate del lote 2',
-  'hoy cosechamos 25 kg de frutilla del lote 3',
+  'hoy cosechamos 20 kg de cebolla del lote 5',
   '¿qué se aplicó en el lote 5 y hasta cuándo es la carencia?',
   'labores pendientes',
   'mis tareas',

@@ -21,7 +21,7 @@ const enlaces = computed(() =>
     { a: '/trazabilidad', texto: 'Trazabilidad', corto: 'Cosecha', icono: 'qr', modulo: 'M2' },
     { a: '/trabajadores', texto: 'Trabajadores', corto: 'Personal', icono: 'personas', modulo: 'M3', permiso: 'trabajadores:leer', roles: ['PROPIETARIO', 'ENCARGADO'] },
     { a: '/mis-tareas', texto: 'Mis tareas', corto: 'Tareas', icono: 'check', modulo: 'M3', permiso: 'tareas:leer', roles: ['TRABAJADOR'] },
-    { a: '/insumos', texto: 'Insumos', icono: 'caja', modulo: 'M4' },
+    { a: '/insumos', texto: 'Inventarios', corto: 'Stock', icono: 'caja', modulo: 'M4', permiso: 'insumos:leer' },
     { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
     // M6, M7 pendientes de implementar en bloques posteriores
     // { a: '/vivero', texto: 'Vivero', icono: 'planta', modulo: 'M6' },
@@ -30,7 +30,18 @@ const enlaces = computed(() =>
     { a: '/configuracion', texto: 'Configuración', icono: 'ajustes', permiso: 'finca:configurar' },
   ].filter((e) => (!e.modulo || sesion.tieneModulo(e.modulo)) && (!e.permiso || sesion.puede(e.permiso)) && (!e.roles || e.roles.includes(sesion.rol)))
 );
-const enlacesMovil = computed(() => enlaces.value.slice(0, 5));
+// Barra inferior del celular: 5 accesos según lo que más usa cada rol (solo módulos activos y permitidos)
+const PRIORIDAD_MOVIL = {
+  TRABAJADOR: ['/mis-tareas', '/campo', '/agente', '/trazabilidad', '/'],
+  ENCARGADO: ['/', '/campo', '/trazabilidad', '/ventas', '/agente', '/trabajadores'],
+  PROPIETARIO: ['/', '/campo', '/ventas', '/reportes', '/configuracion', '/agente'],
+};
+const enlacesMovil = computed(() => {
+  const orden = PRIORIDAD_MOVIL[sesion.rol] || [];
+  const elegidos = orden.map((a) => enlaces.value.find((e) => e.a === a)).filter(Boolean);
+  const resto = enlaces.value.filter((e) => !elegidos.includes(e));
+  return [...elegidos, ...resto].slice(0, 5);
+});
 const conMarco = computed(() => sesion.autenticado && !ruta.meta.publica);
 
 function salir() {

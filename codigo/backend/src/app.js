@@ -68,7 +68,7 @@ export function crearApp() {
   app.use('/api/agente', agenteRouter); // capacidad transversal (ADR-004)
   app.use('/api/alertas', alertas);
   app.use('/api/insumos', requiereModulo('M4'), insumos);
-  app.use('/api/productos', requiereModulo('M5'), productos);
+  app.use('/api/productos', requiereModulo('M4'), productos); // M4: inventario de productos cosechados
   app.use('/api/clientes', requiereModulo('M5'), clientes);
   app.use('/api/pedidos', requiereModulo('M5'), pedidos);
   app.use('/api/ventas', requiereModulo('M5'), ventas);

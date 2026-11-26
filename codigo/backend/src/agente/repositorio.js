@@ -3,6 +3,7 @@
 import { prisma } from '../db.js';
 import { crearLote, urlPublicaLote } from '../services/lotes.js';
 import { enviarWhatsApp } from '../services/whatsapp.js';
+import { inicioDiaLocal } from '../services/alertas.js';
 import { normalizar } from './guardrails.js';
 import { INTENCIONES, TEMAS, normalizarCodigoLote } from './parser.js';
 import { RechazoAgente, ESTADOS } from './agente.js';
@@ -239,8 +240,7 @@ export const ejecutorPrisma = {
   /** Consultas. Solo datos registrados; la "dosis" se muestra únicamente como texto de etiqueta cargado. */
   async consultar(tema, ctx, datos = {}) {
     const { fincaId, ahora } = ctx;
-    const inicioDia = new Date(ahora);
-    inicioDia.setUTCHours(0, 0, 0, 0);
+    const inicioDia = inicioDiaLocal(ahora); // día de Bolivia (UTC-4)
     const finDia = new Date(inicioDia.getTime() + 86400000);
 
     switch (tema) {

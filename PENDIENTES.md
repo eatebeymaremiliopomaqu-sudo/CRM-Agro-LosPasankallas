@@ -70,17 +70,21 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Correcciones: prompt del LLM usaba "parcela", webhook revisaba un módulo inexistente, permisos del frontend sin `tareas:*`
 - [x] 167 pruebas backend ✅ (vector oficial de firma de Twilio incluido), 11 frontend ✅, build OK
 
-## 📋 PENDIENTE
+### BLOQUE 6 - Seed completo y pantallas faltantes (sprint-3) ✅
+- [x] Seed determinista con historia para la demo: labor por WhatsApp → cosecha L-02 → QR → inventario → venta
+- [x] Lote con carencia vigente (L-05) y lote que sale de carencia mañana (L-04); todas las cosechas previas respetan la carencia
+- [x] Clientes con/sin consentimiento; pedido recibido por WhatsApp
+- [x] Ventas con cobros completos, parciales y vencidos; stock bajo en frutilla y AgroProtect
+- [x] Labores programadas para hoy, atrasadas y próximas (alertas)
+- [x] Fechas del seed y del agente en hora local de Bolivia
+- [x] Inventarios (M4): insumos + productos cosechados + movimientos (API de productos pasa a M4)
+- [x] Menú según rol y módulos activos; barra inferior móvil priorizada por rol
+- [x] Cola offline: tareas hechas y cosechas
+- [x] Corrige: modal de carencia nunca se mostraba (error HTTP mal leído), etiquetas de módulos antiguas
+- [x] Demo verificada de punta a punta contra el servidor (10/10 pasos)
+- [x] 167 pruebas backend ✅, 11 frontend ✅, build OK
 
-### BLOQUE 6 - Seed completo y pantallas faltantes (sprint-3)
-- [ ] Seed con historia para demo: labor→cosecha→QR→inventario→venta
-- [ ] Lote con carencia vigente
-- [ ] Clientes con/sin consentimiento
-- [ ] Pedidos y ventas con cobros parciales/vencidos
-- [ ] Lotes de plantines (vivero)
-- [ ] Menú frontend según rol y módulos activos
-- [ ] Navegación inferior móvil según rol
-- [ ] Cola offline: tareas hechas y cosechas
+## 📋 PENDIENTE
 
 ### BLOQUE 7 - M6 Vivero y M7 Reportes/Finanzas (sprint-3)
 - [ ] Modelo `LotePlantin` (siembra, germinación, stock, precio)

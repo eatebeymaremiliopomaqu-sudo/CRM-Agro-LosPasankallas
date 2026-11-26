@@ -1,4 +1,4 @@
-// M1 · Lotes y cultivos
+// M0 · Núcleo: lotes de campo y campañas (cultivos)
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
