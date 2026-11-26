@@ -5,6 +5,7 @@
 //   L-04 Papa    → sale de carencia mañana (alerta FIN_CARENCIA); su cosecha anterior fue antes de la aplicación
 //   Cosechas pasadas respetaron siempre la carencia → fichas QR con "✔ carencia respetada"
 //   Ventas con cobros completos, parciales y vencidos; stock bajo en frutilla y en un agroquímico
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
@@ -18,6 +19,10 @@ const azar = () => ((semilla = (semilla * 16807) % 2147483647) - 1) / 2147483646
 const hoyLocal = new Date(Date.now() - 4 * 3600000);
 const dia = (offset, hora = 12) => new Date(Date.UTC(hoyLocal.getUTCFullYear(), hoyLocal.getUTCMonth(), hoyLocal.getUTCDate() + offset, hora));
 const iniciales = 'FLM'; // Finca Los Molles
+// Celular real del encargado para la demo con WhatsApp: SOLO en .env (DEMO_WHATSAPP_ENCARGADO), nunca en el repositorio.
+// En las pruebas siempre se usa el número ficticio.
+const telReal = process.env.NODE_ENV === 'test' ? '' : String(process.env.DEMO_WHATSAPP_ENCARGADO || '').replace(/\D/g, '');
+const TEL_ENCARGADO = telReal.length >= 8 ? telReal : '59170000002';
 
 async function limpiar() {
   // Orden inverso a las dependencias
@@ -68,7 +73,7 @@ async function main() {
   const usuarios = {};
   for (const [clave, nombre, rol, tel, trabajadorId] of [
     ['propietario', 'Ana Quispe (Propietaria)', 'PROPIETARIO', '59170000001', null],
-    ['encargado', 'Ing. Bruno Rojas (Encargado)', 'ENCARGADO', '59170000002', null],
+    ['encargado', 'Ing. Bruno Rojas (Encargado)', 'ENCARGADO', TEL_ENCARGADO, null],
     ['trabajador', 'Juan Pérez (Capataz)', 'TRABAJADOR', '59170000003', juan.id],
   ]) {
     usuarios[clave] = await prisma.usuario.create({
@@ -346,7 +351,7 @@ async function main() {
     [9, 'SALIENTE', '✅ Registrado. Labor guardada en L-02.'],
     [10, 'ENTRANTE', 'cuánto AgroProtect le echo a la mochila?'],
     [10, 'SALIENTE', '⚠️ No puedo recomendar productos, dosis ni mezclas de agroquímicos. Esa decisión corresponde al ingeniero agrónomo responsable.'],
-  ]) await prisma.mensajeWhatsApp.create({ data: { fincaId: finca.id, telefono: '59170000002', direccion, texto, fecha: dia(-1, h + 4) } });
+  ]) await prisma.mensajeWhatsApp.create({ data: { fincaId: finca.id, telefono: TEL_ENCARGADO, direccion, texto, fecha: dia(-1, h + 4) } });
   for (const u of [usuarios.propietario, usuarios.encargado]) {
     await prisma.bitacoraAlerta.create({ data: { fincaId: finca.id, tipo: 'RESUMEN_DIARIO', disparo: 'PROGRAMADO', destinatario: `${u.nombre} (${u.rol})`, telefono: u.telefono, mensaje: '🔔 Alertas Finca Los Molles (ejemplo del día anterior)', cantidad: 4, estado: 'SIMULADO', fecha: dia(-1, 11) } });
   }

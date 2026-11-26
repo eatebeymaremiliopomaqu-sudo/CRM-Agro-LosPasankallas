@@ -1,55 +1,42 @@
-# Notas de daily (Daily Scrum)
+# Registro diario (Daily Scrum de un equipo de una persona)
 
-> **Plantilla + ejemplos.** Los ejemplos describen el trabajo realmente hecho en cada bloque, pero los nombres y fechas están entre [ ]: reemplácenlos con su registro real (una nota por día).
+**Autor:** Beymar Emilio Poma Queso · Grupo Los Pasankallas (trabajo individual)
 
-## Plantilla (15 minutos, de pie)
+Como el equipo es de una sola persona, la daily no es una reunión. Es un **registro breve al empezar cada jornada** (5 minutos), escrito en el rol de **Scrum Master**: qué se avanzó, qué se hará hoy y qué bloquea. Si hay un bloqueo, se anota la acción para quitarlo antes de seguir programando como **Developer**.
+
+> ✏️ **COMPLETAR:** los ejemplos de abajo describen el trabajo que efectivamente quedó en los commits de cada rama. Las **fechas** son lo único que falta: reemplaza `dd/mm/aaaa` por el día real y agrega una entrada por cada día que trabajaste.
+
+## Formato de cada entrada
 
 ```
-Fecha: [dd/mm/aaaa] · Sprint [N] · Día [n de 10]
-Asistentes: [Integrante 1], [Integrante 2], [Integrante 3]
-
-[Integrante]  Ayer: …            Hoy: …            Impedimentos: …
-[Integrante]  Ayer: …            Hoy: …            Impedimentos: …
-[Integrante]  Ayer: …            Hoy: …            Impedimentos: …
-
-Acuerdos / acciones: …
+Fecha: dd/mm/aaaa · Sprint N · Día n de 10
+Ayer:          …
+Hoy:           …
+Bloqueos:      …   (acción para resolverlo)
 Puntos pendientes del sprint (burndown): …
 ```
 
 ## Ejemplos
 
-### Sprint 1 · Día 3
-| Integrante | Ayer | Hoy | Impedimentos |
-|---|---|---|---|
-| [Integrante 1] | Renombré Parcela → Lote en el esquema y el seed | Middleware `requiereModulo` con la tabla `ModuloFinca` | Ninguno |
-| [Integrante 2] | Matriz de permisos con los 3 roles | Pruebas de RBAC | Dudas con el rol "consulta" → se elimina (ADR-006) |
-| [Integrante 3] | Vista de lotes con mapa | Calendario de labores | Vite falla si la ruta tiene `#` → renombrar carpeta |
+### Sprint 1 · Día 3 · Fecha: dd/mm/aaaa ✏️
+- **Ayer:** renombré Parcela → Lote en el esquema y el seed; matriz de permisos con los 3 roles.
+- **Hoy:** middleware `requiereModulo` con la tabla `ModuloFinca`; pruebas de RBAC; vista de lotes con mapa.
+- **Bloqueos:** Vite falla si la ruta tiene el carácter numeral → renombrar la carpeta. Duda con el rol "consulta" → se elimina (ADR-006).
+- **Pendiente del sprint:** 36 puntos. Decisión: cambio limpio sin alias (ADR-013).
 
-**Acuerdos:** cambio limpio sin alias (ADR-013). Pendientes: 36 puntos.
+### Sprint 2 · Día 6 · Fecha: dd/mm/aaaa ✏️
+- **Ayer:** rutas de ventas y cobros; ficha pública del QR con labores; modelo `Tarea`.
+- **Hoy:** cuentas por cobrar; ventas anonimizadas en el QR y consulta SQL documentada; vista "Mis tareas".
+- **Bloqueos:** el JWT no trae `trabajadorId` → leerlo de la BD (DEF-15). ¿Mostrar el nombre del cliente en el QR? → No, por privacidad.
+- **Decisión:** la cosecha genera la entrada de inventario automáticamente (ADR-017.9).
 
-### Sprint 2 · Día 6
-| Integrante | Ayer | Hoy | Impedimentos |
-|---|---|---|---|
-| [Integrante 1] | Rutas de ventas y cobros | Cuentas por cobrar | Ninguno |
-| [Integrante 2] | Ficha pública del QR con labores | Ventas anonimizadas + consulta SQL documentada | ¿Mostrar el nombre del cliente? → No (privacidad) |
-| [Integrante 3] | Modelo `Tarea` | Vista "Mis tareas" | El JWT no trae `trabajadorId` → leer de la BD (DEF-15) |
+### Sprint 3 · Día 4 · Fecha: dd/mm/aaaa ✏️
+- **Ayer:** webhook de Twilio con firma; intenciones de cosecha y pedido; alertas diarias.
+- **Hoy:** probar con el celular en el Sandbox; políticas por perfil; botón "Enviar ahora" y bitácora.
+- **Bloqueos:** hace falta un túnel (cloudflared) para la URL pública; las fechas en UTC confunden "hoy" (DEF-26); ventana de 24 h de WhatsApp para mensajes proactivos.
+- **Decisión:** alertas solo a quien dio consentimiento; documentar la ventana de 24 h en la guía.
 
-**Acuerdos:** la cosecha genera entrada de inventario automáticamente (ADR-017.9).
-
-### Sprint 3 · Día 4
-| Integrante | Ayer | Hoy | Impedimentos |
-|---|---|---|---|
-| [Integrante 1] | Webhook de Twilio con firma | Probar con el celular en el Sandbox | Hace falta túnel (cloudflared) para la URL pública |
-| [Integrante 2] | Intenciones de cosecha y pedido | Políticas por perfil (trabajador, cliente) | Fechas en UTC confunden "hoy" (DEF-26) |
-| [Integrante 3] | Alertas diarias | Botón "Enviar ahora" y bitácora | Ventana de 24 h de WhatsApp para mensajes proactivos |
-
-**Acuerdos:** las alertas solo a quien dio consentimiento; documentar la ventana de 24 h en la guía.
-
-### Sprint 3 · Día 8
-| Integrante | Ayer | Hoy | Impedimentos |
-|---|---|---|---|
-| [Integrante 1] | Migración a Vitest | Pruebas de API con supertest | Las pruebas encontraron que una dosis con nombre comercial no se bloqueaba (DEF-17, crítico) |
-| [Integrante 2] | Reportes de costos por lote | Exportación CSV | Ninguno |
-| [Integrante 3] | Seed de la demo | Guion de la exposición | Ninguno |
-
-**Acuerdos:** DEF-17 se corrige hoy con prueba de regresión antes de seguir.
+### Sprint 3 · Día 8 · Fecha: dd/mm/aaaa ✏️
+- **Ayer:** migración a Vitest; reportes de costos por lote; seed de la demo.
+- **Hoy:** pruebas de API con supertest; exportación CSV; guion de la exposición.
+- **Bloqueos:** las pruebas encontraron que una pregunta de dosis con nombre comercial no se bloqueaba (DEF-17, crítico) → se corrige hoy con prueba de regresión antes de seguir.

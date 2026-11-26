@@ -58,7 +58,7 @@ const TAREAS = {
   3: ['Proveedor WhatsApp twilio|meta|simulado y webhook firmado', 'Agente: cosecha, tarea hecha, pedido, consultas, políticas por perfil', 'Alertas diarias + bitácora', 'Vivero y reportes de finanzas con CSV', 'Migración a Vitest, pruebas de API y CI', 'Seed de la demo, informe, diapositivas y despliegue'],
 };
 const AVANCE = {
-  // puntos pendientes al final de cada día (10 días hábiles). PLANTILLA: reemplazar por el registro real del equipo.
+  // puntos pendientes al final de cada día (10 días hábiles). ✏️ COMPLETAR: reemplazar por el registro real de Beymar.
   // fracción del compromiso que queda pendiente al final de cada día
   1: [1, 0.93, 0.84, 0.77, 0.65, 0.53, 0.42, 0.28, 0.14, 0],
   2: [0.95, 0.89, 0.85, 0.85, 0.7, 0.55, 0.4, 0.24, 0.09, 0],
@@ -71,7 +71,8 @@ for (const sp of [1, 2, 3]) {
   velocidad.push({ sprint: sp, comprometido: total, completado: total });
   const md = `# Sprint ${sp} · Sprint backlog
 
-> Fechas, responsables y horas son **plantilla**: complétenlos con su trabajo real (Jira/Trello).
+> Trabajo individual: el responsable de todas las historias y tareas es Beymar Emilio Poma Queso.
+> ✏️ **COMPLETAR:** las horas reales de cada tarea (columna "✏️ h") y las fechas del sprint.
 
 **Objetivo del sprint:** ${['', 'Núcleo modular, roles y control de campo con bloqueo por carencia.', 'Inventario, ventas, cuentas por cobrar, trazabilidad hasta la venta y tareas.', 'WhatsApp real con agente ampliado, alertas, vivero, finanzas, calidad y entrega.'][sp]}
 **Rama:** \`sprint-${sp}\` · **Duración:** 2 semanas (10 días hábiles) · **Compromiso:** ${total} puntos
@@ -80,19 +81,19 @@ for (const sp of [1, 2, 3]) {
 
 | ID | Historia | Puntos | Responsable | Estado |
 |---|---|---|---|---|
-${hs.map((h) => `| ${h[0]} | ${h[2]} | ${h[4]} | [Integrante] | Hecho |`).join('\n')}
+${hs.map((h) => `| ${h[0]} | ${h[2]} | ${h[4]} | Beymar | Hecho |`).join('\n')}
 
 ## Tareas técnicas
 
 | Tarea | Estimación (h) | Responsable | Estado |
 |---|---|---|---|
-${TAREAS[sp].map((t) => `| ${t} | [h] | [Integrante] | Hecho |`).join('\n')}
+${TAREAS[sp].map((t) => `| ${t} | ✏️ h | Beymar | Hecho |`).join('\n')}
 
 ## Definición de terminado
 
 - Pruebas en verde (backend y frontend) y build del frontend sin errores.
 - Swagger actualizado; sin claves en el repositorio.
-- Revisado por otro integrante y fusionado en \`sprint-${sp}\`.
+- Autorrevisado (diff completo, pruebas en verde) y fusionado en \`sprint-${sp}\`.
 
 ![Burndown](burndown_sprint${sp}.png)
 `;

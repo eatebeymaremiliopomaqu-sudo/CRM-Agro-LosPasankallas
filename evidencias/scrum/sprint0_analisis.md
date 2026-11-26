@@ -1,8 +1,8 @@
 # Sprint 0 · Análisis y descubrimiento
 
-> Entrevista **simulada** con un productor **ficticio** (no es una persona real). Los nombres de los integrantes y fechas reales se completan donde dice [ ].
+> Entrevista **simulada** con un productor **ficticio** (no es una persona real). Trabajo individual: los tres roles los asume Beymar Emilio Poma Queso.
 
-**Duración:** 1 semana · **Rama:** `sprint-0` · **Participantes:** [Integrante 1] (Product Owner), [Integrante 2] (Scrum Master), [Integrante 3] (Equipo de desarrollo)
+**Duración:** 1 semana · **Rama:** `sprint-0` · **Participante:** Beymar Emilio Poma Queso (Product Owner, Scrum Master y Developer)
 
 ## 1. Entrevista al productor (simulada)
 
@@ -50,12 +50,12 @@ Ver `../diagramas/modelo_er.png` (versión final, 30 tablas en 3FN) y la secció
 - Stack: Vue 3 + Vite (PWA), Node.js + Express + Prisma, SQLite; Vercel + Render (bajo costo).
 - WhatsApp por **Twilio Sandbox** para la demo; Meta Cloud API como alternativa.
 - Agente con **reglas + LLM opcional**: el LLM solo extrae datos; las decisiones y validaciones las hace el código.
-- Estimación con Planning Poker (Fibonacci). Velocidad esperada: ~45 puntos por sprint.
-- Ver `../../DECISIONES.md` (ADR-001 a ADR-020).
+- Estimación con puntos de historia (Fibonacci), comparando cada historia con una de referencia (HU-01 = 3 puntos). Velocidad esperada: ~45 puntos por sprint.
+- Ver `../../DECISIONES.md` (ADR-001 a ADR-021).
 
 ## 5. Definition of Done (acordada)
 
-1. Código revisado por otro integrante y fusionado en la rama del sprint.
+1. Diff completo autorrevisado (rol Scrum Master) y fusionado en la rama del sprint.
 2. Pruebas automatizadas en verde; build sin errores.
 3. Swagger y documentación actualizados.
 4. Sin datos reales ni claves en el repositorio.

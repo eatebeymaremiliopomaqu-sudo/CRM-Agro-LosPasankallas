@@ -49,7 +49,7 @@ En la página principal de la consola (**Account Info**) copia:
 
 El agente solo atiende números conocidos. Tienes dos opciones:
 
-- **Como personal**: entra a la app como `propietario@finca.test` → **Configuración → Usuarios y roles** y pon tu número en el usuario con el que quieres probar (por ejemplo el **encargado**). Formato: `591` + 8 dígitos, sin espacios ni `+` → **`[591XXXXXXXX]`**. Activa el interruptor **Alertas WhatsApp** para recibir alertas.
+- **Como personal**: entra a la app como `propietario@finca.test` → **Configuración → Usuarios y roles** y pon tu número en el usuario con el que quieres probar (por ejemplo el **encargado**). Formato: `591` + 8 dígitos, sin espacios ni `+` (p. ej. `59170000002`). Para el encargado de la demo también puedes ponerlo en `DEMO_WHATSAPP_ENCARGADO` del `.env` y ejecutar `npm run db:seed`. Activa el interruptor **Alertas WhatsApp** para recibir alertas.
 - **Como cliente**: **Ventas → Clientes → editar** un cliente, pon tu número y marca el consentimiento.
 
 > Puedes cambiar de rol para la demo editando el número en otro usuario o cliente.
@@ -80,9 +80,9 @@ Usa la URL `https://….ngrok-free.app/api/webhooks/twilio`.
 ### B. Backend desplegado en Render
 
 Si ya desplegaste (ver `DESPLIEGUE.md`), tu webhook es:
-`https://[servicio].onrender.com/api/webhooks/twilio`
+`https://<servicio>.onrender.com/api/webhooks/twilio`
 
-> El plan gratuito de Render "duerme" tras 15 minutos: antes de la demo abre `https://[servicio].onrender.com/api/salud` para despertarlo.
+> El plan gratuito de Render "duerme" tras 15 minutos: antes de la demo abre `https://<servicio>.onrender.com/api/salud` para despertarlo.
 
 ## 5. Configurar el webhook en Twilio
 
@@ -135,7 +135,7 @@ Como **cliente** (tu número en un cliente): `precios`, `quiero 3 cajas de fruti
 | Twilio no responde nada | Revisa en la consola de Twilio **Monitor → Logs → Errors**. Suele ser la URL del webhook mal copiada o el backend apagado. |
 | Error **403 "Firma X-Twilio-Signature inválida"** | `TWILIO_WEBHOOK_URL` no es idéntica a la URL configurada en Twilio (https, sin barra final), o el Auth Token es otro. |
 | Error **503 "Falta TWILIO_AUTH_TOKEN"** | Falta la variable en `.env`/Render. |
-| "Este número no está registrado" | Tu número no está en ningún usuario/trabajador/cliente, o tiene otro formato. Usa `591XXXXXXXX`. |
+| "Este número no está registrado" | Tu número no está en ningún usuario/trabajador/cliente, o tiene otro formato. Usa `591` + 8 dígitos, sin `+` ni espacios. |
 | "El canal de WhatsApp no está activo" | **Configuración → WhatsApp y alertas →** activa el canal. |
 | Las alertas no llegan | Tu usuario no tiene el consentimiento activo, o pasaron más de 24 h desde tu último mensaje al Sandbox. |
 | Respuesta tarda la primera vez en Render | El servicio estaba dormido; vuelve a intentar en 1 minuto. |

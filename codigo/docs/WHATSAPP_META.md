@@ -7,7 +7,7 @@ Alternativa a Twilio. Es la API oficial de Meta; requiere una app de Meta for De
 1. Entra a <https://developers.facebook.com/apps> → **Crear app** → tipo **Empresa** (Business).
 2. Agrega el producto **WhatsApp** y entra a **WhatsApp → Configuración de la API**.
 3. Meta te da un **número de prueba** y un **token temporal** (dura 24 h). Para algo estable, crea un **usuario del sistema** en el Business Manager con un token permanente.
-4. En **Para**, agrega tu número `[591XXXXXXXX]` como destinatario de prueba y verifícalo con el código que te llega.
+4. En **Para**, agrega tu número (`591` + 8 dígitos) como destinatario de prueba y verifícalo con el código que te llega.
 
 ## 2. Variables de entorno
 

@@ -112,12 +112,12 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 
 ### BLOQUE 9 - Documentación final y entregables (main) ✅
 - [x] README.md actualizado (módulos, roles, arranque en Windows, demo, WhatsApp, pruebas)
-- [x] LEEME.txt con integrantes, roles por sprint (plantilla), usuarios, arranque y WhatsApp
+- [x] LEEME.txt con integrante, roles, usuarios, arranque y WhatsApp
 - [x] Swagger 100 %: 66 rutas, verificado por prueba automática (`tests/unit/swagger.test.js`)
 - [x] Informe fuente HTML en `informe/fuente/` + PDF generado por script (Chrome headless)
 - [x] Consultas SQL clave en `codigo/backend/prisma/consultas_clave.sql` (verificadas contra la BD)
 - [x] Diagramas regenerados por script: arquitectura, ER, flujo del agente, flujo de la demo
-- [x] PPTX de 14 láminas con notas del orador para los 3 integrantes y lámina de aprendizajes (fuente pptxgenjs)
+- [x] PPTX de 14 láminas con notas del orador para un expositor y lámina de aprendizajes (fuente pptxgenjs)
 - [x] Evidencias SCRUM: Sprint 0, backlog importable, sprint backlogs 1–3, dailies, reviews, retrospectivas, burndowns, velocidad
 - [x] Guion de exposición 8–10 min con la demo paso a paso
 - [x] 249 pruebas backend ✅ (96 % de líneas), 14 frontend ✅
@@ -128,23 +128,30 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] `codigo/docs/DESPLIEGUE.md` paso a paso (GitHub, Render, Vercel, Twilio, CI, verificación, costos)
 - [x] API probada en modo producción (`NODE_ENV=production`)
 - [x] Checklist de la guía marcado con evidencias: `evidencias/checklist_guia.md`
-- [x] ZIP `entrega/CRM_Agro_Grupo##.zip` generado con `git archive` (sin node_modules, .env ni *.db)
+- [x] ZIP de entrega generado con `git archive` (sin node_modules, .env ni *.db)
 
-## 📋 PENDIENTE (requiere cuentas o datos del equipo)
+### FASE FINAL - Preparación para presentar (main)
+- [x] PASO 1 · Datos reales: grupo Los Pasankallas, Beymar Emilio Poma Queso (trabajo individual), asignatura, docente e hito en LEEME, README, CONTRIBUIR, informe, diapositivas, SCRUM, guion y checklist
+- [x] PASO 1 · Informe §8.1 "Adaptación de SCRUM a un equipo de una persona"; notas del orador y guion para un expositor
+- [x] PASO 1 · Archivos renombrados: `Informe_Grupo_LosPasankallas.pdf`, `Diapositivas_Grupo_LosPasankallas.pptx`
+- [x] PASO 1 · Celular real del encargado solo en `.env` (`DEMO_WHATSAPP_ENCARGADO`, ADR-021)
+- [ ] PASO 2 · Verificación local completa (BD, servidor, build, pruebas, flujo de la demo por API)
+- [ ] PASO 3 · WhatsApp con Twilio y el celular de Beymar
+- [ ] PASO 4 · GitHub, Render y Vercel; URLs públicas en los documentos
+- [ ] PASO 5 · Capturas reales, tablero Trello/Jira, registro SCRUM
+- [ ] PASO 6 · ZIP final `CRM_Agro_Grupo_LosPasankallas.zip`
 
-- [ ] Reemplazar los [ ] de LEEME.txt, informe (portada), diapositivas (portada y pie) y documentos SCRUM con número de grupo, nombres, asignatura y docente; luego regenerar: `node informe/fuente/generar_pdf.mjs` y `cd diapositivas/fuente ; node generar_diapositivas.js`
-- [ ] Renombrar la carpeta si contiene `#` antes de ejecutar el frontend (Vite)
-- [ ] Subir a GitHub y desplegar en Render y Vercel (`codigo/docs/DESPLIEGUE.md`); anotar las URL públicas en LEEME.txt e informe
-- [ ] Conectar el celular del equipo al Sandbox de Twilio (`codigo/docs/WHATSAPP_TWILIO.md`) y ejecutar CP-MAN-03 / UAT-01 a 06 con el celular real
-- [ ] Commits de cada integrante con su propio usuario de Git en las ramas de sprint (`codigo/CONTRIBUIR.md`)
-- [ ] Importar `evidencias/scrum/product_backlog.csv` en Jira o Trello y guardar una captura del tablero
-- [ ] Completar dailies, comentarios del PO y retrospectivas con lo ocurrido realmente; reemplazar el avance diario de plantilla de los burndowns (`evidencias/scrum/fuente/generar_scrum.mjs`)
+## 📋 PENDIENTE (requiere cuentas o datos de Beymar)
+
+- [ ] Conectar el celular al Sandbox de Twilio y ejecutar CP-MAN-03 / UAT-01 a 06 con el celular real
+- [ ] Subir a GitHub y desplegar en Render y Vercel; anotar las URL públicas
+- [ ] Importar `evidencias/scrum/product_backlog.csv` en Trello o Jira y guardar una captura del tablero
+- [ ] ✏️ Completar las fechas del registro diario, las horas de los sprint backlogs, las observaciones del PO y el avance diario real de los burndowns (`evidencias/scrum/fuente/generar_scrum.mjs`)
 - [ ] Capturas reales de la app desplegada en `evidencias/capturas/` y pruebas manuales CP-MAN-01, 02 y 04
-- [ ] Volver a generar el ZIP después de esos cambios: `git archive --format=zip -o entrega/CRM_Agro_Grupo##.zip HEAD`
 
 ## ⚠️ BLOQUEADORES
 
-Ninguno técnico. Los pendientes de arriba dependen de cuentas externas (GitHub, Render, Vercel, Twilio, Jira) o de datos del grupo que no deben inventarse.
+Ninguno técnico. Los pendientes de arriba dependen de cuentas externas (GitHub, Render, Vercel, Twilio, Jira) o de datos que no deben inventarse.
 
 ## 📝 NOTAS
 

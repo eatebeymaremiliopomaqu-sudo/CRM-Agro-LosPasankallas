@@ -8,7 +8,7 @@ Este documento registra las decisiones técnicas importantes tomadas durante el 
 
 **Fecha**: 2026-11-25
 **Estado**: Aceptada
-**Decisión tomada por**: Equipo de desarrollo
+**Decisión tomada por**: Beymar Emilio Poma Queso
 
 ### Contexto
 
@@ -493,7 +493,7 @@ Esto permite:
 
 **Fecha**: 2026-11-25
 **Estado**: Aceptada
-**Decisión tomada por**: Equipo de desarrollo
+**Decisión tomada por**: Beymar Emilio Poma Queso
 
 ### Contexto
 
@@ -525,7 +525,7 @@ Durante la implementación aparecieron detalles que la guía no fija. Se eligió
 
 **Fecha**: 2026-11-25
 **Estado**: Aceptada
-**Decisión tomada por**: Equipo de desarrollo
+**Decisión tomada por**: Beymar Emilio Poma Queso
 
 ### Contexto
 
@@ -559,7 +559,7 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 **Fecha**: 2026-11-25
 **Estado**: Aceptada
-**Decisión tomada por**: Equipo de desarrollo
+**Decisión tomada por**: Beymar Emilio Poma Queso
 
 ### Decisión
 
@@ -594,6 +594,20 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 ---
 
+## ADR-021: Trabajo individual y celular real fuera del repositorio
+
+**Fecha**: 2026-11-26
+**Estado**: Aceptada
+**Decisión tomada por**: Beymar Emilio Poma Queso
+
+| # | Decisión | Motivo |
+|---|---|---|
+| 21.1 | El proyecto es individual (grupo Los Pasankallas, 1 integrante). Beymar asume Product Owner, Scrum Master y Developer en todos los sprints, en momentos separados (informe §8.1). Se eliminan las referencias a 3 integrantes y a la rotación de roles. | La guía propone equipos de 3; no se inventan personas. |
+| 21.2 | La daily es un registro escrito de 5 minutos; la revisión de código entre pares se sustituye por la autorrevisión del diff y las pruebas con umbrales de cobertura en el CI. | Equivalentes posibles para un equipo de una persona. |
+| 21.3 | El celular real del encargado se carga con `DEMO_WHATSAPP_ENCARGADO` en `.env` (no versionado); el seed lo usa si existe y, si no, el número ficticio 59170000002. En las pruebas siempre se usa el ficticio. | Evita publicar un número personal en GitHub y mantiene los datos ficticios en el repositorio. |
+
+---
+
 ## Plantilla para nuevas decisiones
 
 ```markdown
@@ -601,7 +615,7 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 **Fecha**: YYYY-MM-DD
 **Estado**: Propuesta | Aceptada | Rechazada | Obsoleta
-**Decisión tomada por**: Nombre/Equipo
+**Decisión tomada por**: Nombre
 
 ### Contexto
 

@@ -8,8 +8,8 @@
 | Fecha de ejecución | 2026-11-25 |
 | Entorno | Local (backend + frontend), datos ficticios del seed, WhatsApp en modo **simulado** |
 | Cuenta usada | `encargado@finca.test` (teléfono 59170000002) |
-| Quién ejecutó | Equipo de desarrollo, en el rol de Don Hilario, usando **Agente y WhatsApp → Simular WhatsApp** y la app web. Los mismos pasos están automatizados en `codigo/backend/tests/integracion/flujos.test.js` y `api.test.js` |
-| Pendiente | Repetir UAT-01 a UAT-06 con el celular real del equipo conectado al Sandbox de Twilio (ver `codigo/docs/WHATSAPP_TWILIO.md`) y anotar el resultado en la última columna |
+| Quién ejecutó | Beymar Emilio Poma Queso, en el rol de Don Hilario, usando **Agente y WhatsApp → Simular WhatsApp** y la app web. Los mismos pasos están automatizados en `codigo/backend/tests/integracion/flujos.test.js` y `api.test.js` |
+| Pendiente | Repetir UAT-01 a UAT-06 con el celular real de Beymar conectado al Sandbox de Twilio (ver `codigo/docs/WHATSAPP_TWILIO.md`) y anotar el resultado en la última columna |
 
 Criterio de aceptación general: cada paso se completa en menos de 1 minuto, el sistema **pide confirmación SI/NO** antes de guardar y los mensajes se entienden sin explicación técnica.
 

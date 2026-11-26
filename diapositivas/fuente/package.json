@@ -2,7 +2,7 @@
   "name": "crm-agro-diapositivas",
   "private": true,
   "type": "commonjs",
-  "description": "Genera ../Diapositivas_Grupo##.pptx con pptxgenjs",
+  "description": "Genera ../Diapositivas_Grupo_LosPasankallas.pptx con pptxgenjs",
   "scripts": { "generar": "node generar_diapositivas.js" },
   "dependencies": { "pptxgenjs": "^3.12.0" }
 }

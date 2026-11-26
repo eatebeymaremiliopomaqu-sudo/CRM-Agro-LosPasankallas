@@ -2,7 +2,9 @@
 
 CRM web **modular y de bajo costo** para fincas pequeñas (frutas, hortalizas y vivero): control técnico de campo, trazabilidad con **QR**, trabajadores, inventarios, ventas, vivero y finanzas, con un **agente de IA por WhatsApp** que registra labores y cosechas **con confirmación previa (SI/NO)** y **nunca recomienda dosis** de agroquímicos.
 
-> Todos los datos son **ficticios** (Finca Los Molles, Comarapa, Santa Cruz).
+> Todos los datos de la finca son **ficticios** (Finca Los Molles, Comarapa, Santa Cruz).
+
+**Grupo Los Pasankallas** · Beymar Emilio Poma Queso (trabajo individual: Product Owner, Scrum Master y Developer) · UNIFRANZ Sede El Alto, Ingeniería de Sistemas · Programación Gráfica y Multimedia · Docente: Ing. Juan Gabriel Lazcano Balanza · Hito 5
 
 ## Módulos (activables por finca)
 
@@ -35,14 +37,14 @@ Si un módulo está apagado, su menú desaparece y la API responde **403**.
 | Correo | Rol | WhatsApp |
 |---|---|---|
 | propietario@finca.test | PROPIETARIO | 59170000001 |
-| encargado@finca.test | ENCARGADO | 59170000002 |
+| encargado@finca.test | ENCARGADO | `DEMO_WHATSAPP_ENCARGADO` del `.env` (sin valor: 59170000002) |
 | trabajador@finca.test | TRABAJADOR (Juan Pérez) | 59170000003 |
 
 Clientes de prueba con WhatsApp: `59133445566` (con consentimiento), `59166778899` (sin consentimiento).
 
 ## Ejecutar en local (Windows · PowerShell)
 
-Requisitos: **Node.js 20 o superior** (probado con Node 26 y npm 11). **La ruta de la carpeta no puede contener `#`** (Vite falla): si se llama `CRM_Agro_Grupo##`, renómbrala, p. ej. `CRM_Agro_Grupo05`.
+Requisitos: **Node.js 20 o superior** (probado con Node 26 y npm 11). **La ruta de la carpeta no puede contener `#`** (Vite falla).
 
 ```powershell
 # 1) Backend  →  http://localhost:3000  ·  Swagger: http://localhost:3000/api/docs
@@ -123,7 +125,7 @@ Frontend en **Vercel**, backend + SQLite en **Render**. Guía: [`docs/DESPLIEGUE
 
 ## Decisiones técnicas
 
-Ver `../DECISIONES.md` (ADR-001 a ADR-020) y `../PENDIENTES.md`.
+Ver `../DECISIONES.md` (ADR-001 a ADR-021) y `../PENDIENTES.md`.
 
 ## Seguridad y ética
 

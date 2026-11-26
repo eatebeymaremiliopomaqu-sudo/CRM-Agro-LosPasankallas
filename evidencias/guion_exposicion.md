@@ -1,36 +1,40 @@
-# Guion de exposición · CRM-Agro (8–10 minutos)
+# Guion de exposición · CRM-Agro (10 minutos, un expositor)
 
-**Diapositivas:** `diapositivas/Diapositivas_Grupo##.pptx` (14 láminas; las notas del orador tienen el texto de cada integrante).
+**Grupo Los Pasankallas** · Expositor: **Beymar Emilio Poma Queso** (trabajo individual) · Programación Gráfica y Multimedia · Hito 5
+
+**Diapositivas:** `diapositivas/Diapositivas_Grupo_LosPasankallas.pptx` (14 láminas; las notas del orador tienen el texto que dice Beymar en cada una).
 **Flujo obligatorio de la demo:** registrar labor por WhatsApp → cosecha → QR de trazabilidad → inventario → venta.
 
-## Reparto y tiempos
+## Tiempos
 
-| Min | Lámina | Quién | Qué dice / hace |
-|---|---|---|---|
-| 0:00 | 1 Portada | [Integrante 1] | Presentación del grupo y del proyecto (datos ficticios) |
-| 0:30 | 2 Problema | [Integrante 1] | Don Hilario: cuadernos, carencia, trazabilidad, rentabilidad |
-| 1:30 | 3 Solución | [Integrante 1] | Modular, en el celular sin señal, por WhatsApp; nunca recomienda dosis |
-| 2:15 | 4 Arquitectura | [Integrante 2] | Vercel + Render + SQLite; routers por módulo; `requiereModulo` |
-| 3:00 | 5 Módulos | [Integrante 2] | M0–M7, incluidos los opcionales M6 y M7 |
-| 3:45 | 6 **Demo** | [Integrante 3] | Demo en vivo (ver abajo) — 2,5 min |
-| 6:15 | 7 Agente | [Integrante 3] | Flujo del mensaje; SI/NO; límites; perfiles |
-| 7:00 | 8 Seguridad y ética | [Integrante 2] | Carencia, consentimiento, privacidad del QR, firmas |
-| 7:30 | 9 Base de datos | [Integrante 2] | 30 tablas, 3FN, consulta de trazabilidad |
-| 8:00 | 10 SCRUM | [Integrante 1] | Sprint 0–3, ramas, velocidad |
-| 8:30 | 11 Calidad | [Integrante 3] | 263 pruebas, 96 % de cobertura, 32 defectos, UAT |
-| 9:00 | 12 Despliegue y costos | [Integrante 2] | URLs y costo < 1 jornal al mes |
-| 9:20 | 13 Aprendizajes | Los tres | Una idea cada uno |
-| 9:45 | 14 Conclusión | [Integrante 3] | Cierre y preguntas |
+| Min | Lámina | Qué dice / hace |
+|---|---|---|
+| 0:00 | 1 Portada | Presentación: Beymar, grupo Los Pasankallas, trabajo individual; datos de la finca ficticios |
+| 0:30 | 2 Problema | Don Hilario: cuadernos, carencia, trazabilidad, rentabilidad |
+| 1:30 | 3 Solución | Modular, en el celular sin señal, por WhatsApp; nunca recomienda dosis |
+| 2:15 | 4 Arquitectura | Vercel + Render + SQLite; routers por módulo; `requiereModulo` |
+| 3:00 | 5 Módulos | M0–M7, incluidos los opcionales M6 y M7 |
+| 3:45 | 6 **Demo** | Demo en vivo (ver abajo) — 2,5 min |
+| 6:15 | 7 Agente | Flujo del mensaje; SI/NO; límites; perfiles |
+| 7:00 | 8 Seguridad y ética | Carencia, consentimiento, privacidad del QR, firmas |
+| 7:30 | 9 Base de datos | 30 tablas, 3FN, consulta de trazabilidad |
+| 8:00 | 10 SCRUM | Sprint 0–3, ramas, velocidad; cómo asumió PO, SM y Developer |
+| 8:30 | 11 Calidad | pruebas automatizadas, más de 90 % de cobertura, 32 defectos, UAT |
+| 9:00 | 12 Despliegue y costos | URLs y costo < 1 jornal al mes |
+| 9:20 | 13 Aprendizajes | Tres ideas: agente seguro = más código que IA; privacidad por diseño; SCRUM de una persona |
+| 9:45 | 14 Conclusión | Cierre y preguntas |
 
 ## Preparación (30 minutos antes)
 
-1. Despertar Render: abrir `https://[servicio].onrender.com/api/salud` (el plan gratuito duerme).
+1. Despertar Render: abrir la URL de Render terminada en `/api/salud` (el plan gratuito duerme).
 2. Reiniciar los datos de la demo si se usó antes: en local `npm run db:seed`; en Render, *Manual Deploy* o borrar el disco efímero (se recarga solo).
-3. Celular del [Integrante 3] unido al Sandbox de Twilio (`join <palabra>`) y su número cargado en el usuario **encargado** (*Configuración → Usuarios*). Enviar "hola" para abrir la ventana de 24 h.
+3. Celular de Beymar unido al Sandbox de Twilio (`join <palabra>`) y su número cargado en el usuario **encargado** (`DEMO_WHATSAPP_ENCARGADO` en `.env` o *Configuración → Usuarios*). Enviar "hola" para abrir la ventana de 24 h.
 4. En el navegador, pestañas abiertas: app como `encargado@finca.test`, *Inventarios → Productos cosechados*, *Ventas*, y la ficha QR vacía.
 5. **Plan B sin internet:** backend y frontend en local, *Agente y WhatsApp → Simular WhatsApp* con el remitente "Usuario · Ing. Bruno Rojas (Encargado)".
 
 ## Demo paso a paso (2,5 min)
+
+Consejo para un expositor: el celular en la mano izquierda, el navegador proyectado; narrar cada paso en una frase mientras se espera la respuesta del agente.
 
 | # | Acción | Lo que el público ve | Frase clave |
 |---|---|---|---|

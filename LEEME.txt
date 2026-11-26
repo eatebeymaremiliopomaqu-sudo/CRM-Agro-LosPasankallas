@@ -1,33 +1,38 @@
-CRM-AGRO · GRUPO [NÚMERO]
-=========================
+CRM-AGRO · GRUPO LOS PASANKALLAS
+================================
 CRM web modular y de bajo costo para fincas pequeñas (frutas, hortalizas y vivero):
 control técnico de campo, trazabilidad con QR, trabajadores, inventarios, ventas,
 vivero y finanzas, con WhatsApp y un agente de IA que registra datos con
 confirmación previa (SI/NO) y NUNCA recomienda dosis de agroquímicos.
-Todos los datos son FICTICIOS (Finca Los Molles, Comarapa).
+Todos los datos de la finca son FICTICIOS (Finca Los Molles, Comarapa).
 
 UNIFRANZ Sede El Alto · Ingeniería de Sistemas
-Asignatura: [NOMBRE] · Docente: [NOMBRE] · Hito: [NÚMERO]
+Asignatura: Programación Gráfica y Multimedia
+Docente: Ing. Juan Gabriel Lazcano Balanza · Hito: 5
 
-INTEGRANTES Y ROLES POR SPRINT
-  Integrante                Sprint 0        Sprint 1          Sprint 2           Sprint 3
-  [Nombre 1]                Product Owner   PO + backend M0   PO + M5 Ventas     PO + informe, SCRUM
-  [Nombre 2]                Scrum Master    SM + M1 Campo     SM + M2/M3         SM + WhatsApp, despliegue
-  [Nombre 3]                Desarrollo      Frontend          M4 + tareas        Agente IA, M6/M7, pruebas
-  (Ajustar a lo que hizo realmente cada uno; cada uno hace commits con su usuario
-   de Git en la rama del sprint: ver codigo/CONTRIBUIR.md)
+INTEGRANTE Y ROLES (trabajo individual)
+  Beymar Emilio Poma Queso   Product Owner + Scrum Master + Developer (Sprint 0 a Sprint 3)
+  La guía propone equipos de 3 con roles rotativos. Este trabajo lo hizo una sola persona,
+  que asumió los tres roles en todos los sprints, separando los momentos de cada rol:
+    - Product Owner: al inicio de cada sprint prioriza el backlog y fija el objetivo del sprint.
+    - Scrum Master:  registro diario breve (avance y bloqueos), revisión del proceso,
+                     review y retrospectiva al cierre del sprint.
+    - Developer:     programa, prueba y hace commits en la rama del sprint (sprint-0 a sprint-3).
+  Detalle en el informe, sección "Adaptación de SCRUM a un equipo de una persona".
 
-URL PÚBLICAS (completar tras desplegar; guía: codigo/docs/DESPLIEGUE.md)
-  Aplicación (Vercel):     https://[proyecto].vercel.app
-  API + Swagger (Render):  https://[servicio].onrender.com/api/docs
-  Webhook de Twilio:       https://[servicio].onrender.com/api/webhooks/twilio
+URL PÚBLICAS (guía: codigo/docs/DESPLIEGUE.md)
+  Aplicación (Vercel):     pendiente de despliegue
+  API + Swagger (Render):  pendiente de despliegue
+  Webhook de Twilio:       pendiente de despliegue
   Nota: el plan gratuito de Render "duerme" tras 15 min; la primera carga tarda ~1 min.
 
 USUARIOS DE DEMOSTRACIÓN (clave: Agro2026!)
   propietario@finca.test  PROPIETARIO (todo, módulos, usuarios, pagos, finanzas)   WhatsApp 59170000001
-  encargado@finca.test    ENCARGADO (campo, aplicaciones, ventas, inventario)       WhatsApp 59170000002
+  encargado@finca.test    ENCARGADO (campo, aplicaciones, ventas, inventario)       WhatsApp: el de DEMO_WHATSAPP_ENCARGADO (.env)
   trabajador@finca.test   TRABAJADOR (sus tareas, labores y observaciones simples)  WhatsApp 59170000003
   Clientes con WhatsApp: 59133445566 (con consentimiento) · 59166778899 (sin consentimiento)
+  El celular real del encargado se configura solo en codigo/backend/.env (no se sube al repositorio):
+    DEMO_WHATSAPP_ENCARGADO=591XXXXXXXX   (sin valor: 59170000002, ficticio)
 
 MÓDULOS (activables por finca; apagado = menú oculto y API 403)
   M0 Núcleo · M1 Control técnico de campo · M2 Trazabilidad (QR) · M3 Trabajadores
@@ -36,7 +41,7 @@ MÓDULOS (activables por finca; apagado = menú oculto y API 403)
   "Lote" = campo de la finca. "Lote de cosecha" = producto cosechado con QR.
 
 CÓMO ARRANCAR EN LOCAL (Windows, PowerShell, Node.js 20 o superior)
-  IMPORTANTE: la ruta de la carpeta NO puede contener "#" (renombrar CRM_Agro_Grupo##).
+  IMPORTANTE: la ruta de la carpeta NO puede contener el carácter numeral (Vite falla).
   Terminal 1 (backend, http://localhost:3000 · Swagger /api/docs):
     cd codigo\backend
     Copy-Item .env.example .env
@@ -58,7 +63,8 @@ CÓMO ARRANCAR EN LOCAL (Windows, PowerShell, Node.js 20 o superior)
 CÓMO CONECTAR WHATSAPP (detalle: codigo/docs/WHATSAPP_TWILIO.md)
   1. Crear cuenta en twilio.com y abrir Messaging > Try it out > Send a WhatsApp message.
   2. Desde el celular enviar "join <palabra-palabra>" al +1 415 523 8886.
-  3. Poner el número del celular (591XXXXXXXX) en un usuario de la finca (Configuración > Usuarios).
+  3. Poner el número del celular en DEMO_WHATSAPP_ENCARGADO (.env) y ejecutar npm run db:seed,
+     o cargarlo en Configuración > Usuarios con "Alertas WhatsApp" activado.
   4. Publicar el backend: cloudflared tunnel --url http://localhost:3000  (o usar Render).
   5. En Twilio, "When a message comes in": https://<url>/api/webhooks/twilio (POST).
   6. En codigo/backend/.env: WHATSAPP_PROVIDER=twilio, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
@@ -66,23 +72,24 @@ CÓMO CONECTAR WHATSAPP (detalle: codigo/docs/WHATSAPP_TWILIO.md)
   7. Escribir "ayuda" al Sandbox. Sin credenciales todo funciona en modo simulado.
 
 PRUEBAS
-  cd codigo\backend  ; npm test         (Vitest: 249 pruebas unitarias + API; crea su BD de prueba)
-  cd codigo\backend  ; npm run test:cov (cobertura 96 % de líneas, con umbrales)
-  cd codigo\frontend ; npm test         (Vitest: 14 pruebas)
+  cd codigo\backend  ; npm test         (Vitest: pruebas unitarias + API; crea su BD de prueba)
+  cd codigo\backend  ; npm run test:cov (cobertura de líneas sobre 90 %, con umbrales)
+  cd codigo\frontend ; npm test         (Vitest)
 
 CONTENIDO
-  /codigo        backend/ (API), frontend/ (PWA), docs/ (WhatsApp y despliegue), render.yaml, README.md
+  /codigo        backend/ (API), frontend/ (PWA), docs/ (WhatsApp y despliegue), README.md
                  (sin node_modules, sin .env, sin bases de datos: usar .env.example)
-  /informe       Informe_Grupo##.pdf · fuente/ (HTML editable + script que genera el PDF)
-  /diapositivas  Diapositivas_Grupo##.pptx (14 láminas con notas del orador) · fuente/ (pptxgenjs)
-  /evidencias    scrum/ (backlog importable, Sprint 0, sprint backlogs, dailies, reviews,
+  /informe       Informe_Grupo_LosPasankallas.pdf · fuente/ (HTML editable + script del PDF)
+  /diapositivas  Diapositivas_Grupo_LosPasankallas.pptx (14 láminas con notas) · fuente/
+  /evidencias    scrum/ (backlog importable, Sprint 0, sprint backlogs, registro diario, reviews,
                  retrospectivas, burndowns, velocidad) · pruebas/ (plan, UAT, defectos, métricas,
                  resultados) · diagramas/ (arquitectura, ER, agente, demo + fuentes)
                  · capturas/ · guion_exposicion.md · checklist_guia.md
+  render.yaml    Blueprint de Render (raíz del repositorio)
   DECISIONES.md  registro de decisiones técnicas (ADR) · PENDIENTES.md estado por bloque
 
 DECLARACIÓN DE USO DE IA
   Se usó Claude (Anthropic) como asistente para generar borradores de código, pruebas,
-  diagramas, informe y diapositivas. Todo fue revisado, ejecutado y probado por el equipo.
+  diagramas, informe y diapositivas. Todo fue revisado, ejecutado y probado por el autor.
   El agente del producto puede usar la API de Claude o Groq solo para extraer datos;
   nunca guarda sin confirmación del usuario ni recomienda dosis.
