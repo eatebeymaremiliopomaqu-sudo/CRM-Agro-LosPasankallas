@@ -23,9 +23,8 @@ const enlaces = computed(() =>
     { a: '/mis-tareas', texto: 'Mis tareas', corto: 'Tareas', icono: 'check', modulo: 'M3', permiso: 'tareas:leer', roles: ['TRABAJADOR'] },
     { a: '/insumos', texto: 'Inventarios', corto: 'Stock', icono: 'caja', modulo: 'M4', permiso: 'insumos:leer' },
     { a: '/ventas', texto: 'Ventas', icono: 'dinero', modulo: 'M5', permiso: 'ventas:leer' },
-    // M6, M7 pendientes de implementar en bloques posteriores
-    // { a: '/vivero', texto: 'Vivero', icono: 'planta', modulo: 'M6' },
-    // { a: '/reportes', texto: 'Reportes', icono: 'grafico', modulo: 'M7' },
+    { a: '/vivero', texto: 'Vivero', icono: 'planta', modulo: 'M6', permiso: 'vivero:leer' },
+    { a: '/reportes', texto: 'Reportes y finanzas', corto: 'Finanzas', icono: 'grafico', modulo: 'M7', permiso: 'finanzas:ver' },
     { a: '/agente', texto: 'Agente y WhatsApp', corto: 'Agente', icono: 'chat', permiso: 'agente:usar' },
     { a: '/configuracion', texto: 'Configuración', icono: 'ajustes', permiso: 'finca:configurar' },
   ].filter((e) => (!e.modulo || sesion.tieneModulo(e.modulo)) && (!e.permiso || sesion.puede(e.permiso)) && (!e.roles || e.roles.includes(sesion.rol)))

@@ -15,6 +15,7 @@ const pestana = ref('labores');
 const labores = ref([]);
 const observaciones = ref([]);
 const laboresProgramadas = ref([]);
+const insumos = ref([]);
 const lotes = ref([]);
 const trabajadores = ref([]);
 const filtro = reactive({ loteId: '', tipo: '' });
@@ -35,7 +36,8 @@ async function cargar() {
     ]);
     labores.value = l;
     observaciones.value = o;
-    lotes.value = p.filter((x) => x.activo);
+    lotes.value = p.filter((x) => x.activa);
+    if (sesion.tieneModulo('M4')) insumos.value = (await api.get('/insumos').catch(() => [])).filter((i) => ['AGROQUIMICO', 'FERTILIZANTE'].includes(i.categoria));
     laboresProgramadas.value = lp;
     if (sesion.tieneModulo('M3') && sesion.puede('trabajadores:leer')) trabajadores.value = await api.get('/trabajadores').catch(() => []);
   } catch (e) {
@@ -45,7 +47,7 @@ async function cargar() {
 
 function nuevaLabor() {
   Object.keys(f).forEach((k) => delete f[k]);
-  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', motivo: '', dosisEtiqueta: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '' });
+  Object.assign(f, { loteId: lotes.value[0]?.id, tipo: 'RIEGO', fecha: hoyISO(), horas: 2, costoBs: 0, descripcion: '', trabajadorId: '', producto: '', motivo: '', dosisEtiqueta: '', ingredienteActivo: '', cantidadUsada: '', unidad: 'L', periodoCarenciaDias: '', responsableTecnico: sesion.usuario?.nombre || '', insumoId: '' });
   modal.value = 'labor';
 }
 function nuevaObs() {
@@ -72,6 +74,7 @@ async function guardarLabor() {
       ingredienteActivo: f.ingredienteActivo || null,
       cantidadUsada: f.cantidadUsada === '' ? null : Number(f.cantidadUsada), unidad: f.unidad || null,
       periodoCarenciaDias: f.periodoCarenciaDias === '' ? null : Number(f.periodoCarenciaDias), responsableTecnico: f.responsableTecnico,
+      insumoId: f.insumoId ? Number(f.insumoId) : null,
     };
   }
   try {
@@ -256,6 +259,13 @@ onMounted(async () => {
         <p style="font-size: 0.85rem; margin-top: 0; color: #7a4e1d">
           Anota lo que <strong>efectivamente se aplicó</strong> por indicación del técnico responsable. El sistema no sugiere productos ni dosis.
         </p>
+        <div v-if="insumos.length" class="campo">
+          <label>Insumo del inventario (opcional: descuenta el stock)</label>
+          <select v-model="f.insumoId" @change="f.producto = insumos.find((i) => i.id === Number(f.insumoId))?.nombre || f.producto; f.unidad = insumos.find((i) => i.id === Number(f.insumoId))?.unidad || f.unidad">
+            <option value="">— No descontar —</option>
+            <option v-for="i in insumos" :key="i.id" :value="i.id">{{ i.nombre }} · stock {{ i.stock }} {{ i.unidad }}</option>
+          </select>
+        </div>
         <div class="campo"><label>Producto comercial</label><input v-model="f.producto" :required="f.tipo === 'FUMIGACION'" /></div>
         <div class="fila-campos">
           <div class="campo"><label>Motivo (plaga/enfermedad)</label><input v-model="f.motivo" placeholder="Ej: Pulgón, Tizón tardío..." /></div>

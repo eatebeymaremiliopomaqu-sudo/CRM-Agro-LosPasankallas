@@ -555,6 +555,26 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 ---
 
+## ADR-019: Vivero (M6) y fórmulas de finanzas (M7)
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada
+**Decisión tomada por**: Equipo de desarrollo
+
+### Decisión
+
+| # | Decisión | Motivo |
+|---|---|---|
+| 19.1 | `LotePlantin` guarda sembradas, germinadas, merma y vendidos; **disponibles = germinadas − merma − vendidos** se calcula (no se guarda). Código `VIV-AAAA-NN`. | Evita inconsistencias de stock. |
+| 19.2 | La venta de plantines usa la misma API de M5 (`DetalleVenta.lotePlantinId`): valida disponibles, suma `vendidos` y pasa el lote a AGOTADO si se acaba. | "Venta de plantines a través de M5". |
+| 19.3 | `Aplicacion.insumoId` opcional: al registrar una aplicación con insumo (o con el mismo nombre de un insumo) se descuenta el stock si la unidad coincide y alcanza. | La guía: "una aplicación puede descontar el insumo usado". |
+| 19.4 | Costo del lote = labores (`costoBs` = gastos directos) + jornales (horas/8 × jornal, solo asistencias con lote) + insumos (cantidad × costo unitario). Ingresos = ventas de sus lotes de cosecha. Margen % = margen / ingresos. | Fórmulas simples y explicables; el informe las detalla. |
+| 19.5 | Las asistencias sin lote (galpón, vivero) y las ventas sin lote de cosecha no se cargan a ningún lote: aparecen aparte en los totales. El vivero se reporta separado. | No inventar prorrateos. |
+| 19.6 | M7 solo para PROPIETARIO (`finanzas:ver`). Exportación CSV con `;` y BOM para Excel en español (backend `/costos.csv` y botón en la UI). | La guía reserva las finanzas al propietario. |
+| 19.7 | Colores de los gráficos validados con el validador de daltonismo (azul `#1F78B4`, naranja `#C8823A`, violeta `#8E5FC2`); siempre con leyenda. | Accesibilidad. |
+
+---
+
 ## Plantilla para nuevas decisiones
 
 ```markdown

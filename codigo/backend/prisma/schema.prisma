@@ -36,6 +36,7 @@ model Finca {
   mensajes     MensajeWhatsApp[]
   acciones     AccionPendiente[]
   alertas      BitacoraAlerta[]
+  lotesPlantin LotePlantin[]
 }
 
 model ModuloFinca {
@@ -175,6 +176,9 @@ model Aplicacion {
   unidad              String?
   periodoCarenciaDias Int?
   responsableTecnico  String
+  // Insumo del inventario usado (descuenta stock y valoriza el costo en M7)
+  insumoId            Int?
+  insumo              Insumo? @relation(fields: [insumoId], references: [id])
 }
 
 model Observacion {
@@ -294,7 +298,8 @@ model Insumo {
   stockMinimo Float  @default(0)
   costoUnitBs Float  @default(0)
 
-  movimientos MovimientoInsumo[]
+  movimientos  MovimientoInsumo[]
+  aplicaciones Aplicacion[]
 }
 
 model MovimientoInsumo {
@@ -406,6 +411,9 @@ model DetalleVenta {
   subtotal      Float
   loteCosechaId Int?
   loteCosecha   LoteCosecha? @relation(fields: [loteCosechaId], references: [id])
+  // M6: venta de plantines del vivero
+  lotePlantinId Int?
+  lotePlantin   LotePlantin? @relation(fields: [lotePlantinId], references: [id])
 }
 
 model Cobro {
@@ -416,6 +424,32 @@ model Cobro {
   montoBs Float
   metodo  String   @default("EFECTIVO") // EFECTIVO | TRANSFERENCIA | QR
   recibo  String?
+}
+
+// ───────────── M6 · Vivero (producción de plantines) ─────────────
+model LotePlantin {
+  id                Int       @id @default(autoincrement())
+  fincaId           Int
+  finca             Finca     @relation(fields: [fincaId], references: [id])
+  codigo            String // VIV-2026-01
+  especie           String // Tomate, Lechuga, Frutilla…
+  variedad          String?
+  fechaSiembra      DateTime
+  bandejas          Int       @default(1)
+  semillasSembradas Int
+  germinadas        Int       @default(0)
+  merma             Int       @default(0) // plantines perdidos después de germinar
+  vendidos          Int       @default(0)
+  etapa             String    @default("SIEMBRA") // SIEMBRA | GERMINACION | CRECIMIENTO | LISTO | AGOTADO
+  precioBs          Float     @default(0) // por plantín
+  costoBs           Float     @default(0) // costo total de producción (semilla, sustrato, bandejas)
+  fechaListo        DateTime?
+  notas             String?
+  creadoEn          DateTime  @default(now())
+
+  detallesVenta DetalleVenta[]
+
+  @@unique([fincaId, codigo])
 }
 
 // ───────────── Capacidad transversal · WhatsApp + agente de IA ─────────────

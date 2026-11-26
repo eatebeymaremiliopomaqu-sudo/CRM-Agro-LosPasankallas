@@ -7,6 +7,7 @@ import { validar } from '../middleware/validar.js';
 import { asyncH, noEncontrado, solicitudInvalida } from '../utils/errores.js';
 import { auditar } from '../utils/auditoria.js';
 import { loteCosechaEnCarencia } from '../utils/carencia.js';
+import { disponibles, etapaSegunStock } from '../utils/vivero.js';
 
 const r = Router();
 
@@ -18,6 +19,7 @@ const esquemaDetalleVenta = z.object({
   subtotal: z.number().min(0),
   loteCosechaId: z.number().int().positive().nullable().optional(),
   productoId: z.number().int().positive().optional(),
+  lotePlantinId: z.number().int().positive().nullable().optional(), // M6: venta de plantines
 });
 
 const esquemaVenta = z.object({
@@ -145,6 +147,15 @@ r.post('/', autorizar('ventas:escribir'), validar(esquemaVenta), asyncH(async (r
 
   const operaciones = [];
 
+  // M6: los plantines salen del stock del lote del vivero
+  for (const detalle of req.body.detalles) {
+    if (!detalle.lotePlantinId) continue;
+    const lp = await prisma.lotePlantin.findFirst({ where: { id: detalle.lotePlantinId, fincaId: req.usuario.fincaId } });
+    if (!lp) throw noEncontrado(`Lote de plantines ${detalle.lotePlantinId}`);
+    const libres = disponibles(lp);
+    if (libres < detalle.cantidad) throw solicitudInvalida(`Plantines insuficientes en ${lp.codigo}: hay ${libres} disponibles`);
+  }
+
   for (const detalle of req.body.detalles) {
     if (detalle.productoId) {
       const producto = await prisma.productoCosechado.findFirst({
@@ -179,6 +190,7 @@ r.post('/', autorizar('ventas:escribir'), validar(esquemaVenta), asyncH(async (r
             precioBs: d.precioBs,
             subtotal: d.subtotal,
             loteCosechaId: d.loteCosechaId || null,
+            lotePlantinId: d.lotePlantinId || null,
           })),
         },
       },
@@ -189,6 +201,11 @@ r.post('/', autorizar('ventas:escribir'), validar(esquemaVenta), asyncH(async (r
     });
 
     for (const detalle of req.body.detalles) {
+      if (detalle.lotePlantinId) {
+        const lp = await tx.lotePlantin.update({ where: { id: detalle.lotePlantinId }, data: { vendidos: { increment: Math.round(detalle.cantidad) } } });
+        const etapa = etapaSegunStock(lp);
+        if (etapa !== lp.etapa) await tx.lotePlantin.update({ where: { id: lp.id }, data: { etapa } });
+      }
       if (detalle.productoId) {
         await tx.movimientoProducto.create({
           data: {

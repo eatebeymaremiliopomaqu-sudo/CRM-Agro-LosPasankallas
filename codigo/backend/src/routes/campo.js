@@ -8,6 +8,7 @@ import { asyncH, noEncontrado, prohibido } from '../utils/errores.js';
 import { auditar } from '../utils/auditoria.js';
 import { puede } from '../utils/permisos.js';
 import { TIPOS_LABOR, TIPOS_OBSERVACION } from '../constantes.js';
+import { descontarInsumoAplicacion } from '../services/inventario.js';
 
 const r = Router();
 
@@ -20,6 +21,7 @@ const esquemaAplicacion = z.object({
   unidad: z.enum(['L', 'ml', 'g', 'kg', 'saco', 'bolsa']).nullable().optional(),
   periodoCarenciaDias: z.number().int().min(0).max(365).nullable().optional(),
   responsableTecnico: z.string().min(3).max(80),
+  insumoId: z.number().int().positive().nullable().optional(), // descuenta del inventario (M4)
 });
 
 const esquemaLabor = z.object({
@@ -72,9 +74,13 @@ r.post('/labores', autorizar('labores:escribir'), validar(esquemaLabor), asyncH(
     const c = await prisma.campania.findFirst({ where: { loteId: datos.loteId, estado: 'EN_CURSO' }, orderBy: { fechaSiembra: 'desc' } });
     datos.campaniaId = c?.id ?? null;
   }
-  const labor = await prisma.labor.create({
-    data: { ...datos, registradoPorId: req.usuario.id, ...(aplicacion ? { aplicacion: { create: aplicacion } } : {}) },
-    include: { aplicacion: true },
+  const labor = await prisma.$transaction(async (tx) => {
+    const l = await tx.labor.create({ data: { ...datos, registradoPorId: req.usuario.id } });
+    if (aplicacion) {
+      const { insumoId } = await descontarInsumoAplicacion(tx, req.usuario.fincaId, aplicacion, `labor #${l.id}`);
+      await tx.aplicacion.create({ data: { ...aplicacion, insumoId, laborId: l.id } });
+    }
+    return tx.labor.findUnique({ where: { id: l.id }, include: { aplicacion: { include: { insumo: { select: { nombre: true, stock: true, unidad: true } } } } } });
   });
   await auditar({ usuarioId: req.usuario.id, fincaId: req.usuario.fincaId, accion: 'CREAR', entidad: 'Labor', entidadId: labor.id });
   res.status(201).json(labor);

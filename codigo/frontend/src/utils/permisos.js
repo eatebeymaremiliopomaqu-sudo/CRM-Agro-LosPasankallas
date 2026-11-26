@@ -27,6 +27,8 @@ export const PERMISOS = {
   'tareas:escribir': [PROPIETARIO, ENCARGADO],
   'alertas:ver': [PROPIETARIO, ENCARGADO],
   'alertas:enviar': [PROPIETARIO, ENCARGADO],
+  'vivero:leer': [PROPIETARIO, ENCARGADO, TRABAJADOR],
+  'vivero:escribir': [PROPIETARIO, ENCARGADO],
 };
 
 export const puede = (rol, permiso) => (PERMISOS[permiso] || []).includes(rol);

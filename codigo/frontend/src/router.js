@@ -12,9 +12,8 @@ const rutas = [
   { path: '/mis-tareas', name: 'mis-tareas', component: () => import('./views/MisTareasView.vue'), meta: { modulo: 'M3', permiso: 'tareas:leer' } },
   { path: '/insumos', name: 'insumos', component: () => import('./views/InsumosView.vue'), meta: { modulo: 'M4' } },
   { path: '/ventas', name: 'ventas', component: () => import('./views/VentasView.vue'), meta: { modulo: 'M5', permiso: 'ventas:leer' } },
-  // M6, M7 pendientes de implementar en bloques posteriores
-  // { path: '/vivero', name: 'vivero', component: () => import('./views/ViveroView.vue'), meta: { modulo: 'M6' } },
-  // { path: '/reportes', name: 'reportes', component: () => import('./views/ReportesView.vue'), meta: { modulo: 'M7' } },
+  { path: '/vivero', name: 'vivero', component: () => import('./views/ViveroView.vue'), meta: { modulo: 'M6', permiso: 'vivero:leer' } },
+  { path: '/reportes', name: 'reportes', component: () => import('./views/ReportesView.vue'), meta: { modulo: 'M7', permiso: 'finanzas:ver' } },
   { path: '/agente', name: 'agente', component: () => import('./views/AgenteView.vue'), meta: { permiso: 'agente:usar' } },
   { path: '/configuracion', name: 'configuracion', component: () => import('./views/ConfiguracionView.vue'), meta: { permiso: 'finca:configurar' } },
   { path: '/:pathMatch(.*)*', name: 'no-encontrado', component: () => import('./views/NoEncontradoView.vue'), meta: { publica: true } },

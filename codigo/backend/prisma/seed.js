@@ -22,7 +22,7 @@ const iniciales = 'FLM'; // Finca Los Molles
 async function limpiar() {
   // Orden inverso a las dependencias
   const modelos = [
-    'cobro', 'detalleVenta', 'venta', 'detallePedido', 'pedido', 'movimientoProducto', 'movimientoInsumo',
+    'cobro', 'detalleVenta', 'venta', 'lotePlantin', 'detallePedido', 'pedido', 'movimientoProducto', 'movimientoInsumo',
     'bitacoraAlerta', 'mensajeWhatsApp', 'accionPendiente', 'eventoTrazabilidad', 'loteCosecha', 'productoCosechado',
     'aplicacion', 'laborProgramada', 'labor', 'insumo', 'cliente', 'observacion', 'pago', 'asistencia', 'tarea',
     'campania', 'lote', 'auditoria', 'usuario', 'trabajador', 'moduloFinca', 'finca',
@@ -41,7 +41,7 @@ async function main() {
       whatsappActivo: true, telefonoWa: '59170000000', alertasActivas: true, horaAlertas: '07:00',
     },
   });
-  for (const codigo of ['M1', 'M2', 'M3', 'M4', 'M5']) await prisma.moduloFinca.create({ data: { fincaId: finca.id, codigo, activo: true } });
+  for (const codigo of ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7']) await prisma.moduloFinca.create({ data: { fincaId: finca.id, codigo, activo: true } });
 
   const hash = await bcrypt.hash('Agro2026!', 10);
   const defTrab = [
@@ -136,21 +136,21 @@ async function main() {
     if (l.riego !== 'SECANO') {
       for (let d = Math.max(l.siembra + 3, -60) + n; d <= -1; d += 6) await crearLabor(cod, 'RIEGO', d, { horas: 2, trabajador: luis, origen: d % 4 === 0 ? 'WHATSAPP' : 'WEB' });
     }
-    await crearLabor(cod, 'FERTILIZACION', Math.max(l.siembra + 20, -50), { horas: 3, trabajador: maria, aplicacion: { producto: insumos.npk.nombre, cantidadUsada: Math.round(l.areaHa * 25), unidad: 'kg' } });
+    await crearLabor(cod, 'FERTILIZACION', Math.max(l.siembra + 20, -50), { horas: 3, trabajador: maria, aplicacion: { producto: insumos.npk.nombre, insumoId: insumos.npk.id, cantidadUsada: Math.round(l.areaHa * 25), unidad: 'kg' } });
     await crearLabor(cod, 'DESHIERBE', Math.max(l.siembra + 30, -20), { horas: 6, trabajador: rosa });
     await crearLabor(cod, 'MONITOREO', -7 - n, { horas: 1, trabajador: juan, descripcion: 'Recorrido de monitoreo fitosanitario' });
   }
   // Aplicaciones fitosanitarias (fechas pensadas para que las cosechas respeten la carencia)
-  const fum = (producto, motivo, dias, cantidadUsada, dosisEtiqueta, ingredienteActivo) => ({ producto, motivo, periodoCarenciaDias: dias, cantidadUsada, unidad: 'L', dosisEtiqueta, ingredienteActivo });
+  const fum = (insumo, motivo, dias, cantidadUsada, dosisEtiqueta, ingredienteActivo) => ({ producto: insumo.nombre, insumoId: insumo.id, motivo, periodoCarenciaDias: dias, cantidadUsada, unidad: 'L', dosisEtiqueta, ingredienteActivo });
   for (const [cod, d, ap, desc] of [
-    ['L-01', -22, fum(insumos.fitoVerde.nombre, 'Ácaros', 7, 0.8, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de ácaros en frutilla'],
-    ['L-02', -25, fum(insumos.agroProtect.nombre, 'Polilla del tomate', 14, 1.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de polilla'],
-    ['L-02', -16, fum(insumos.fitoVerde.nombre, 'Mosca blanca', 7, 0.9, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de mosca blanca'],
-    ['L-03', -14, fum(insumos.fitoVerde.nombre, 'Pulgón', 7, 0.7, null, 'Ingrediente B'), 'Control de pulgón'],
-    ['L-04', -30, fum(insumos.agroProtect.nombre, 'Gusano blanco', 14, 2.0, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano blanco'],
-    ['L-04', -13, fum(insumos.agroProtect.nombre, 'Tizón tardío', 14, 2.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Aplicación preventiva de tizón (después de la cosecha)'],
-    ['L-05', -12, fum(insumos.fitoVerde.nombre, 'Trips', 7, 0.6, null, 'Ingrediente B'), 'Control de trips'],
-    ['L-05', -3, fum(insumos.agroProtect.nombre, 'Gusano cogollero', 14, 1.4, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano cogollero'],
+    ['L-01', -22, fum(insumos.fitoVerde, 'Ácaros', 7, 0.8, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de ácaros en frutilla'],
+    ['L-02', -25, fum(insumos.agroProtect, 'Polilla del tomate', 14, 1.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de polilla'],
+    ['L-02', -16, fum(insumos.fitoVerde, 'Mosca blanca', 7, 0.9, '0.5 L por 200 L de agua (según etiqueta)', 'Ingrediente B'), 'Control de mosca blanca'],
+    ['L-03', -14, fum(insumos.fitoVerde, 'Pulgón', 7, 0.7, null, 'Ingrediente B'), 'Control de pulgón'],
+    ['L-04', -30, fum(insumos.agroProtect, 'Gusano blanco', 14, 2.0, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano blanco'],
+    ['L-04', -13, fum(insumos.agroProtect, 'Tizón tardío', 14, 2.2, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Aplicación preventiva de tizón (después de la cosecha)'],
+    ['L-05', -12, fum(insumos.fitoVerde, 'Trips', 7, 0.6, null, 'Ingrediente B'), 'Control de trips'],
+    ['L-05', -3, fum(insumos.agroProtect, 'Gusano cogollero', 14, 1.4, '2.5 L/ha (según etiqueta)', 'Ingrediente A'), 'Control de gusano cogollero'],
   ]) await crearLabor(cod, 'FUMIGACION', d, { horas: 3, costoBs: 30, trabajador: juan, descripcion: desc, aplicacion: ap });
 
   // ───────────── M1 · Calendario de labores (programadas) ─────────────
@@ -189,9 +189,9 @@ async function main() {
     const fecha = dia(d);
     if (fecha.getUTCDay() === 0) continue;
     for (const [i, t] of trabajadores.entries()) {
-      if (azar() < 0.12) continue;
+      if (azar() < 0.35) continue;
       const cod = codigos[(i + d + 60) % codigos.length];
-      await prisma.asistencia.create({ data: { trabajadorId: t.id, fecha, horas: azar() < 0.2 ? 4 : 8, tarea: ['RIEGO', 'DESHIERBE', 'COSECHA', 'PODA', 'MONITOREO'][(i + d + 60) % 5], loteId: lotes[cod].id } });
+      await prisma.asistencia.create({ data: { trabajadorId: t.id, fecha, horas: azar() < 0.2 ? 4 : 8, tarea: ['RIEGO', 'DESHIERBE', 'COSECHA', 'PODA', 'MONITOREO'][(i + d + 60) % 5], loteId: azar() < 0.4 ? null : lotes[cod].id } }); // sin lote = tareas generales (galpón, vivero)
     }
   }
   await prisma.pago.create({ data: { trabajadorId: juan.id, desde: dia(-30), hasta: dia(-16), dias: 12, montoBs: 1800, estado: 'PAGADO' } });
@@ -290,6 +290,31 @@ async function main() {
   await venta('quinta', -2, [{ p: 'FRUTILLA', cantidad: 45, precioBs: 24, lc: 'frut2' }], [{ d: -1, montoBs: 500, metodo: 'TRANSFERENCIA', recibo: 'TRF-0102' }], 'Pago parcial');
   await venta('gonzalez', -1, [{ p: 'FRUTILLA', cantidad: 30, precioBs: 25, lc: 'frut1' }], [{ d: -1, montoBs: 750, metodo: 'EFECTIVO', recibo: null }], 'Venta directa en la finca');
 
+  // ───────────── M6 · Vivero (lotes de plantines) y venta por M5 ─────────────
+  const plantines = {};
+  for (const [clave, codigo, especie, variedad, d, bandejas, sembradas, germinadas, merma, etapa, precioBs, costoBs] of [
+    ['tom', 'VIV-2026-01', 'Tomate', 'Santa Cruz Kada', -40, 10, 2000, 1840, 60, 'LISTO', 0.8, 620],
+    ['lec', 'VIV-2026-02', 'Lechuga', 'Crespa', -28, 6, 1200, 1050, 30, 'LISTO', 0.5, 310],
+    ['pim', 'VIV-2026-03', 'Pimentón', 'California Wonder', -15, 5, 1000, 640, 0, 'CRECIMIENTO', 0.9, 280],
+    ['frut', 'VIV-2026-04', 'Frutilla', 'Albión (estolones)', -5, 4, 800, 0, 0, 'GERMINACION', 1.5, 900],
+  ]) {
+    plantines[clave] = await prisma.lotePlantin.create({
+      data: { fincaId: finca.id, codigo, especie, variedad, fechaSiembra: dia(d), bandejas, semillasSembradas: sembradas, germinadas, merma, etapa, precioBs, costoBs, fechaListo: etapa === 'LISTO' ? dia(d + 30) : null },
+    });
+  }
+  for (const [cli, d, lp, cantidad, precio] of [['suarez', -6, 'tom', 600, 0.8], ['gonzalez', -3, 'lec', 200, 0.5]]) {
+    const total = cantidad * precio;
+    const l = plantines[lp];
+    await prisma.venta.create({
+      data: {
+        clienteId: clientes[cli].id, fecha: dia(d), total, pagado: total, saldo: 0, estado: 'PAGADO', notas: 'Venta de plantines del vivero',
+        detalles: { create: [{ producto: `Plantín de ${l.especie.toLowerCase()} ${l.variedad}`, cantidad, unidad: 'plantin', precioBs: precio, subtotal: total, lotePlantinId: l.id }] },
+        cobros: { create: [{ fecha: dia(d), montoBs: total, metodo: 'EFECTIVO' }] },
+      },
+    });
+    await prisma.lotePlantin.update({ where: { id: l.id }, data: { vendidos: { increment: cantidad } } });
+  }
+
   // ───────────── M3 · Tareas asignadas ─────────────
   for (const [t, por, titulo, descripcion, cod, prioridad, estado, venc, notificada] of [
     [juan, 'encargado', 'Revisar sistema de riego en L-01', 'Verificar goteros y fugas antes del riego', 'L-01', 'ALTA', 'PENDIENTE', 1, true],
@@ -327,11 +352,11 @@ async function main() {
   }
 
   const totales = {
-    labores: await prisma.labor.count(), cosechas: await prisma.loteCosecha.count(), ventas: await prisma.venta.count(), tareas: await prisma.tarea.count(),
+    plantines: await prisma.lotePlantin.count(), labores: await prisma.labor.count(), cosechas: await prisma.loteCosecha.count(), ventas: await prisma.venta.count(), tareas: await prisma.tarea.count(),
   };
   console.log('✅ Datos ficticios cargados.');
   console.log('   Usuarios: propietario|encargado|trabajador @finca.test · clave: Agro2026!');
-  console.log(`   ${totales.labores} labores · ${totales.cosechas} lotes de cosecha · ${totales.ventas} ventas · ${totales.tareas} tareas`);
+  console.log(`   ${totales.plantines} lotes de plantines · ${totales.labores} labores · ${totales.cosechas} lotes de cosecha · ${totales.ventas} ventas · ${totales.tareas} tareas`);
   console.log('   Demo: L-02 (tomate) libre para cosechar · L-05 (cebolla) en carencia · L-04 sale de carencia mañana');
 }
 

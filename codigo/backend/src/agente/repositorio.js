@@ -4,6 +4,7 @@ import { prisma } from '../db.js';
 import { crearLote, urlPublicaLote } from '../services/lotes.js';
 import { enviarWhatsApp } from '../services/whatsapp.js';
 import { inicioDiaLocal } from '../services/alertas.js';
+import { descontarInsumoAplicacion } from '../services/inventario.js';
 import { normalizar } from './guardrails.js';
 import { INTENCIONES, TEMAS, normalizarCodigoLote } from './parser.js';
 import { RechazoAgente, ESTADOS } from './agente.js';
@@ -151,21 +152,18 @@ export const ejecutorPrisma = {
             origen,
             trabajadorId: ctx.trabajadorId ?? null,
             registradoPorId: usuario?.id ?? null,
-            ...(d.producto
-              ? {
-                  aplicacion: {
-                    create: {
-                      producto: d.producto,
-                      cantidadUsada: d.cantidadUsada != null ? Number(d.cantidadUsada) : null,
-                      unidad: d.unidad || null,
-                      responsableTecnico: usuario?.nombre || 'Reportado por WhatsApp',
-                    },
-                  },
-                }
-              : {}),
           },
         });
         texto = `Labor #${labor.id} (${d.tipo}) guardada en ${lote.codigo}.`;
+        if (d.producto) {
+          const aplicacion = { producto: d.producto, cantidadUsada: d.cantidadUsada != null ? Number(d.cantidadUsada) : null, unidad: d.unidad || null };
+          const r = await prisma.$transaction(async (tx) => {
+            const v = await descontarInsumoAplicacion(tx, fincaId, aplicacion, `labor #${labor.id}`);
+            await tx.aplicacion.create({ data: { ...aplicacion, insumoId: v.insumoId, laborId: labor.id, responsableTecnico: usuario?.nombre || 'Reportado por WhatsApp' } });
+            return v;
+          });
+          if (r.descontado) texto += ` Se descontaron ${aplicacion.cantidadUsada} ${aplicacion.unidad} del inventario.`;
+        }
         break;
       }
       case INTENCIONES.REGISTRAR_ASISTENCIA: {

@@ -84,19 +84,20 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Demo verificada de punta a punta contra el servidor (10/10 pasos)
 - [x] 167 pruebas backend ✅, 11 frontend ✅, build OK
 
-## 📋 PENDIENTE
+### BLOQUE 7 - M6 Vivero y M7 Reportes/Finanzas (sprint-3) ✅
+- [x] Modelo `LotePlantin` (siembra, germinadas, % germinación, merma, stock disponible, precio, costo)
+- [x] Venta de plantines a través de M5 (valida disponibles, actualiza vendidos/etapa)
+- [x] ViveroView.vue (KPI, avance, venta)
+- [x] Aplicación descuenta el insumo usado del inventario (`Aplicacion.insumoId`)
+- [x] Costo por lote = labores + jornales + insumos valorizados; ingresos por ventas; margen y margen %; costo por kg
+- [x] Filtros por campaña y fechas
+- [x] Gráficos Chart.js (ingresos vs costos, composición del costo) con paleta validada
+- [x] Exportación a CSV (UI y `/api/reportes/costos.csv`)
+- [x] ReportesView.vue con fórmulas visibles
+- [x] Corrige: lotes no aparecían en el mapa ni en el formulario de labores (`activo` vs `activa`)
+- [x] 182 pruebas backend ✅, 14 frontend ✅, build OK; M6/M7 verificados contra el servidor
 
-### BLOQUE 7 - M6 Vivero y M7 Reportes/Finanzas (sprint-3)
-- [ ] Modelo `LotePlantin` (siembra, germinación, stock, precio)
-- [ ] Venta de plantines a través de M5
-- [ ] ViveroView.vue
-- [ ] Cálculo costos por lote (labores + jornales + insumos)
-- [ ] Cálculo ingresos y márgenes
-- [ ] Filtros por campaña y fechas
-- [ ] Gráficos Chart.js
-- [ ] Exportación a CSV
-- [ ] ReportesView.vue
-- [ ] Explicación de fórmulas en informe
+## 📋 PENDIENTE
 
 ### BLOQUE 8 - Calidad y pruebas (sprint-3)
 - [ ] Migrar pruebas backend a Vitest

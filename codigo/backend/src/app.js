@@ -18,6 +18,8 @@ import trabajadores from './routes/trabajadores.js';
 import tareas from './routes/tareas.js';
 import { agenteRouter, webhookRouter, twilioRouter } from './routes/agente.js';
 import alertas from './routes/alertas.js';
+import vivero from './routes/vivero.js';
+import reportes from './routes/reportes.js';
 import insumos from './routes/insumos.js';
 import productos from './routes/productos.js';
 import clientes from './routes/clientes.js';
@@ -72,6 +74,8 @@ export function crearApp() {
   app.use('/api/clientes', requiereModulo('M5'), clientes);
   app.use('/api/pedidos', requiereModulo('M5'), pedidos);
   app.use('/api/ventas', requiereModulo('M5'), ventas);
+  app.use('/api/vivero', requiereModulo('M6'), vivero);
+  app.use('/api/reportes', requiereModulo('M7'), reportes);
 
   app.use(noEncontradoRuta);
   app.use(manejadorErrores);

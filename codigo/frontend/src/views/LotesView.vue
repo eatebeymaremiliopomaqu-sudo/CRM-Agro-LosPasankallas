@@ -93,7 +93,7 @@ onMounted(cargar);
   </div>
 
   <div class="tarjeta">
-    <MapaLotes :lotes="lotes.filter((l) => l.activo)" :centro="[sesion.finca?.lat ?? -17.9135, sesion.finca?.lng ?? -64.5312]" @seleccionar="verDetalle" />
+    <MapaLotes :lotes="lotes.filter((l) => l.activa)" :centro="[sesion.finca?.lat ?? -17.9135, sesion.finca?.lng ?? -64.5312]" @seleccionar="verDetalle" />
   </div>
 
   <div class="tarjeta">
@@ -103,7 +103,7 @@ onMounted(cargar);
       <table>
         <thead><tr><th>Código</th><th>Nombre</th><th class="num">Área</th><th>Cultivo actual</th><th>Riego</th><th class="num">Labores</th><th /></tr></thead>
         <tbody>
-          <tr v-for="l in lotes" :key="l.id" :style="{ opacity: l.activo ? 1 : 0.5 }">
+          <tr v-for="l in lotes" :key="l.id" :style="{ opacity: l.activa ? 1 : 0.5 }">
             <td><strong>{{ l.codigo }}</strong></td>
             <td>{{ l.nombre }}</td>
             <td class="num">{{ l.areaHa }} ha</td>
