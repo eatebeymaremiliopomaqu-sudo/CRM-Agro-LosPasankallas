@@ -135,7 +135,7 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] PASO 1 · Informe §8.1 "Adaptación de SCRUM a un equipo de una persona"; notas del orador y guion para un expositor
 - [x] PASO 1 · Archivos renombrados: `Informe_Grupo_LosPasankallas.pdf`, `Diapositivas_Grupo_LosPasankallas.pptx`
 - [x] PASO 1 · Celular real del encargado solo en `.env` (`DEMO_WHATSAPP_ENCARGADO`, ADR-021)
-- [ ] PASO 2 · Verificación local completa (BD, servidor, build, pruebas, flujo de la demo por API)
+- [x] PASO 2 · Verificación local: `db push --force-reset` + seed con el celular del encargado, /api/salud y /api/docs OK, build OK, 249 + 14 pruebas en verde, flujo de la demo por API OK (labor con SI → cosecha → QR → inventario → venta → ficha con la venta), servidor detenido por PID
 - [ ] PASO 3 · WhatsApp con Twilio y el celular de Beymar
 - [ ] PASO 4 · GitHub, Render y Vercel; URLs públicas en los documentos
 - [ ] PASO 5 · Capturas reales, tablero Trello/Jira, registro SCRUM
