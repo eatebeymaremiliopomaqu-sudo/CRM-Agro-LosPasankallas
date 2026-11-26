@@ -106,7 +106,7 @@ r.get('/:id', autorizar('ventas:leer'), asyncH(async (req, res) => {
             select: {
               id: true,
               codigo: true,
-              token: true,
+              tokenPublico: true,
               campania: {
                 select: {
                   cultivo: true,

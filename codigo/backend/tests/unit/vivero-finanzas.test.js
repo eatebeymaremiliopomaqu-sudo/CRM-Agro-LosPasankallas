@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { porcentajeGerminacion, disponibles, costoUnitario, validarConteo, etapaSegunStock, conIndicadores } from '../../src/utils/vivero.js';
 import { calcularCostosPorLote, costoUnitInsumo, ingresosPorMes } from '../../src/services/finanzas.js';

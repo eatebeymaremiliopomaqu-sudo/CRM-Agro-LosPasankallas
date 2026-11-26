@@ -575,6 +575,25 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 ---
 
+## ADR-020: Estrategia de pruebas (bloque 8)
+
+**Fecha**: 2026-11-25
+**Estado**: Aceptada (complementa ADR-008)
+
+### Decisión
+
+| # | Decisión | Motivo |
+|---|---|---|
+| 20.1 | Backend 100 % en **Vitest** (`node:assert` se mantiene en las aserciones antiguas; las nuevas usan `expect`). | La guía pide Jest o Vitest; un solo framework en todo el proyecto. |
+| 20.2 | Pruebas de API con **supertest** sobre `prisma/test.db`, que `tests/setup/bd-prueba.js` crea desde cero y carga con el seed antes de cada ejecución. Ejecución secuencial (`fileParallelism: false`). | Reproducible en cualquier PC y en el CI, sin tocar `dev.db`. |
+| 20.3 | Variables de entorno de prueba fijas en `vitest.config.js` (token de Twilio, secreto de Meta, URL del webhook). | Permite probar firmas válidas e inválidas. |
+| 20.4 | Umbrales de cobertura: ≥ 85 % de líneas global; ≥ 95 % en agente/guardrails/parser/políticas y finanzas/trazabilidad; ≥ 90 % en carencia, tareas, vivero y ventas. | Meta de la guía (≥ 80 % global, ≥ 90 % crítico) con margen. |
+| 20.5 | Los limitadores de tasa global y del agente se omiten cuando `NODE_ENV=test`. El de login sigue activo. | Las suites hacen cientos de peticiones por minuto. |
+| 20.6 | La cobertura del frontend mide `src/utils` (lógica); las vistas se validan con UAT y pruebas manuales. | Probar vistas Vue requeriría otra herramienta (fuera de alcance). |
+| 20.7 | El workflow de CI vive en `.github/workflows/ci.yml` en la raíz del repositorio (antes estaba en `codigo/.github`, donde GitHub no lo ejecuta). | Requisito de GitHub Actions. |
+
+---
+
 ## Plantilla para nuevas decisiones
 
 ```markdown

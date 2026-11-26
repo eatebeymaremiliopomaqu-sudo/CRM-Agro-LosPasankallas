@@ -1,25 +1,50 @@
-﻿ID,Módulo,Tipo,Caso de prueba,Archivo,Ejecución,Resultado
-CP-M0-01,M0,Integración,Desactivar M6 bloquea /api/insumos (403) y reactivarlo lo habilita,tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-M0-02,M0,Unitaria,"Módulos: M0 siempre activo, JSON corrupto, dependencias M2/M3/M5→M1",tests/unit/dominio.test.js,Automatizada,Pasó
-CP-SEG-01,M0,Unitaria,Matriz RBAC: CONSULTA no escribe; sólo TECNICO/ADMIN registran agroquímicos,tests/unit/dominio.test.js,Automatizada,Pasó
-CP-SEG-02,M0,Integración,Login inválido → 401 genérico; sin token/token falso → 401; cuerpo inválido → 400,tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-SEG-03,M0,Integración,CONSULTA no crea parcelas (403); SUPERVISOR no registra aplicaciones (403); TECNICO sí (201),tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-SEG-04,M5,Unitaria,Sanitización de entrada y detección de inyección de instrucciones,tests/unit/guardrails.test.js,Automatizada,Pasó
-CP-M3-01,M3,Unitaria,"Código de lote correlativo, iniciales sin tildes, token público aleatorio",tests/unit/dominio.test.js,Automatizada,Pasó
-CP-M3-02,M3,Integración,Parcela → siembra → lote → vista pública sin datos sensibles; token inexistente → 404,tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-M4-01,M4,Unitaria,"Nómina: 8 h = 1 jornal, validación de horas y jornal, planilla ordenada",tests/unit/dominio.test.js,Automatizada,Pasó
-CP-M4-02,M4,Integración,Pasar lista dos veces el mismo día no duplica registros,tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-M5-01,M5,Unitaria,"WhatsApp: extracción de mensajes de texto, firma HMAC, modo simulado",tests/unit/dominio.test.js,Automatizada,Pasó
-CP-M5-02,M5,Integración,Registro por WhatsApp simulado con SI; rechazo de dosis; verificación del webhook,tests/integracion/api.test.js,Automatizada (CI),Pasa en CI
-CP-AG-01,M5,Unitaria,11 pedidos de dosis/producto/mezcla son bloqueados,tests/unit/guardrails.test.js,Automatizada,Pasó
-CP-AG-02,M5,Unitaria,8 registros legítimos NO son bloqueados (sin falsos positivos),tests/unit/guardrails.test.js,Automatizada,Pasó
-CP-AG-03,M5,Unitaria,Filtro de salida del LLM reemplaza dosificaciones,tests/unit/guardrails.test.js,Automatizada,Pasó
-CP-AG-04,M5,Unitaria,Intérprete por reglas: 12 intenciones y extracción de datos,tests/unit/parser.test.js,Automatizada,Pasó
-CP-AG-05,M5,Unitaria,Confirmación previa: no escribe antes de SI; NO cancela; vence a 10 min; por remitente,tests/unit/agente.test.js,Automatizada,Pasó
-CP-AG-06,M5,Unitaria,"Errores: ejecutor falla, datos faltantes, mensaje vacío o no entendido",tests/unit/agente.test.js,Automatizada,Pasó
-CP-AG-07,M5,Unitaria,"Respuesta del LLM: JSON roto, intención inventada, campos no permitidos",tests/unit/agente.test.js,Automatizada,Pasó
+﻿ID,Módulo,Tipo,Caso de prueba,Archivo / guía,Ejecución,Resultado
+CP-SEG-01,M0,API,"Roles en la API: TRABAJADOR no ve ventas, finanzas ni trabajadores ni registra aplicaciones; ENCARGADO no configura módulos ni ve finanzas",backend/tests/integracion/api.test.js,Automatizada (Vitest + supertest),Pasó
+CP-SEG-02,M0,API,"Login inválido → 401 genérico; sin token o token falso → 401; cuerpo inválido → 400 con detalles",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-SEG-03,M0,Unitaria,"Matriz RBAC (backend) y copia del frontend idénticas",frontend/tests/permisos.test.js,Automatizada,Pasó
+CP-SEG-04,Agente,Unitaria,"Sanitización de entrada y detección de inyección de instrucciones",backend/tests/unit/guardrails.test.js,Automatizada,Pasó
+CP-M0-01,M0,API,"Desactivar M6 bloquea /api/vivero (403) y reactivarlo lo habilita; M5 sin M4 → 400",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-M0-02,M0,Unitaria,"Módulos: M0 siempre activo, dependencias M2→M1, M5→M4, M7→M1+M4",backend/tests/unit/dominio.test.js,Automatizada,Pasó
+CP-M0-10,M0,API,"Finca (hora de alertas válida), usuarios con consentimiento y fecha, no auto-desactivarse, lotes y campañas CRUD",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M1-10,M1,API,"Labores con filtros, aplicación con insumo descuenta stock (y rechaza si no alcanza), observaciones, calendario: programar, marcar hecha (crea labor), cancelar",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M2-01,M2,Unitaria,"Código de lote de cosecha correlativo, iniciales sin tildes, token público aleatorio",backend/tests/unit/dominio.test.js,Automatizada,Pasó
+CP-M2-02,M2,API,"Cosechar lote en carencia → 409 con mensaje de la guía; PROPIETARIO fuerza solo con justificación (auditoría); vender lote cosechado en carencia → 409",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-M2-03,M2,Unitaria,"Carencia: fecha fin, mismo día, día siguiente, varias aplicaciones",backend/tests/integracion/carencia.test.js,Automatizada,Pasó
+CP-M2-10,M2,API + Unitaria,"Ficha pública del QR: lote → labores → cosecha → venta, sin nombres de clientes, teléfonos ni responsables; aplicaciones posteriores a la cosecha no cuentan",backend/tests/integracion/api.test.js · tests/unit/tareas.test.js,Automatizada,Pasó
+CP-M2-11,M2,API,"Consulta SQL de trazabilidad documentada se ejecuta con parámetro enlazado; intento de inyección → 404",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-M3-01,M3,API,"Trabajador con consentimiento (fecha), asistencia idempotente, planilla, pago solo PROPIETARIO",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M3-02,M3,Unitaria,"Nómina: 8 h = 1 jornal, validaciones, planilla ordenada",backend/tests/unit/dominio.test.js,Automatizada,Pasó
+CP-M3-10,M3,Unitaria + API,"Tareas: transiciones, permisos, orden, vencimiento; el trabajador completa solo las suyas (403 ajenas)",backend/tests/unit/tareas.test.js · tests/integracion/api.test.js,Automatizada,Pasó
+CP-M3-11,M3,API,"Asignar tarea a trabajador sin consentimiento no envía WhatsApp; con consentimiento sí",backend/tests/integracion/api.test.js · flujos.test.js,Automatizada,Pasó
+CP-M4-01,M4,API,"Insumos y productos: entradas, salidas, rechazo por stock insuficiente, movimientos filtrados",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M4-02,M4,API,"La cosecha suma stock del producto y la venta lo descuenta",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-M4-10,M4,Unitaria,"Descuento de insumo: unidad distinta, stock insuficiente, sin cantidad",backend/tests/unit/vivero-finanzas.test.js,Automatizada,Pasó
+CP-M5-01,M5,API,"Venta → cobro parcial (saldo) → cobro total (PAGADO); no se vende más que el stock; cuentas por cobrar",backend/tests/integracion/api.test.js,Automatizada,Pasó
+CP-M5-02,M5,API,"Clientes con consentimiento y fecha; pedidos: crear, ver, entregar, filtrar",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M6-01,M6,Unitaria,"% germinación, disponibles, costo unitario, conteos imposibles, etapa AGOTADO",backend/tests/unit/vivero-finanzas.test.js,Automatizada,Pasó
+CP-M6-02,M6,API,"Lote de plantines: alta, avance, venta por M5 hasta agotar",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-M7-01,M7,Unitaria + API,"Costo por lote = labores + jornales + insumos; margen y margen %; sin ingresos no hay %; CSV",backend/tests/unit/vivero-finanzas.test.js · tests/integracion/api.test.js,Automatizada,Pasó
+CP-M7-02,M7,Unitaria (Vitest),"Exportación CSV con ; y coma decimal, escapado",frontend/tests/csv.test.js,Automatizada,Pasó
+CP-AG-01,Agente,Unitaria,"Pedidos de dosis/producto/mezcla bloqueados (incluye nombres comerciales desconocidos)",backend/tests/unit/guardrails.test.js · agente-ampliado.test.js,Automatizada,Pasó
+CP-AG-02,Agente,Unitaria,"Registros legítimos y consultas de lo registrado NO se bloquean",backend/tests/unit/guardrails.test.js · agente-ampliado.test.js,Automatizada,Pasó
+CP-AG-03,Agente,Unitaria,"Filtro de salida del LLM reemplaza dosificaciones",backend/tests/unit/guardrails.test.js,Automatizada,Pasó
+CP-AG-04,Agente,Unitaria,"Intérprete por reglas: intenciones, cosecha de la guía, pedido de la guía, tarea hecha, consultas",backend/tests/unit/parser.test.js · agente-ampliado.test.js,Automatizada,Pasó
+CP-AG-05,Agente,Unitaria,"Confirmación previa: no escribe antes de SI; NO cancela; vence a 10 min; por remitente",backend/tests/unit/agente.test.js,Automatizada,Pasó
+CP-AG-12,Agente,Unitaria,"Políticas por perfil: trabajador y cliente limitados",backend/tests/unit/agente-ampliado.test.js,Automatizada,Pasó
+CP-AG-20,Agente,API,"Simulador: 12 consultas, asistencia, observación, fumigación, tareas, pedido de cliente, ALTA/BAJA",backend/tests/integracion/flujos.test.js,Automatizada,Pasó
+CP-WA-02,WhatsApp,Unitaria,"Firma X-Twilio-Signature (vector oficial de Twilio), números whatsapp:+591…, TwiML",backend/tests/unit/whatsapp.test.js,Automatizada,Pasó
+CP-WA-04,WhatsApp,Unitaria + API,"Alertas: armado por tipo, hora local, envío solo con consentimiento y bitácora",backend/tests/unit/whatsapp.test.js · tests/integracion/api.test.js,Automatizada,Pasó
+CP-WA-05,WhatsApp,API,"Webhooks: Twilio firma inválida 403 / válida TwiML con SI-NO; Meta HMAC inválida 401 / válida 200; verificación",backend/tests/integracion/api.test.js,Automatizada,Pasó
 CP-PWA-01,PWA,Unitaria (Vitest),"Cola sin conexión: encola, sincroniza, se detiene sin red, descarta 4xx",frontend/tests/colaOffline.test.js,Automatizada,Pasó
-CP-MAN-01,PWA,Manual,Instalar la PWA en Android y registrar una labor en modo avión; al volver la red se sincroniza,—,Manual,Pendiente de ejecutar en el despliegue
-CP-MAN-02,M3,Manual,Imprimir etiqueta y escanear el QR con la cámara del celular,—,Manual,Pendiente de ejecutar en el despliegue
-CP-MAN-03,M5,Manual,Mensaje real desde WhatsApp al número de prueba de Meta,—,Manual,Pendiente de ejecutar en el despliegue
-CP-MAN-04,UI,Manual,"Responsividad en 360 px, 768 px y 1440 px; navegación inferior en móvil",—,Manual,Pendiente de ejecutar en el despliegue
+CP-UAT-01,Demo,UAT,"Don Hilario registra una labor por WhatsApp",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-02,Demo,UAT,"Don Hilario cosecha tomate del lote 2 por WhatsApp y recibe el QR",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-03,Demo,UAT,"El sistema impide cosechar el lote 5 en carencia",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-04,Demo,UAT,"Escanea el QR: ve labores, carencia respetada y venta sin datos del cliente",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-05,Demo,UAT,"Revisa el inventario y registra la venta vinculada al lote",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-06,Demo,UAT,"Pide una dosis y el agente se niega",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-07,M3,UAT,"Juan (trabajador) ve y marca sus tareas desde el celular",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-UAT-08,M5,UAT,"Un cliente hace un pedido por WhatsApp",evidencias/pruebas/casos_uat.md,Manual con usuario simulado,Pasó
+CP-MAN-01,PWA,Manual,"Instalar la PWA en Android y registrar una labor en modo avión; al volver la red se sincroniza",—,Manual,Pendiente de ejecutar en el despliegue
+CP-MAN-02,M2,Manual,"Imprimir la etiqueta y escanear el QR con la cámara del celular",—,Manual,Pendiente de ejecutar en el despliegue
+CP-MAN-03,WhatsApp,Manual,"Mensaje real desde el celular del equipo al Sandbox de Twilio",codigo/docs/WHATSAPP_TWILIO.md,Manual,Pendiente: requiere la cuenta de Twilio del equipo
+CP-MAN-04,UI,Manual,"Responsividad en 360 px, 768 px y 1440 px; barra inferior según el rol",—,Manual,Pendiente de ejecutar en el despliegue

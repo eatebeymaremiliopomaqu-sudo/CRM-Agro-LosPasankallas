@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { crearAgente, crearAlmacenMemoria, describirAccion, ESTADOS, TEXTO_AYUDA } from '../../src/agente/agente.js';
 import { interpretarPorReglas, INTENCIONES } from '../../src/agente/parser.js';

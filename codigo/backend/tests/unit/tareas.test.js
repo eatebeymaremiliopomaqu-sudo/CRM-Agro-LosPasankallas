@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { ordenarTareas, puedeGestionarTarea, transicionTarea, tareaVencida, mensajeTareaAsignada } from '../../src/utils/tareas.js';
 import { armarFichaPublica, finCarencia, CONSULTAS_TRAZABILIDAD } from '../../src/services/trazabilidad.js';

@@ -95,7 +95,7 @@ export function extraerCantidadUsada(t) {
 }
 
 export function extraerProducto(t) {
-  const m = t.match(/\b(?:con|producto)\s+(?!el\b|la\b|los\b|las\b|un\b|una\b)([a-z0-9][a-z0-9\- ]{1,30}?)(?=\s*(?:,|;|\.|\d|\ben\b|\by\b|\bpara\b|\bcontra\b|$))/);
+  const m = t.match(/\b(?:con|producto)\s+(?!el\b|la\b|los\b|las\b|un\b|una\b)([a-z0-9][a-z0-9\-() ]{1,40}?)(?=\s*(?:,|;|\.|\d|\ben\b|\by\b|\bpara\b|\bcontra\b|$))/);
   if (!m) return null;
   const p = m[1].trim();
   if (/^(agua|mochila|bomba|tractor|ayuda)$/.test(p)) return null;
@@ -223,7 +223,8 @@ export function interpretarPorReglas(texto, ahora = new Date()) {
 
   // Tarea hecha: "tarea hecha", "terminé la tarea 12", "ya completé la tarea"
   if (/\btareas?\b/.test(t) && /\b(hecha|hecho|lista|listo|terminad\w*|termine|terminamos|complet\w*|acabad\w*|acabe|finalic\w*|hice)\b/.test(t)) {
-    const id = (t.match(/\btarea\s*(?:n(?:ro|o|um)?\.?|#)?\s*(\d{1,6})\b/) || t.match(/#\s*(\d{1,6})\b/) || [])[1];
+    const id = (t.match(/\btarea\s*(?:n(?:ro|o|um)?\.?|#)?\s*(\d{1,6})\b/) || t.match(/#\s*(\d{1,6})\b/) ||
+      t.match(/\b(?:hecha|hecho|lista|listo|terminada|completada)\s*(?:n(?:ro|o|um)?\.?)?\s*(\d{1,6})\b/) || [])[1];
     return r(INTENCIONES.MARCAR_TAREA_HECHA, { tareaId: id ? Number(id) : null });
   }
 

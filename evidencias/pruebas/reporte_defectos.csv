@@ -1,15 +1,33 @@
 ﻿ID,Severidad,Componente,Descripción,Cómo se detectó,Corrección,Estado
-DEF-01,Alta,M5 Agente,"""cuanto glifosato le echo a la mochila"" no era bloqueado: el patrón sólo aceptaba infinitivos (echar) y no conjugaciones (echo)",CP-AG-01 falló en la 1.ª ejecución,"Se agregaron conjugaciones (echo, pongo, aplico, uso, mezclo, fumigo) al patrón",Cerrado
-DEF-02,Media,M5 Agente,"""hoy se trabajó 8 horas"" registraba un trabajador llamado ""Se""",CP-AG-04 falló en la 1.ª ejecución,Lista de palabras que no pueden ser nombres,Cerrado
-DEF-03,Media,M5 Agente,"""¿cuántos trabajadores vinieron?"" se trataba como registro de asistencia en vez de consulta",Revisión de casos de prueba,"Preguntas (cuántos, quién, cómo vamos) se clasifican como CONSULTA",Cerrado
-DEF-04,Baja,M5 Agente,Los signos ¿ ¡ al inicio impedían reconocer saludos y consultas,Revisión de código,El normalizador elimina ¿ ¡,Cerrado
-DEF-05,Alta,M5 Agente,"El LLM podía devolver campos no esperados (p. ej. ""dosisRecomendada"") que llegaban al resumen",Revisión de seguridad del agente,Lista blanca de campos por intención; objetos anidados descartados,Cerrado
-DEF-06,Media,M5 Agente,"Si el LLM omitía la fecha, el resumen mostraba ""el undefined""",Prueba exploratoria,Fecha por defecto = hoy y normalización del código de parcela,Cerrado
-DEF-07,Alta,M1 Mapa,XSS: el nombre de la parcela se insertaba como HTML en el popup de Leaflet,Revisión de código (seguridad),Escape de HTML antes de insertar,Cerrado
-DEF-08,Media,M3 Trazabilidad,XSS en la etiqueta imprimible del lote (cultivo y nombre de finca),Revisión de código (seguridad),Escape de HTML en la ventana de impresión,Cerrado
+DEF-01,Alta,Agente IA,"""cuanto glifosato le echo a la mochila"" no era bloqueado: el patrón sólo aceptaba infinitivos (echar) y no conjugaciones (echo)",CP-AG-01 falló en la 1.ª ejecución,"Se agregaron conjugaciones (echo, pongo, aplico, uso, mezclo, fumigo) al patrón",Cerrado
+DEF-02,Media,Agente IA,"""hoy se trabajó 8 horas"" registraba un trabajador llamado ""Se""",CP-AG-04 falló en la 1.ª ejecución,Lista de palabras que no pueden ser nombres,Cerrado
+DEF-03,Media,Agente IA,"""¿cuántos trabajadores vinieron?"" se trataba como registro de asistencia en vez de consulta",Revisión de casos de prueba,"Preguntas (cuántos, quién, cómo vamos) se clasifican como CONSULTA",Cerrado
+DEF-04,Baja,Agente IA,Los signos ¿ ¡ al inicio impedían reconocer saludos y consultas,Revisión de código,El normalizador elimina ¿ ¡,Cerrado
+DEF-05,Alta,Agente IA,"El LLM podía devolver campos no esperados (p. ej. ""dosisRecomendada"") que llegaban al resumen",Revisión de seguridad del agente,Lista blanca de campos por intención; objetos anidados descartados,Cerrado
+DEF-06,Media,Agente IA,"Si el LLM omitía la fecha, el resumen mostraba ""el undefined""",Prueba exploratoria,Fecha por defecto = hoy y normalización del código de parcela,Cerrado
+DEF-07,Alta,M0 Lotes (mapa),XSS: el nombre de la parcela se insertaba como HTML en el popup de Leaflet,Revisión de código (seguridad),Escape de HTML antes de insertar,Cerrado
+DEF-08,Media,M2 Trazabilidad,XSS en la etiqueta imprimible del lote (cultivo y nombre de finca),Revisión de código (seguridad),Escape de HTML en la ventana de impresión,Cerrado
 DEF-09,Alta,Despliegue,El build en Render fallaría: el CLI de Prisma estaba en devDependencies y Render instala con NODE_ENV=production,Revisión del pipeline,prisma pasa a dependencies,Cerrado
 DEF-10,Media,CI/CD,GitHub Actions no permite usar secrets en la condición if de un paso,Validación del workflow,Secret expuesto como variable de entorno y condición sobre env,Cerrado
 DEF-11,Baja,Pruebas,"""node --test tests/unit/"" no encontraba los archivos en Node 22",Ejecución de npm test,"Patrón glob ""tests/unit/**/*.test.js""",Cerrado
 DEF-12,Baja,Calidad de código,Expresiones regulares con caracteres de control literales (frágiles al editar),Revisión de código,Reemplazo por secuencias \uXXXX,Cerrado
 DEF-13,Media,Despliegue,En el plan gratuito de Render SQLite se borra al reiniciar,Análisis de costos,seed-si-vacio.js recarga datos demo; plan Starter + disco para producción,Mitigado
 DEF-14,Baja,UI / CSS,Las tarjetas dentro de una rejilla quedaban desalineadas (la regla .tarjeta + .tarjeta les sumaba margen superior),Revisión visual de las pantallas,Margen 0 para tarjetas dentro de .rejilla,Cerrado
+DEF-15,Alta,M3 Tareas,"""Mis tareas"" siempre vacía: el JWT no incluye trabajadorId y la ruta lo leía de req.usuario",Revisión de código (bloque 4),trabajadorId se lee de la BD en cada petición (ADR-017.5),Cerrado
+DEF-16,Media,M3 Tareas,Tareas ordenadas alfabéticamente por estado/prioridad (URGENTE quedaba después de MEDIA),Revisión de código,Orden explícito en utils/tareas.js con pruebas,Cerrado
+DEF-17,Crítica,Agente IA,"""¿cuánto AgroProtect le echo a la mochila?"" NO se bloqueaba: el nombre comercial no estaba en la lista de términos químicos",Prueba de API CP-WA-05 (falló en la 1.ª ejecución),"Patrón ""cuánto … le echo/pongo/aplico"" y ""por mochila/bomba/hectárea"" sin depender del nombre",Cerrado
+DEF-18,Media,Agente IA,"""tarea hecha 12"" (formato que el propio agente sugiere) no tomaba el número",Prueba de API CP-AG-20,"Se reconoce el número después de ""hecha/lista/terminada""",Cerrado
+DEF-19,Baja,Agente IA,"Productos con paréntesis (""FitoVerde SC (ficticio)"") no se reconocían en el mensaje",Prueba de API CP-AG-20,Se aceptan paréntesis en el nombre del producto,Cerrado
+DEF-20,Alta,M2 Trazabilidad,"El PROPIETARIO no podía forzar una cosecha en carencia: la validación Zod eliminaba el campo ""justificacion""",Revisión de código (bloque 4),Campo agregado al esquema y excluido al crear el lote,Cerrado
+DEF-21,Alta,Frontend,"La copia de permisos del frontend no tenía tareas:* → menú ""Mis tareas"" y botón ""Asignar tarea"" ocultos",Revisión de código (bloque 5),Matriz sincronizada + prueba que compara frontend y backend,Cerrado
+DEF-22,Alta,Agente IA,"El prompt del LLM pedía el campo ""parcela"" y el validador espera ""lote"": con LLM activo toda cosecha/labor quedaba ""falta el lote""",Revisión de código (bloque 5),Prompt actualizado; prueba de validación,Cerrado
+DEF-23,Crítica,WhatsApp,"El webhook revisaba el módulo M5 sin cargar los módulos de la finca: respondía siempre ""WhatsApp no está activo""",Revisión de código (bloque 5),WhatsApp como capacidad transversal con Finca.whatsappActivo (ADR-004),Cerrado
+DEF-24,Crítica,Agente IA,La cosecha registrada por WhatsApp no validaba el período de carencia,Revisión de código (bloque 5),"Validación en ""preparar"" (antes del SI) y al confirmar",Cerrado
+DEF-25,Media,M2 Trazabilidad,Una aplicación hecha DESPUÉS de una cosecha se contaba como carencia de esa cosecha (ficha QR y venta),Prueba de humo con datos del seed,Solo cuentan aplicaciones anteriores a la fecha de cosecha (código y SQL),Cerrado
+DEF-26,Media,Agente IA / Seed,"Fechas en UTC: después de las 20:00 en Bolivia ""hoy"" era el día siguiente (labores de hoy no aparecían en alertas)",Prueba de humo de la demo (paso 8 falló),"Día local de Bolivia (UTC-4) en agente, alertas y seed",Cerrado
+DEF-27,Alta,Frontend M2,El aviso de carencia (y el botón Forzar) nunca se mostraba: la vista leía e.response en vez de e.status,Revisión de código (bloque 6),ErrorApi conserva el cuerpo de la respuesta,Cerrado
+DEF-28,Media,M2 Trazabilidad,La ficha pública mostraba el destino con el nombre comercial del cliente,Prueba de API CP-M2-10,"Destinos genéricos en el seed y aviso en el formulario (""el QR es público"")",Cerrado
+DEF-29,Alta,M5 Ventas,"GET /api/ventas/:id respondía 500: pedía el campo ""token"" (es ""tokenPublico"")",Prueba de API CP-M5-01,Campo corregido,Cerrado
+DEF-30,Alta,Frontend M0/M1,"Los lotes no aparecían en el mapa ni en el formulario de labores (filtro por ""activo""; el campo es ""activa"")",Revisión de código (bloque 7),Campo corregido,Cerrado
+DEF-31,Baja,Seed,Labores aleatorias dejaban 4 de 6 lotes en carencia y cosechas dentro de la carencia,Prueba de humo (bloque 4),Seed determinista con historia coherente,Cerrado
+DEF-32,Baja,Frontend,Etiquetas de módulos con la numeración antigua (Inventarios decía M6),Revisión visual,Etiquetas y comentarios actualizados,Cerrado

@@ -71,7 +71,11 @@ export function pideRecomendacionDosis(texto) {
   if (!t) return false;
   if (esConsultaDeRegistro(t)) return false; // solo pide ver lo registrado
   const temaQuimico = new RegExp(AGROQUIMICO).test(t) || /\b(plaga|pulgon|gusano|hongo|roya|tizon|mosca|arana|trips|maleza|oruga|mildiu|polilla)\b/.test(t);
-  const inequivoco = /\b(que|cual|cuanta|cuanto)\s+dosis\b|\bdosis\s+(recomendad|ideal|correct|adecuad)|\bpuedo mezclar\b|\bcon que\s+(fumigo|curo|mato)\b/.test(t);
+  const inequivoco =
+    /\b(que|cual|cuanta|cuanto)\s+dosis\b|\bdosis\s+(recomendad|ideal|correct|adecuad)|\bpuedo mezclar\b|\bcon que\s+(fumigo|curo|mato)\b/.test(t) ||
+    // "¿cuánto <cualquier producto> le echo/pongo/aplico (a la mochila)?" aunque el nombre comercial no sea conocido
+    /\b(cuanto|cuanta|cuantos|cuantas)\b.*\b(le echo|le pongo|le aplico|le mezclo|echo|pongo|mezclo)\b/.test(t) ||
+    /\b(cuanto|cuanta|cuantos|cuantas)\b.*\b(por|a la|en la|para la)\s+(mochila|bomba|fumigadora|aspersora|cilindro|tanque|hectarea)\b/.test(t);
   if (inequivoco) return true;
   if (!temaQuimico) return false;
   return PATRONES_PEDIDO.some((p) => p.test(t));

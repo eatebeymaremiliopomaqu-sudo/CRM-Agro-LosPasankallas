@@ -1,21 +1,42 @@
-Pruebas del frontend (tests/colaOffline.test.js). Ejecutadas en el entorno de desarrollo con un adaptador de node:test que reemplaza la API de Vitest (describe/it/expect). En el proyecto se ejecutan con: cd frontend && npm test
 
-▶ Cola sin conexión (CP-PWA-01)
-  ✔ encola y lista en orden (1.703908ms)
-  ✔ sincroniza todo cuando vuelve la red (0.93488ms)
-  ✔ si sigue sin red, se detiene y conserva los pendientes (0.44352ms)
-  ✔ descarta y reporta los rechazados por validación (4xx) (0.293303ms)
-  ✔ tolera almacenamiento corrupto (0.38264ms)
-✔ Cola sin conexión (CP-PWA-01) (4.684837ms)
-▶ Utilidades de interfaz
-  ✔ permisos de la interfaz (0.117113ms)
-  ✔ formatos (16.657703ms)
-✔ Utilidades de interfaz (17.052602ms)
-ℹ tests 7
-ℹ suites 2
-ℹ pass 7
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 152.47853
+ RUN  v2.1.9 C:/Users/Intel Jasper Lake/Desktop/TAREA H5/CRM_Agro_PASANKALLAS/codigo/frontend
+      Coverage enabled with v8
+
+ ✓ tests/csv.test.js > Exportación CSV (M7) > usa ";" y coma decimal para Excel en español
+ ✓ tests/csv.test.js > Exportación CSV (M7) > escapa comillas, separadores y saltos de línea
+ ✓ tests/csv.test.js > Exportación CSV (M7) > sin filas devuelve solo la cabecera
+ ✓ tests/permisos.test.js > Matriz RBAC del frontend > es idéntica a la del backend (si no, se ocultan o muestran botones por error)
+ ✓ tests/permisos.test.js > Matriz RBAC del frontend > el trabajador ve sus tareas pero no ventas ni finanzas
+ ✓ tests/permisos.test.js > Matriz RBAC del frontend > permiso desconocido es falso
+ ✓ tests/permisos.test.js > Tareas · vencimiento en la UI > vence al terminar el día y solo si está activa
+ ✓ tests/colaOffline.test.js > Cola sin conexión (CP-PWA-01) > encola y lista en orden
+ ✓ tests/colaOffline.test.js > Cola sin conexión (CP-PWA-01) > sincroniza todo cuando vuelve la red
+ ✓ tests/colaOffline.test.js > Cola sin conexión (CP-PWA-01) > si sigue sin red, se detiene y conserva los pendientes
+ ✓ tests/colaOffline.test.js > Cola sin conexión (CP-PWA-01) > descarta y reporta los rechazados por validación (4xx)
+ ✓ tests/colaOffline.test.js > Cola sin conexión (CP-PWA-01) > tolera almacenamiento corrupto
+ ✓ tests/colaOffline.test.js > Utilidades de interfaz > permisos de la interfaz
+ ✓ tests/colaOffline.test.js > Utilidades de interfaz > formatos
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  23:50:30
+   Duration  4.47s (transform 121ms, setup 0ms, collect 260ms, tests 75ms, environment 8.10s, prepare 1.08s)
+
+ % Coverage report from v8
+----------------|---------|----------|---------|---------|-------------------
+File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------------|---------|----------|---------|---------|-------------------
+All files       |   93.66 |    96.07 |      80 |   93.66 |                   
+ colaOffline.js |     100 |      100 |     100 |     100 |                   
+ csv.js         |    61.9 |      100 |   66.66 |    61.9 | 16-23             
+ formato.js     |   95.45 |    86.66 |    62.5 |   95.45 | 3                 
+ permisos.js    |     100 |      100 |     100 |     100 |                   
+ tareas.js      |     100 |      100 |     100 |     100 |                   
+----------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 93.66% ( 133/142 )
+Branches     : 96.07% ( 49/51 )
+Functions    : 80% ( 16/20 )
+Lines        : 93.66% ( 133/142 )
+================================================================================

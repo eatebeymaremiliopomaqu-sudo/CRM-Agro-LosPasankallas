@@ -97,19 +97,20 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] Corrige: lotes no aparecían en el mapa ni en el formulario de labores (`activo` vs `activa`)
 - [x] 182 pruebas backend ✅, 14 frontend ✅, build OK; M6/M7 verificados contra el servidor
 
-## 📋 PENDIENTE
+### BLOQUE 8 - Calidad y pruebas (sprint-3) ✅
+- [x] Pruebas del backend migradas a Vitest
+- [x] Cobertura con @vitest/coverage-v8: 96 % de líneas (umbrales en `vitest.config.js`: ≥ 85 % global, ≥ 90-95 % crítico)
+- [x] Pruebas de API con supertest sobre `prisma/test.db` creada y cargada automáticamente
+- [x] Pruebas de RBAC, módulos, carencia, ventas, trazabilidad, tareas, webhooks (firma válida e inválida), vivero, reportes y agente
+- [x] Casos UAT con "Don Hilario, encargado de Finca Los Molles" (`evidencias/pruebas/casos_uat.md`)
+- [x] `plan_de_pruebas.csv` actualizado (unitarias, API, UAT, manuales)
+- [x] `reporte_defectos.csv` con 32 defectos (18 nuevos encontrados por las pruebas y la revisión)
+- [x] `metricas.md` + `metricas.png` generados por script a partir de la cobertura real
+- [x] CI en `.github/workflows/ci.yml` (raíz del repo) con cobertura y build
+- [x] Corrige: dosis con nombre comercial no bloqueada (crítico), "tarea hecha 12", detalle de venta 500, destino con nombre del cliente en el QR
+- [x] 247 pruebas backend ✅, 14 frontend ✅
 
-### BLOQUE 8 - Calidad y pruebas (sprint-3)
-- [ ] Migrar pruebas backend a Vitest
-- [ ] Cobertura con @vitest/coverage-v8 (meta ≥80% global, ≥90% crítico)
-- [ ] Pruebas de API con supertest + BD de prueba
-- [ ] Pruebas de RBAC, módulos, carencia, ventas, trazabilidad, webhooks
-- [ ] Casos UAT con "Don Hilario, encargado de Finca Los Molles"
-- [ ] Archivo `evidencias/pruebas/casos_uat.md`
-- [ ] Actualizar `plan_de_pruebas.csv`
-- [ ] Actualizar `reporte_defectos.csv`
-- [ ] Archivo `evidencias/pruebas/metricas.md` con gráfico PNG
-- [ ] Actualizar CI `.github/workflows/ci.yml`
+## 📋 PENDIENTE
 
 ### BLOQUE 9 - Documentación final y entregables (main)
 - [ ] README.md actualizado con nueva nomenclatura

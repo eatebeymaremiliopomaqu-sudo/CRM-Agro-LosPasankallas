@@ -1,0 +1,70 @@
+# CI/CD: pruebas con cobertura en cada push y pull request (ramas de sprint incluidas).
+# Si todo pasa en main, se dispara el deploy de Render (hook) y Vercel despliega desde su integración con GitHub.
+name: CI CRM-Agro
+
+on:
+  push:
+    branches: [main, 'sprint-*']
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend · Vitest (unitarias + API) y cobertura
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: codigo/backend
+    env:
+      JWT_SECRET: secreto-solo-para-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: codigo/backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      # La BD SQLite de prueba (prisma/test.db) se crea y se carga sola en tests/setup/bd-prueba.js.
+      # Los umbrales de cobertura (≥ 85 % global, ≥ 90-95 % en lógica crítica) están en vitest.config.js.
+      - name: Pruebas con cobertura
+        run: npm run test:cov
+      - name: Guardar reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: codigo/backend/coverage/
+
+  frontend:
+    name: Frontend · Vitest y build PWA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: codigo/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: codigo/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run test:cov
+      - run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://crm-agro-api.onrender.com' }}
+
+  desplegar:
+    name: Desplegar (solo main)
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+    steps:
+      - name: Disparar deploy en Render
+        if: env.RENDER_HOOK != ''
+        run: curl -fsS -X POST "$RENDER_HOOK"
+      - name: Vercel
+        run: echo "Vercel despliega automáticamente desde la integración con GitHub."

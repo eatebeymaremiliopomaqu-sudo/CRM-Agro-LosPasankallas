@@ -35,8 +35,8 @@ export function crearApp() {
   app.use(cors({ origin: config.corsOrigin, credentials: false }));
   // Guardamos el cuerpo crudo para verificar la firma del webhook de WhatsApp
   app.use(express.json({ limit: '200kb', verify: (req, _res, buf) => { req.rawBody = buf; } }));
-  if (!config.esProduccion || process.env.LOG_HTTP) app.use(morgan('dev'));
-  app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }));
+  if ((!config.esProduccion && process.env.NODE_ENV !== 'test') || process.env.LOG_HTTP) app.use(morgan('dev'));
+  app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 300, skip: () => process.env.NODE_ENV === 'test', standardHeaders: true, legacyHeaders: false }));
 
   // Salud (Render la usa como health check)
   app.get('/api/salud', async (_req, res) => {

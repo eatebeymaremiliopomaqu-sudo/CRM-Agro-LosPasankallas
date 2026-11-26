@@ -182,7 +182,7 @@ onMounted(cargar);
         <div class="campo"><label>Cantidad (kg)</label><input v-model="f.cantidadKg" type="number" min="0.1" step="0.1" required /><small>1 quintal = 46 kg</small></div>
         <div class="campo"><label>Calidad</label><select v-model="f.calidad"><option>PRIMERA</option><option>SEGUNDA</option><option>DESCARTE</option></select></div>
       </div>
-      <div class="campo"><label>Destino</label><input v-model="f.destino" placeholder="Mercado Abasto, feria local…" /></div>
+      <div class="campo"><label>Tipo de destino (se ve en el QR público)</label><input v-model="f.destino" placeholder="Mercado mayorista, feria local, restaurante…" /><small class="apagado">No escribas el nombre del cliente: el QR es público.</small></div>
       <div class="acciones"><button type="button" class="btn secundario" @click="modal = null">Cancelar</button><button class="btn tierra">Crear lote de cosecha y QR</button></div>
     </form>
   </Modal>

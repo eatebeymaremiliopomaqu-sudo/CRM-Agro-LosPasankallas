@@ -209,10 +209,10 @@ async function main() {
   const cosechas = {};
   let correlativo = 0;
   for (const [clave, cod, producto, kg, d, destino, calidad] of [
-    ['papa1', 'L-04', 'PAPA', 900, -15, 'Mercado Abasto Santa Cruz', 'PRIMERA'],
-    ['frut1', 'L-01', 'FRUTILLA', 180, -12, 'Supermercado El Frutero', 'PRIMERA'],
-    ['tom1', 'L-02', 'TOMATE', 420, -8, 'Mercado Abasto Santa Cruz', 'PRIMERA'],
-    ['pim1', 'L-03', 'PIMENTON', 160, -6, 'Restaurante La Quinta', 'PRIMERA'],
+    ['papa1', 'L-04', 'PAPA', 900, -15, 'Mercado mayorista', 'PRIMERA'],
+    ['frut1', 'L-01', 'FRUTILLA', 180, -12, 'Supermercado', 'PRIMERA'],
+    ['tom1', 'L-02', 'TOMATE', 420, -8, 'Mercado mayorista', 'PRIMERA'],
+    ['pim1', 'L-03', 'PIMENTON', 160, -6, 'Restaurante', 'PRIMERA'],
     ['frut2', 'L-01', 'FRUTILLA', 60, -5, 'Venta directa', 'PRIMERA'],
     ['tom2', 'L-02', 'TOMATE', 300, -2, 'Por despachar', 'SEGUNDA'],
   ]) {

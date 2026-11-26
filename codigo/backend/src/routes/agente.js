@@ -13,7 +13,7 @@ import { extraerMensajes, extraerMensajeTwilio, proveedorWhatsApp, twiml, verifi
 
 export { procesarMensaje };
 
-const limiteAgente = rateLimit({ windowMs: 60 * 1000, max: 30, message: { error: 'Demasiados mensajes, espere un minuto.' } });
+const limiteAgente = rateLimit({ windowMs: 60 * 1000, max: 30, skip: () => process.env.NODE_ENV === 'test', message: { error: 'Demasiados mensajes, espere un minuto.' } });
 const limiteWebhook = rateLimit({ windowMs: 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false });
 
 // ── Canal web (chat dentro del CRM) ──

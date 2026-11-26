@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import {
   pideRecomendacionDosis, salidaContieneDosis, filtrarSalida, sanitizarEntrada, pareceInyeccion, MENSAJE_SIN_DOSIS, MAX_LARGO_MENSAJE,

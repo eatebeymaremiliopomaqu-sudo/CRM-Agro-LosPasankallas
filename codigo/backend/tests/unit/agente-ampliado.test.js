@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { crearAgente, crearAlmacenMemoria, ESTADOS, RechazoAgente, TEXTO_AYUDA_CLIENTE, describirAccion } from '../../src/agente/agente.js';
 import { interpretarPorReglas, INTENCIONES, TEMAS, extraerFechaEntrega, extraerPedido } from '../../src/agente/parser.js';
@@ -175,5 +175,24 @@ describe('Validación de la respuesta del LLM · intenciones nuevas', () => {
   });
   it('pedido sin producto queda en faltantes', () => {
     assert.deepEqual(validarRespuestaLLM('{"intencion":"PEDIDO_CLIENTE","datos":{"cantidad":3}}').faltantes, ['producto']);
+  });
+});
+
+describe('Guardrails · nombres comerciales desconocidos (DEF-17)', () => {
+  it('"¿cuánto AgroProtect le echo a la mochila?" se bloquea', () => {
+    assert.equal(pideRecomendacionDosis('¿cuánto AgroProtect le echo a la mochila?'), true);
+    assert.equal(pideRecomendacionDosis('cuantos ml de Xyz por mochila'), true);
+    assert.equal(pideRecomendacionDosis('cuántos trabajadores vinieron hoy'), false);
+    assert.equal(pideRecomendacionDosis('cuánto queda de tomate'), false);
+  });
+});
+
+describe('Parser · defectos encontrados por las pruebas de API (DEF-18, DEF-19)', () => {
+  it('"tarea hecha 12" (formato que sugiere el propio agente) toma el número', () => {
+    assert.equal(interpretarPorReglas('tarea hecha 12', AHORA).datos.tareaId, 12);
+    assert.equal(interpretarPorReglas('tarea lista nro 3', AHORA).datos.tareaId, 3);
+  });
+  it('producto con paréntesis, como en los nombres comerciales cargados', () => {
+    assert.equal(interpretarPorReglas('fumigué el lote 3 con FitoVerde SC (ficticio), 1 litro', AHORA).datos.producto, 'Fitoverde Sc (Ficticio)');
   });
 });

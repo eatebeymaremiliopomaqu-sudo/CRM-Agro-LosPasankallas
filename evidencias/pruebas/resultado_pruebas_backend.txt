@@ -1,0 +1,333 @@
+
+ RUN  v2.1.9 C:/Users/Intel Jasper Lake/Desktop/TAREA H5/CRM_Agro_PASANKALLAS/codigo/backend
+      Coverage enabled with v8
+
+ ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > yo, finca y tablero
+ ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > configurar WhatsApp y alertas de la finca
+ ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > usuarios: crear con consentimiento (guarda fecha) y no auto-desactivarse 324ms
+stdout | tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > lotes: crear, ver, editar, campaña y baja lógica
+prisma:error 
+Invalid `prisma.lote.create()` invocation in
+C:\Users\Intel Jasper Lake\Desktop\TAREA H5\CRM_Agro_PASANKALLAS\codigo\backend\src\routes\lotes.js:52:31
+
+  49 }));
+  50 
+  51 r.post('/', autorizar('lotes:escribir'), validar(esquemaLote), asyncH(async (req, res) => {
+→ 52   const l = await prisma.lote.create(
+Unique constraint failed on the fields: (`fincaId`,`codigo`)
+
+ ✓ tests/integracion/flujos.test.js > M0 · Núcleo: finca, usuarios, lotes y campañas (CP-M0-10) > lotes: crear, ver, editar, campaña y baja lógica
+ ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > registra labor y la lista con filtros
+ ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > la aplicación con insumo descuenta el stock
+ ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > observaciones
+ ✓ tests/integracion/flujos.test.js > M1 · Campo: labores, observaciones y calendario (CP-M1-10) > calendario: programar, marcar hecha (crea la labor) y cancelar
+ ✓ tests/integracion/flujos.test.js > M2 · Trazabilidad privada (CP-M2-11) > lista, detalle con QR, SVG y eventos 430ms
+ ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > alta, consentimiento con fecha, asistencia idempotente, planilla y pago
+ ✓ tests/integracion/flujos.test.js > M3 · Trabajadores, asistencia y pagos (CP-M3-01) > tareas: iniciar, editar y cancelar
+ ✓ tests/integracion/flujos.test.js > M4 · Inventarios (CP-M4-01) > insumos y productos con movimientos
+ ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > cliente: alta con consentimiento, edición, filtro y baja lógica
+ ✓ tests/integracion/flujos.test.js > M5 · Clientes y pedidos (CP-M5-02) > pedido: crear, ver, confirmar y entregar
+ ✓ tests/integracion/flujos.test.js > M6 · Vivero (CP-M6-02) > lote de plantines: alta, avance y venta por M5
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "resumen de hoy"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "cuántos trabajadores vinieron hoy?"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "labores pendientes"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "¿qué se aplicó en el lote 5 y hasta cuándo es la carencia?"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "¿qué se aplicó en el lote 9?"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "stock de frutilla"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "stock"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "stock de unobtainium"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "ventas de hoy"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "ventas de la semana"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "ventas del mes"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > consulta: "cuentas por cobrar"
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > registro de asistencia y observación con confirmación 343ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > fumigación registrada por el encargado descuenta el insumo del mismo nombre
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > el trabajador ve sus tareas y marca una por número
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > cliente con consentimiento: precios y pedido por WhatsApp; ALTA/BAJA 384ms
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > trabajador sin cuenta de usuario también puede usar el agente
+ ✓ tests/integracion/flujos.test.js > Agente por el simulador de WhatsApp: consultas y registros (CP-AG-20) > canal web y bitácoras
+ ✓ tests/integracion/api.test.js > Autenticación y validación (CP-SEG-02) > credenciales incorrectas → 401 con mensaje genérico
+ ✓ tests/integracion/api.test.js > Autenticación y validación (CP-SEG-02) > sin token o con token falso → 401
+ ✓ tests/integracion/api.test.js > Autenticación y validación (CP-SEG-02) > cuerpo inválido → 400 con detalles
+ ✓ tests/integracion/api.test.js > Autenticación y validación (CP-SEG-02) > salud y Swagger
+ ✓ tests/integracion/api.test.js > Roles en la API (CP-SEG-01) > trabajador: no ve ventas, finanzas ni trabajadores
+ ✓ tests/integracion/api.test.js > Roles en la API (CP-SEG-01) > trabajador no registra aplicaciones fitosanitarias
+ ✓ tests/integracion/api.test.js > Roles en la API (CP-SEG-01) > encargado no configura módulos ni ve finanzas
+ ✓ tests/integracion/api.test.js > Módulos activables por finca (CP-M0-01) > desactivar M6 bloquea /api/vivero (403) y reactivarlo lo habilita
+ ✓ tests/integracion/api.test.js > Módulos activables por finca (CP-M0-01) > no se activa un módulo sin su dependencia
+ ✓ tests/integracion/api.test.js > Respeto de la carencia (CP-M2-02) > cosechar un lote en carencia → 409 con mensaje claro
+ ✓ tests/integracion/api.test.js > Respeto de la carencia (CP-M2-02) > el propietario puede forzar solo con justificación, y queda en auditoría
+ ✓ tests/integracion/api.test.js > Respeto de la carencia (CP-M2-02) > vender el lote cosechado en carencia → 409
+ ✓ tests/integracion/api.test.js > Respeto de la carencia (CP-M2-02) > un lote sin carencia se cosecha y entra al inventario
+ ✓ tests/integracion/api.test.js > Trazabilidad pública (CP-M2-10) > ficha del QR sin datos personales y con la venta anonimizada
+ ✓ tests/integracion/api.test.js > Trazabilidad pública (CP-M2-10) > la consulta SQL documentada se ejecuta y no admite inyección
+ ✓ tests/integracion/api.test.js > Ventas y cuentas por cobrar (CP-M5-01) > venta → cobro parcial → cobro total cambia el estado
+ ✓ tests/integracion/api.test.js > Ventas y cuentas por cobrar (CP-M5-01) > no se vende más de lo que hay en stock
+ ✓ tests/integracion/api.test.js > Ventas y cuentas por cobrar (CP-M5-01) > cuentas por cobrar
+ ✓ tests/integracion/api.test.js > Tareas asignadas (CP-M3-10) > el trabajador ve y completa solo sus tareas
+ ✓ tests/integracion/api.test.js > Tareas asignadas (CP-M3-10) > asignar a un trabajador sin consentimiento no envía WhatsApp
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Twilio: firma inválida → 403
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Twilio: firma válida → TwiML con la respuesta del agente y confirmación SI/NO
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Twilio: el agente nunca recomienda dosis
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Twilio: cliente sin consentimiento recibe pedido de ALTA y no puede pedir
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Meta: firma HMAC inválida → 401, válida → 200
+ ✓ tests/integracion/api.test.js > Webhooks de WhatsApp (CP-WA-05) > Meta: verificación del webhook
+ ✓ tests/integracion/api.test.js > Alertas, vivero y reportes (CP-WA-04, CP-M6-01, CP-M7-01) > alertas: vista previa y envío solo a quien dio consentimiento
+ ✓ tests/integracion/api.test.js > Alertas, vivero y reportes (CP-WA-04, CP-M6-01, CP-M7-01) > vivero: % de germinación y disponibles
+ ✓ tests/integracion/api.test.js > Alertas, vivero y reportes (CP-WA-04, CP-M6-01, CP-M7-01) > reportes: costos por lote, margen y CSV
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > cosecha de la guía: "hoy cosechamos 40 kg de tomate del lote 2"
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > pedido de la guía: "quiero 3 cajas de frutilla para el viernes"
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > pedido con "mañana" no ensucia el producto
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > fechas de entrega
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > tarea hecha con y sin número
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "¿qué se aplicó en el lote 2 y hasta cuándo es la carencia?" → CARENCIA_LOTE
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "labores pendientes" → LABORES_PENDIENTES
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "mis tareas" → MIS_TAREAS
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "stock de urea" → STOCK
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "¿cuánto queda de tomate?" → STOCK
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "ventas de la semana" → VENTAS
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "cuentas por cobrar" → CUENTAS_POR_COBRAR
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "precios" → PRECIOS
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > una pregunta con verbo de aplicación NO se registra como labor
+ ✓ tests/unit/agente-ampliado.test.js > Parser · nuevas intenciones (CP-AG-10) > "hay pulgón en el lote 4" sigue siendo observación
+ ✓ tests/unit/agente-ampliado.test.js > Guardrails · registro vs consejo (CP-AG-11) > ver la dosis REGISTRADA no es pedir una recomendación
+ ✓ tests/unit/agente-ampliado.test.js > Guardrails · registro vs consejo (CP-AG-11) > pedir consejo sigue bloqueado aunque mencione lo registrado
+ ✓ tests/unit/agente-ampliado.test.js > Guardrails · registro vs consejo (CP-AG-11) > preguntas agronómicas se derivan al ingeniero agrónomo
+ ✓ tests/unit/agente-ampliado.test.js > Políticas por perfil (CP-AG-12) > el trabajador no registra aplicaciones ni cosechas
+ ✓ tests/unit/agente-ampliado.test.js > Políticas por perfil (CP-AG-12) > el trabajador no consulta ventas ni cuentas: se le muestran sus tareas
+ ✓ tests/unit/agente-ampliado.test.js > Políticas por perfil (CP-AG-12) > el cliente solo pide y ve precios
+ ✓ tests/unit/agente-ampliado.test.js > Políticas por perfil (CP-AG-12) > el personal no registra pedidos como cliente
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > pedido de cliente: pide confirmación y guarda solo con SI
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > el cliente recibe su propia ayuda
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > trabajador marca tarea hecha con confirmación
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > trabajador no puede registrar fumigaciones (rechazo sin crear acción)
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > si preparar rechaza (p. ej. carencia), no se crea la acción
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > la consulta de carencia pasa el lote y no se bloquea como "dosis"
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > pedir consejo de dosis sigue rechazado y la pregunta agronómica se deriva
+ ✓ tests/unit/agente-ampliado.test.js > Agente con perfiles y preparación (CP-AG-13) > describe los pedidos y tareas
+ ✓ tests/unit/agente-ampliado.test.js > Validación de la respuesta del LLM · intenciones nuevas > acepta lote (no "parcela") y limpia el tema
+ ✓ tests/unit/agente-ampliado.test.js > Validación de la respuesta del LLM · intenciones nuevas > pedido sin producto queda en faltantes
+ ✓ tests/unit/agente-ampliado.test.js > Guardrails · nombres comerciales desconocidos (DEF-17) > "¿cuánto AgroProtect le echo a la mochila?" se bloquea
+ ✓ tests/unit/agente-ampliado.test.js > Parser · defectos encontrados por las pruebas de API (DEF-18, DEF-19) > "tarea hecha 12" (formato que sugiere el propio agente) toma el número
+ ✓ tests/unit/agente-ampliado.test.js > Parser · defectos encontrados por las pruebas de API (DEF-18, DEF-19) > producto con paréntesis, como en los nombres comerciales cargados
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > verificarCarencia() retorna enCarencia:false si no hay aplicaciones
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > verificarCarencia() detecta aplicación en carencia
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > verificarCarencia() permite cosecha fuera de carencia
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > verificarCarencia() usa la aplicación más reciente con carencia vigente
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > validarCarenciaParaCosecha() lanza CarenciaError si está en carencia
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > validarCarenciaParaCosecha() permite si no hay carencia
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > validarCarenciaParaCosecha() permite forzar con justificación (PROPIETARIO)
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > validarCarenciaParaCosecha() rechaza forzar sin justificación
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > validarCarenciaParaCosecha() rechaza forzar si justificación muy corta
+ ✓ tests/integracion/carencia.test.js > Verificación de período de carencia > cálculo de fechas - casos límite
+ ✓ tests/unit/dominio.test.js > Nómina de jornales (CP-M4-01) > 8 horas = 1 jornal
+ ✓ tests/unit/dominio.test.js > Nómina de jornales (CP-M4-01) > sin asistencias paga 0
+ ✓ tests/unit/dominio.test.js > Nómina de jornales (CP-M4-01) > rechaza horas inválidas y jornales negativos
+ ✓ tests/unit/dominio.test.js > Nómina de jornales (CP-M4-01) > planilla agrupa, omite sin registros y ordena por monto
+ ✓ tests/unit/dominio.test.js > Roles y permisos RBAC (CP-SEG-01) > sólo PROPIETARIO configura la finca y gestiona usuarios
+ ✓ tests/unit/dominio.test.js > Roles y permisos RBAC (CP-SEG-01) > sólo encargado/propietario registran aplicaciones de agroquímicos
+ ✓ tests/unit/dominio.test.js > Roles y permisos RBAC (CP-SEG-01) > CONSULTA no escribe en ningún módulo
+ ✓ tests/unit/dominio.test.js > Roles y permisos RBAC (CP-SEG-01) > permiso desconocido o rol inválido = denegado
+ ✓ tests/unit/dominio.test.js > Módulos activables por finca (CP-M0-02) > M0 siempre activo y filtra módulos desconocidos
+ ✓ tests/unit/dominio.test.js > Módulos activables por finca (CP-M0-02) > tieneModulo
+ ✓ tests/unit/dominio.test.js > Módulos activables por finca (CP-M0-02) > valida dependencias entre módulos
+ ✓ tests/unit/dominio.test.js > Códigos de trazabilidad (CP-M3-01) > iniciales sin tildes ni símbolos
+ ✓ tests/unit/dominio.test.js > Códigos de trazabilidad (CP-M3-01) > código correlativo con ceros
+ ✓ tests/unit/dominio.test.js > Códigos de trazabilidad (CP-M3-01) > token público aleatorio y seguro para URL
+ ✓ tests/unit/dominio.test.js > Códigos de trazabilidad (CP-M3-01) > teléfono boliviano
+ ✓ tests/unit/dominio.test.js > WhatsApp Cloud API (CP-M5-01) > extrae sólo mensajes de texto
+ ✓ tests/unit/dominio.test.js > WhatsApp Cloud API (CP-M5-01) > verifica la firma HMAC del webhook
+ ✓ tests/unit/dominio.test.js > WhatsApp Cloud API (CP-M5-01) > sin credenciales el envío es simulado
+ ✓ tests/unit/dominio.test.js > Período de carencia (CP-M2-02) > calcula fecha fin de carencia correctamente
+ ✓ tests/unit/dominio.test.js > Período de carencia (CP-M2-02) > detecta lote en carencia
+ ✓ tests/unit/dominio.test.js > Período de carencia (CP-M2-02) > permite lote fuera de carencia
+ ✓ tests/unit/dominio.test.js > Período de carencia (CP-M2-02) > casos límite: mismo día y día siguiente
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > propone, NO guarda hasta confirmar, y guarda al responder SI
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > cancela con NO y no guarda nada
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > la confirmación expira a los 10 minutos
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > un nuevo registro reemplaza al pendiente anterior
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > las confirmaciones son por remitente (otro teléfono no confirma)
+ ✓ tests/unit/agente.test.js > Flujo con confirmación previa (CP-AG-05) > SI/NO sin nada pendiente
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > rechaza pedidos de dosis sin crear acciones
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > rechaza intentos de inyección
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > pide datos faltantes
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > si el ejecutor falla, informa el error y cancela la acción
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > mensaje vacío devuelve ayuda
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > mensaje no entendido devuelve ayuda
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > consultas no requieren confirmación
+ ✓ tests/unit/agente.test.js > Límites y manejo de errores (CP-AG-06) > completa fecha y normaliza el lote que devuelve un LLM
+ ✓ tests/unit/agente.test.js > Resumen legible de acciones > describe cada tipo
+ ✓ tests/unit/agente.test.js > Validación de la respuesta del LLM (CP-AG-07) > acepta JSON válido aunque venga con texto alrededor
+ ✓ tests/unit/agente.test.js > Validación de la respuesta del LLM (CP-AG-07) > descarta campos no permitidos y objetos anidados
+ ✓ tests/unit/agente.test.js > Validación de la respuesta del LLM (CP-AG-07) > agrega faltantes obligatorios y horas por defecto
+ ✓ tests/unit/agente.test.js > Validación de la respuesta del LLM (CP-AG-07) > rechaza JSON roto, intención inventada o tipos incorrectos
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · números (CP-WA-01) > normaliza el formato de Twilio y de Meta
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · firma X-Twilio-Signature (CP-WA-02) > coincide con el vector de la documentación de Twilio
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · firma X-Twilio-Signature (CP-WA-02) > acepta la firma válida y rechaza las alteradas
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · mensajes entrantes y TwiML > extrae el mensaje de Twilio
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · mensajes entrantes y TwiML > el número de Meta también se normaliza
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · mensajes entrantes y TwiML > TwiML escapa XML y vacía cuando no hay texto
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · proveedores (ADR-009) > sin credenciales cae en simulado
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · proveedores (ADR-009) > Twilio envía From/To/Body con autenticación básica
+ ✓ tests/unit/whatsapp.test.js > WhatsApp · proveedores (ADR-009) > Meta envía por la Graph API y propaga errores
+ ✓ tests/unit/whatsapp.test.js > Consentimiento por WhatsApp (CP-WA-03) > reconoce ALTA y BAJA
+ ✓ tests/unit/whatsapp.test.js > Alertas automáticas (CP-WA-04) > arma cada tipo de alerta
+ ✓ tests/unit/whatsapp.test.js > Alertas automáticas (CP-WA-04) > el mensaje agrupa por tipo e indica cómo darse de baja
+ ✓ tests/unit/whatsapp.test.js > Alertas automáticas (CP-WA-04) > día y hora local de Bolivia (UTC-4)
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · transiciones (CP-M3-10) > PENDIENTE → iniciar → EN_CURSO
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · transiciones (CP-M3-10) > se puede completar desde PENDIENTE o EN_CURSO
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · transiciones (CP-M3-10) > no se completa una tarea cancelada ni se cancela una completada
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · transiciones (CP-M3-10) > acción desconocida
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · permisos (CP-M3-11) > el trabajador gestiona solo sus tareas
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · permisos (CP-M3-11) > encargado y propietario gestionan todas
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · permisos (CP-M3-11) > sin usuario o sin tarea no se permite
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · orden y vencimiento > ordena activas primero, luego urgencia y vencimiento
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · orden y vencimiento > vence al terminar el día límite y solo si sigue activa
+ ✓ tests/unit/tareas.test.js > Tareas asignadas · orden y vencimiento > el aviso de WhatsApp incluye tarea, lote y cómo darse de baja
+ ✓ tests/unit/tareas.test.js > Trazabilidad pública (CP-M2-10) > calcula fin de carencia y si se respetó
+ ✓ tests/unit/tareas.test.js > Trazabilidad pública (CP-M2-10) > detecta cosecha dentro de la carencia
+ ✓ tests/unit/tareas.test.js > Trazabilidad pública (CP-M2-10) > las ventas se anonimizan: solo tipo de cliente, fecha y cantidad
+ ✓ tests/unit/tareas.test.js > Trazabilidad pública (CP-M2-10) > finCarencia sin días devuelve null
+ ✓ tests/unit/tareas.test.js > Trazabilidad pública (CP-M2-10) > las consultas SQL usan parámetro enlazado y no concatenan el token
+ ✓ tests/unit/tareas.test.js > Inventario · clave de cultivo > normaliza tildes y mayúsculas
+ ✓ tests/unit/tareas.test.js > Trazabilidad · aplicaciones posteriores a la cosecha > no forman parte de la historia ni rompen la carencia de ese lote
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > lote en distintos formatos
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > normaliza códigos de lote
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > cantidades: kg, quintales (46 kg) y arrobas
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > horas y cantidades usadas
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > producto aplicado
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > trabajador
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > fecha relativa
+ ✓ tests/unit/parser.test.js > Extractores del intérprete por reglas > severidad y tipo de observación
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "si" → CONFIRMAR
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "Sí!" → CONFIRMAR
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "ok" → CONFIRMAR
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "no" → CANCELAR
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "cancelar" → CANCELAR
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "hola" → AYUDA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "" → AYUDA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "resumen de hoy" → CONSULTA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "cuántos trabajadores vinieron hoy?" → CONSULTA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "¿cómo vamos?" → CONSULTA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > "qwerty asdf" → DESCONOCIDA
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > labor de riego completa
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > fumigación sin producto pide el dato
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > fumigación con producto y cantidad (registro, no recomendación)
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > labor sin lote
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > asistencia con horas por defecto
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > pregunta por trabajadores es consulta de personal
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > asistencia sin nombre
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > observación de plaga
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > cosecha en quintales
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > cosecha sin lote
+ ✓ tests/unit/parser.test.js > Intenciones (CP-AG-04) > fertilización registra cantidad sin exigir producto
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > % de germinación
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > disponibles = germinadas − merma − vendidos (nunca negativo)
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > costo unitario sobre plantines útiles
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > valida conteos imposibles
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > etapa AGOTADO cuando no quedan plantines y vuelve a LISTO
+ ✓ tests/unit/vivero-finanzas.test.js > M6 · Vivero (CP-M6-01) > agrega indicadores
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > costo = labores + jornales + insumos valorizados
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > margen y margen %
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > sin ingresos no hay margen % ni costo por kg
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > totales incluyen ventas sin lote aparte
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > costo del insumo por vínculo o por nombre
+ ✓ tests/unit/vivero-finanzas.test.js > M7 · Costos por lote, ingresos y margen (CP-M7-01) > ingresos por mes
+ ✓ tests/unit/vivero-finanzas.test.js > M4 · Descuento del insumo usado en una aplicación (CP-M4-10) > descuenta si la unidad coincide y hay stock
+ ✓ tests/unit/vivero-finanzas.test.js > M4 · Descuento del insumo usado en una aplicación (CP-M4-10) > no descuenta con unidad distinta, sin stock o sin cantidad
+ ✓ tests/unit/vivero-finanzas.test.js > M4 · Descuento del insumo usado en una aplicación (CP-M4-10) > litros escritos de varias formas
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "¿Qué dosis de mancozeb uso para el tomate?"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "cuanto glifosato le echo a la mochila de 20 litros"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "Cuántos ml de insecticida por mochila?"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "recomiéndame un fungicida para la roya"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "¿con qué fumigo el pulgón?"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "qué le echo para el gusano cogollero"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "¿Puedo mezclar urea con el foliar?"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "cuál es la dosis recomendada de cipermetrina"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "qué producto uso contra la mosca blanca"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "cada cuánto fumigo la frutilla con fungicida"
+ ✓ tests/unit/guardrails.test.js > Guardrail: el agente NO recomienda dosis (CP-AG-01) > bloquea: "cuanto abono debo poner por planta"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "fumigué el lote 2 con FitoVerde, 2 litros"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "apliqué AgroProtect en L-03 ayer"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "hay pulgón en el lote 4 severidad 3"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "regué el lote 1 por 3 horas"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "Juan Pérez trabajó 8 horas"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "cosechamos 12 qq de papa en L-04"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: "resumen de hoy"
+ ✓ tests/unit/guardrails.test.js > Guardrail: sí permite REGISTRAR aplicaciones ya hechas (CP-AG-02) > permite: ""
+ ✓ tests/unit/guardrails.test.js > Filtro de salida del LLM (CP-AG-03) > detecta dosificaciones en la respuesta
+ ✓ tests/unit/guardrails.test.js > Filtro de salida del LLM (CP-AG-03) > no confunde datos normales con dosis
+ ✓ tests/unit/guardrails.test.js > Filtro de salida del LLM (CP-AG-03) > reemplaza la respuesta peligrosa por el mensaje seguro
+ ✓ tests/unit/guardrails.test.js > Sanitización e inyección (CP-SEG-04) > quita caracteres de control y recorta el largo
+ ✓ tests/unit/guardrails.test.js > Sanitización e inyección (CP-SEG-04) > detecta intentos de cambiar las reglas
+
+ Test Files  11 passed (11)
+      Tests  247 passed (247)
+   Start at  23:47:42
+   Duration  41.80s (transform 911ms, setup 0ms, collect 6.27s, tests 8.11s, environment 6ms, prepare 3.52s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   95.97 |    79.94 |   95.13 |   95.97 |                   
+ src               |   88.63 |       25 |      60 |   88.63 |                   
+  app.js           |   95.91 |    71.42 |     100 |   95.91 | 47-48             
+  config.js        |    87.5 |     6.25 |       0 |    87.5 | 4-9               
+  constantes.js    |     100 |      100 |     100 |     100 |                   
+  db.js            |      50 |        0 |       0 |      50 | 10-16             
+ src/agente        |   92.52 |    83.87 |   95.16 |   92.52 |                   
+  agente.js        |     100 |    87.09 |     100 |     100 | ...70,172,188-189 
+  guardrails.js    |     100 |      100 |     100 |     100 |                   
+  llm.js           |    44.7 |    45.45 |   33.33 |    44.7 | 30-71,88-91,93-94 
+  parser.js        |   98.79 |    94.35 |     100 |   98.79 | 92,281-282        
+  politicas.js     |     100 |      100 |     100 |     100 |                   
+  repositorio.js   |   91.92 |    67.05 |   93.75 |   91.92 | ...20,191-198,232 
+  validacionLLM.js |   95.91 |    89.18 |     100 |   95.91 | 28-29             
+ src/middleware    |   90.58 |    80.55 |   85.71 |   90.58 |                   
+  auth.js          |      96 |    93.75 |     100 |      96 | 48-49             
+  errores.js       |      75 |       60 |      50 |      75 | 4-5,15-16,18-19   
+  validar.js       |     100 |      100 |     100 |     100 |                   
+ src/routes        |   97.81 |    68.75 |     100 |   97.81 |                   
+  agente.js        |   88.29 |    65.51 |     100 |   88.29 | 74,84-90,114-116  
+  alertas.js       |     100 |      100 |     100 |     100 |                   
+  auth.js          |   92.98 |       80 |     100 |   92.98 | 51-54             
+  campo.js         |    97.9 |    46.15 |     100 |    97.9 | 90-94             
+  clientes.js      |   99.12 |    46.15 |     100 |   99.12 | 78                
+  dashboard.js     |     100 |      100 |     100 |     100 |                   
+  fincas.js        |   97.72 |     61.9 |     100 |   97.72 | 115,118-119       
+  insumos.js       |     100 |     87.5 |     100 |     100 | 36                
+  lotes.js         |    96.8 |    81.81 |     100 |    96.8 | 89-91             
+  pedidos.js       |   97.05 |    54.54 |     100 |   97.05 | 42-43,45-46       
+  productos.js     |     100 |    78.57 |     100 |     100 | 47,91,104         
+  reportes.js      |   97.22 |    83.33 |     100 |   97.22 | 18                
+  tareas.js        |     100 |    76.31 |     100 |     100 | ...56,59-60,68-70 
+  trabajadores.js  |     100 |    73.33 |     100 |     100 | ...,85,91,116,129 
+  trazabilidad.js  |     100 |    83.33 |     100 |     100 | 24,52,113         
+  ventas.js        |   96.68 |    66.66 |     100 |   96.68 | ...65-166,253-256 
+  vivero.js        |     100 |       50 |     100 |     100 | 30,41,55-59       
+ src/services      |   96.82 |    84.34 |   96.49 |   96.82 |                   
+  alertas.js       |   86.76 |    81.66 |      90 |   86.76 | 139-156           
+  ...onWhatsApp.js |   97.93 |    86.88 |     100 |   97.93 | 79,81             
+  finanzas.js      |     100 |     72.3 |     100 |     100 | ...05-115,130-135 
+  inventario.js    |     100 |    83.33 |     100 |     100 | 5,27,30,40        
+  lotes.js         |     100 |    85.71 |     100 |     100 | 17                
+  nomina.js        |     100 |      100 |     100 |     100 |                   
+  trazabilidad.js  |     100 |    94.59 |     100 |     100 | 62-66             
+  whatsapp.js      |   96.07 |    86.48 |   94.73 |   96.07 | ...48-149,169-171 
+ src/utils         |   97.93 |    89.51 |   97.05 |   97.93 |                   
+  auditoria.js     |   88.88 |       75 |     100 |   88.88 | 17-18             
+  carencia.js      |   95.83 |       80 |   85.71 |   95.83 | 66-69,163-164     
+  codigos.js       |     100 |      100 |     100 |     100 |                   
+  errores.js       |     100 |      100 |     100 |     100 |                   
+  permisos.js      |     100 |      100 |     100 |     100 |                   
+  tareas.js        |     100 |    81.25 |     100 |     100 | 44,47-48,63       
+  vivero.js        |     100 |       96 |     100 |     100 | 28                
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 95.97% ( 4216/4393 )
+Branches     : 79.94% ( 1120/1401 )
+Functions    : 95.13% ( 176/185 )
+Lines        : 95.97% ( 4216/4393 )
+================================================================================

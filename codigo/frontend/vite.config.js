@@ -48,5 +48,10 @@ export default defineConfig({
     }),
   ],
   server: { port: 5173, proxy: { '/api': 'http://localhost:3000' } },
-  test: { environment: 'jsdom', include: ['tests/**/*.test.js'] },
+  test: {
+    environment: 'jsdom',
+    include: ['tests/**/*.test.js'],
+    // Lógica del cliente (utilidades, cola offline, permisos). Las vistas se validan con los casos UAT.
+    coverage: { provider: 'v8', include: ['src/utils/**/*.js'], reporter: ['text', 'text-summary', 'json-summary'] },
+  },
 });
