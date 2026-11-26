@@ -1,26 +1,31 @@
-﻿ID,Módulo,Historia de usuario,Criterios de aceptación,Story points,Prioridad,Sprint,Estado
-HU-01,M0,Como administrador quiero iniciar sesión con correo y contraseña para acceder de forma segura.,JWT de 8 h; mensaje genérico ante error; límite de 10 intentos/15 min.,5,Alta,1,Hecho
-HU-02,M0,Como administrador quiero asignar roles a los usuarios para que cada uno vea sólo lo que le corresponde.,4 roles; la API responde 403 si no hay permiso.,5,Alta,1,Hecho
-HU-03,M0,Como administrador quiero activar o desactivar módulos de mi finca para usar sólo lo que necesito.,Rutas bloqueadas con 403; dependencias M2/M3/M5→M1.,5,Alta,1,Hecho
-HU-04,M0,Como administrador quiero una bitácora de auditoría para saber quién hizo cada cambio.,Se registra crear/actualizar/eliminar/login/agente.,3,Media,1,Hecho
-HU-05,M1,"Como técnico quiero registrar parcelas con área, riego y coordenadas.",Código único P-01 por finca; baja lógica.,5,Alta,1,Hecho
-HU-06,M1,Como técnico quiero ver las parcelas en un mapa para ubicarlas rápido.,Leaflet + OSM; color por cultivo; popup.,5,Media,1,Hecho
-HU-07,M1,Como técnico quiero registrar siembras (ciclos de cultivo) por parcela.,"Cultivo, variedad, fechas, estado.",3,Alta,1,Hecho
-HU-08,INF,Como equipo queremos desplegar el esqueleto en Vercel y Render desde el sprint 1.,URL pública funcionando con /api/salud.,3,Alta,1,Pasó a S2
-HU-09,M2,"Como capataz quiero registrar labores (riego, deshierbe, poda…) con horas y costo.",Filtros por parcela y tipo; origen del registro.,5,Alta,2,Hecho
-HU-10,M2,"Como técnico quiero registrar la aplicación de un agroquímico tal como se hizo, sin que el sistema recomiende dosis.","Sólo TECNICO/ADMIN; producto, cantidad usada, carencia, responsable.",5,Alta,2,Hecho
-HU-11,M2,"Como capataz quiero reportar plagas, enfermedades o daños de clima con severidad.",Severidad 1-5; alertas ≥4 en el tablero.,3,Alta,2,Hecho
-HU-12,M3,Como técnico quiero crear un lote de cosecha con código correlativo y QR.,Código FLM-AAAA-NNNN; token público no adivinable.,8,Alta,2,Hecho
-HU-13,M3,Como consumidor quiero escanear el QR y ver el origen del producto.,Página pública sin datos sensibles (sin trabajadores ni costos).,5,Alta,2,Hecho
-HU-14,M4,Como capataz quiero pasar lista diaria con horas y tarea.,Registro masivo idempotente por trabajador y fecha.,5,Alta,2,Hecho
-HU-15,M4,Como administrador quiero calcular la planilla de jornales y generar pagos.,8 h = 1 jornal; total del periodo; estado del pago.,5,Media,2,Hecho
-HU-16,M0,Como usuario quiero un tablero con indicadores y gráficos.,"KPIs, horas por día, labores por tipo, kg por cultivo.",3,Media,2,Pasó a S3
-HU-08b,INF,(Arrastre) Despliegue en Vercel y Render con variables de entorno.,URL pública; CORS configurado.,3,Alta,2,Hecho
-HU-17,M5,Como capataz quiero registrar labores por WhatsApp escribiendo en lenguaje natural.,Webhook verificado (HMAC); usuario identificado por teléfono.,8,Alta,3,Hecho
-HU-18,M5,Como técnico quiero que el agente me pida confirmación antes de guardar.,Acción pendiente que vence en 10 min; SI/NO.,5,Alta,3,Hecho
-HU-19,M5,Como responsable de la finca quiero que el agente se niegue a recomendar dosis o productos.,Guardrail de entrada y de salida; pruebas automatizadas.,5,Alta,3,Hecho
-HU-20,M5,Como equipo queremos que el agente siga funcionando si el LLM falla.,Tiempo máximo 8 s; validación de JSON; respaldo por reglas.,3,Alta,3,Hecho
-HU-21,M6,Como técnico quiero controlar el stock de insumos con alertas de mínimo (módulo opcional).,Entradas/salidas; no permite stock negativo.,5,Media,3,Hecho
-HU-22,PWA,Como capataz sin señal quiero seguir registrando y que se sincronice después.,Cola local; sincroniza al volver la red; PWA instalable.,5,Alta,3,Hecho
-HU-23,INF,"Como equipo queremos CI/CD, Swagger y pruebas automatizadas.",GitHub Actions; /api/docs; cobertura ≥ 90 % en lógica de negocio.,5,Alta,3,Hecho
-HU-16b,M0,(Arrastre) Tablero con indicadores y gráficos.,Chart.js; alertas de campo e insumos bajos.,3,Media,3,Hecho
+﻿Issue Key,Summary,Description,Issue Type,Story Points,Priority,Sprint,Labels,Epic,Status
+HU-01,Como propietario quiero iniciar sesión con correo y contraseña para acceder de forma segura.,Criterios de aceptación: JWT de 8 h; mensaje genérico ante error; máx. 10 intentos cada 15 min.,Story,3,High,Sprint 1,M0,Núcleo,Done
+HU-02,"Como propietario quiero asignar los roles propietario, encargado y trabajador para que cada uno vea solo lo suyo.",Criterios de aceptación: La API responde 403 sin permiso; la UI oculta menús.,Story,5,High,Sprint 1,M0,Núcleo,Done
+HU-03,Como propietario quiero activar o desactivar módulos de mi finca para pagar y usar solo lo que necesito.,"Criterios de aceptación: Tabla ModuloFinca; 403 en rutas de módulos apagados; dependencias M2→M1, M5→M4, M7→M1+M4.",Story,5,High,Sprint 1,M0,Núcleo,Done
+HU-04,Como encargado quiero registrar los lotes de la finca en un mapa con su campaña actual.,Criterios de aceptación: Código único por finca; mapa Leaflet; campaña con cultivo y fecha de siembra.,Story,5,High,Sprint 1,M0,Núcleo,Done
+HU-05,Como propietario quiero una bitácora de auditoría para saber quién hizo cada cambio.,"Criterios de aceptación: Se registran altas, cambios, login, agente y cosechas forzadas.",Story,2,Medium,Sprint 1,M0,Núcleo,Done
+HU-06,Como encargado quiero un calendario de labores con responsable para organizar la semana.,Criterios de aceptación: Estados PENDIENTE/HECHA/CANCELADA; al marcar HECHA se crea la labor real.,Story,5,High,Sprint 1,M1,Campo,Done
+HU-07,"Como encargado quiero registrar aplicaciones con producto, motivo y período de carencia.",Criterios de aceptación: Se muestra la fecha de fin de carencia; dosis solo como texto de etiqueta.,Story,5,High,Sprint 1,M1,Campo,Done
+HU-08,Como propietario quiero que el sistema impida cosechar un lote en carencia.,Criterios de aceptación: HTTP 409 con mensaje claro; solo el propietario fuerza con justificación (auditada).,Story,8,High,Sprint 1,M1,Campo,Done
+HU-09,Como trabajador quiero registrar labores y observaciones desde el celular aunque no tenga señal.,Criterios de aceptación: Cola offline que sincroniza al volver la red.,Story,5,Medium,Sprint 1,M1,Campo,Done
+HU-10,Como encargado quiero que la cosecha sume stock de producto y la venta lo descuente.,Criterios de aceptación: Movimientos ENTRADA/SALIDA con referencia al lote o a la venta.,Story,5,High,Sprint 2,M4,Inventarios,Done
+HU-11,Como encargado quiero ver alertas de stock mínimo de insumos y productos.,Criterios de aceptación: Insignia en inventario y alerta diaria por WhatsApp.,Story,3,Medium,Sprint 2,M4,Inventarios,Done
+HU-12,Como encargado quiero registrar clientes con su consentimiento de WhatsApp.,Criterios de aceptación: Fecha de consentimiento; baja lógica.,Story,3,High,Sprint 2,M5,Ventas,Done
+HU-13,Como encargado quiero registrar pedidos y convertirlos en ventas vinculadas al lote de cosecha.,Criterios de aceptación: Estados del pedido; detalle con loteCosechaId; valida stock.,Story,8,High,Sprint 2,M5,Ventas,Done
+HU-14,Como propietario quiero ver cuentas por cobrar con cobros parciales y vencidos.,Criterios de aceptación: Saldo por venta y por cliente; vencida a los 7 días.,Story,5,High,Sprint 2,M5,Ventas,Done
+HU-15,Como consumidor quiero escanear el QR y ver el origen del producto hasta la venta.,Criterios de aceptación: Lote → labores → carencia → cosecha → venta; sin datos personales.,Story,8,High,Sprint 2,M2,Trazabilidad,Done
+HU-16,Como docente quiero ver la consulta SQL de trazabilidad documentada.,Criterios de aceptación: Consulta real con parámetro enlazado; misma que en el informe.,Story,3,Medium,Sprint 2,M2,Trazabilidad,Done
+HU-17,Como encargado quiero asignar tareas a los trabajadores y avisarles por WhatsApp si aceptaron.,"Criterios de aceptación: Prioridad, lote, fecha límite; aviso solo con consentimiento.",Story,5,High,Sprint 2,M3,Trabajadores,Done
+HU-18,"Como trabajador quiero ver ""Mis tareas"" en el celular y marcarlas hechas.",Criterios de aceptación: Solo sus tareas; funciona sin señal.,Story,5,High,Sprint 2,M3,Trabajadores,Done
+HU-19,"Como encargado quiero escribir ""hoy cosechamos 40 kg de tomate del lote 2"" por WhatsApp y que se registre tras mi SI.",Criterios de aceptación: Twilio o Meta; firma del webhook; carencia validada; QR en la respuesta.,Story,8,High,Sprint 3,WA,WhatsApp + IA,Done
+HU-20,"Como encargado quiero consultar por WhatsApp pendientes, carencias, stock, ventas y cuentas por cobrar.",Criterios de aceptación: Solo datos registrados; sin recomendaciones.,Story,5,High,Sprint 3,WA,WhatsApp + IA,Done
+HU-21,"Como cliente quiero hacer un pedido por WhatsApp (""quiero 3 cajas de frutilla para el viernes"").",Criterios de aceptación: Solo con consentimiento; confirmación SI/NO; aparece en Pedidos.,Story,5,High,Sprint 3,WA,WhatsApp + IA,Done
+HU-22,Como trabajador o cliente quiero dar o quitar mi consentimiento con ALTA / BAJA.,Criterios de aceptación: Se guarda la fecha; nunca se envían alertas sin consentimiento.,Story,3,High,Sprint 3,WA,WhatsApp + IA,Done
+HU-23,"Como encargado quiero recibir cada mañana alertas de riego, aplicaciones, stock, carencia y cobros.","Criterios de aceptación: Hora configurable; botón ""Enviar ahora""; bitácora.",Story,5,Medium,Sprint 3,WA,WhatsApp + IA,Done
+HU-24,Como propietario quiero que el agente nunca recomiende dosis ni productos.,Criterios de aceptación: Pruebas automatizadas de rechazo; deriva al agrónomo.,Story,5,High,Sprint 3,IA,WhatsApp + IA,Done
+HU-25,"Como encargado quiero registrar lotes de plantines con germinación, merma y stock.",Criterios de aceptación: % germinación; disponibles = germinadas − merma − vendidos.,Story,5,Medium,Sprint 3,M6,Vivero,Done
+HU-26,Como encargado quiero vender plantines desde el módulo de ventas.,Criterios de aceptación: Descuenta disponibles; AGOTADO al terminar.,Story,3,Medium,Sprint 3,M6,Vivero,Done
+HU-27,"Como propietario quiero ver el costo, el ingreso y el margen por lote.",Criterios de aceptación: Labores + jornales + insumos; margen %; filtros por campaña y fechas.,Story,8,Medium,Sprint 3,M7,Finanzas,Done
+HU-28,Como propietario quiero exportar el reporte a CSV y verlo en gráficos.,Criterios de aceptación: CSV con ; para Excel; gráficos accesibles.,Story,3,Low,Sprint 3,M7,Finanzas,Done
+HU-29,Como equipo queremos pruebas automatizadas con cobertura y CI.,Criterios de aceptación: Vitest + supertest; ≥ 80 % global; CI en cada push.,Story,8,High,Sprint 3,QA,Calidad,Done
+HU-30,Como equipo queremos desplegar en Vercel y Render con costo mensual justificado.,Criterios de aceptación: URL pública; variables protegidas; guía paso a paso.,Story,5,High,Sprint 3,DEV,Despliegue,Done

@@ -1,97 +1,131 @@
 # 🌱 CRM-Agro
 
-CRM web modular y de bajo costo para fincas pequeñas: **control técnico de campo**, **trazabilidad con QR** y **gestión de trabajadores**, con **WhatsApp** y un **agente de IA** que registra datos con confirmación previa y **nunca recomienda dosis de agroquímicos**.
+CRM web **modular y de bajo costo** para fincas pequeñas (frutas, hortalizas y vivero): control técnico de campo, trazabilidad con **QR**, trabajadores, inventarios, ventas, vivero y finanzas, con un **agente de IA por WhatsApp** que registra labores y cosechas **con confirmación previa (SI/NO)** y **nunca recomienda dosis** de agroquímicos.
 
-> Todos los datos incluidos son **ficticios** (Finca Los Molles, Comarapa).
+> Todos los datos son **ficticios** (Finca Los Molles, Comarapa, Santa Cruz).
 
-## Módulos
+## Módulos (activables por finca)
 
-| Código | Módulo | Qué hace |
+| Código | Módulo | Qué hace | Depende de |
+|---|---|---|---|
+| M0 | Núcleo | Login JWT, roles, finca, usuarios, **lotes de campo** y **campañas**, módulos activables (tabla `ModuloFinca`), auditoría | — (siempre activo) |
+| M1 | Control técnico de campo | Calendario de labores, riego programado, labores, **aplicaciones** (producto, motivo, fecha, **carencia**), observaciones, cosechas por lote | M0 |
+| M2 | Trazabilidad | **Lote de cosecha** con código y **QR**; ficha pública lote → labores → cosecha → venta; consulta SQL documentada | M1 |
+| M3 | Trabajadores | Personal, asistencia, **tareas asignadas** ("Mis tareas"), jornales y pagos | M0 |
+| M4 | Inventarios | Insumos y **productos cosechados**, entradas/salidas, alerta de stock mínimo | M0 |
+| M5 | Ventas y clientes | Clientes (consentimiento WhatsApp), pedidos, ventas, precios, cobros y **cuentas por cobrar** | M4 |
+| M6 | Vivero | Lotes de plantines: siembra, germinación (%), merma, stock y venta por M5 | — |
+| M7 | Reportes y finanzas | **Costo por lote**, ingresos, **margen**, gráficos y exportación CSV | M1, M4 |
+| — | WhatsApp + agente IA | Capacidad transversal (`Finca.whatsappActivo`): Twilio, Meta o simulado; alertas diarias | — |
+
+Si un módulo está apagado, su menú desaparece y la API responde **403**.
+
+**Terminología:** *lote* = campo/parcela de la finca (M0). *Lote de cosecha* = producto cosechado con código QR (M2).
+
+## Roles
+
+| Rol | Puede |
+|---|---|
+| PROPIETARIO | Todo: configura la finca, módulos y usuarios; pagos; **finanzas (M7)**; forzar una cosecha en carencia con justificación |
+| ENCARGADO | Campo, aplicaciones fitosanitarias, trazabilidad, inventario, ventas, trabajadores y tareas, alertas |
+| TRABAJADOR | Ve y marca **sus tareas**, registra labores y observaciones simples, consulta carencias. No ve ventas, finanzas ni pagos |
+
+## Usuarios de demostración (clave `Agro2026!`)
+
+| Correo | Rol | WhatsApp |
 |---|---|---|
-| M0 | Núcleo | Login JWT, roles (PROPIETARIO, ENCARGADO, TRABAJADOR), finca, **módulos activables** (tabla ModuloFinca), auditoría |
-| M1 | Lotes y cultivos | Lotes (campos) en mapa (Leaflet/OSM), campañas agrícolas |
-| M2 | Control técnico de campo | Labores, registro de aplicaciones (sin recomendaciones), observaciones fitosanitarias |
-| M3 | Trazabilidad | Lotes de cosecha con código correlativo, **QR** y página pública del lote |
-| M4 | Trabajadores | Personal, pasar lista, planilla de jornales y pagos |
-| M5 | Ventas | **(En desarrollo)** Registro de ventas y clientes con consentimiento WhatsApp |
-| M6 | Vivero | **(En desarrollo)** Control de almácigos y producción de plantines |
-| M7 | Reportes | **(En desarrollo)** Dashboards y reportes de producción |
+| propietario@finca.test | PROPIETARIO | 59170000001 |
+| encargado@finca.test | ENCARGADO | 59170000002 |
+| trabajador@finca.test | TRABAJADOR (Juan Pérez) | 59170000003 |
 
-> **Nota sobre terminología**: "Lote" se refiere a un campo/parcela de la finca. "Lote de cosecha" se refiere al producto cosechado con código QR para trazabilidad (M3).
+Clientes de prueba con WhatsApp: `59133445566` (con consentimiento), `59166778899` (sin consentimiento).
+
+## Ejecutar en local (Windows · PowerShell)
+
+Requisitos: **Node.js 20 o superior** (probado con Node 26 y npm 11). **La ruta de la carpeta no puede contener `#`** (Vite falla): si se llama `CRM_Agro_Grupo##`, renómbrala, p. ej. `CRM_Agro_Grupo05`.
+
+```powershell
+# 1) Backend  →  http://localhost:3000  ·  Swagger: http://localhost:3000/api/docs
+cd codigo\backend
+Copy-Item .env.example .env
+npm install
+# npm 11 bloquea scripts de instalación: autoriza los de Prisma y esbuild una sola vez
+npm install-scripts approve prisma @prisma/client @prisma/engines esbuild
+npm rebuild
+npx prisma generate
+npx prisma db push
+npm run db:seed
+npm run dev
+
+# 2) Frontend (otra terminal)  →  http://localhost:5173
+cd codigo\frontend
+npm install
+npm install-scripts approve esbuild   # solo si npm lo pide
+npm rebuild
+npm run dev
+```
+
+> Para reiniciar los datos de la demo: `npm run db:seed` en `codigo/backend`.
+> Para liberar un puerto ocupado usa el PID exacto: `netstat -ano | findstr :3000` y luego `taskkill /PID <número> /F` (nunca `taskkill /IM node.exe`).
+
+## Demo de la exposición (8–10 min)
+
+**Labor por WhatsApp → cosecha → QR → inventario → venta.** Paso a paso en `../evidencias/guion_exposicion.md`.
+
+1. *Agente y WhatsApp → Simular WhatsApp* (o tu celular con Twilio): `regué el lote 2 por 2 horas` → `SI`.
+2. `hoy cosechamos 40 kg de tomate del lote 2` → `SI` → código del lote de cosecha y enlace del QR.
+3. Abrir el QR: labores, aplicaciones con carencia respetada, cosecha.
+4. *Inventarios → Productos cosechados*: el tomate subió 40 kg.
+5. *Ventas → Nueva venta* vinculada al lote de cosecha → el QR muestra la venta (sin datos del cliente).
+6. Límites: `hoy cosechamos 20 kg de cebolla del lote 5` → bloqueo por carencia; `¿qué dosis le echo al lote 5?` → rechazo.
+
+## WhatsApp
+
+- Sin credenciales funciona en modo **simulado** (bitácora en *Agente y WhatsApp*).
+- **Twilio Sandbox (recomendado):** [`docs/WHATSAPP_TWILIO.md`](docs/WHATSAPP_TWILIO.md) — webhook `POST /api/webhooks/twilio`.
+- **Meta Cloud API:** [`docs/WHATSAPP_META.md`](docs/WHATSAPP_META.md) — webhook `/api/webhooks/whatsapp`.
+- Comandos `ALTA` / `BAJA` para el consentimiento. Alertas diarias a la hora configurada (solo a quien aceptó).
+
+## Pruebas
+
+```powershell
+cd codigo\backend ; npm test          # Vitest: unitarias + API (crea prisma/test.db sola)
+cd codigo\backend ; npm run test:cov  # con cobertura (umbrales en vitest.config.js)
+cd codigo\frontend ; npm test         # Vitest (jsdom)
+```
+
+Resultados, plan, UAT, defectos y métricas en `../evidencias/pruebas/`.
 
 ## Estructura
 
 ```
 codigo/
-├── backend/            API Node.js + Express + Prisma + SQLite
-│   ├── prisma/         schema.prisma, seed.js (datos ficticios)
+├── backend/                 API Node.js + Express + Prisma + SQLite
+│   ├── prisma/              schema.prisma · seed.js (historia de la demo) · seed-si-vacio.js (Render)
 │   ├── src/
-│   │   ├── agente/     agente.js (orquestador), parser.js (reglas), llm.js, guardrails.js
-│   │   ├── routes/     un archivo por módulo
-│   │   ├── services/   lotes/QR, nómina, WhatsApp
-│   │   ├── middleware/ JWT, roles, módulos, validación Zod, errores
-│   │   └── docs/       OpenAPI (Swagger en /api/docs)
-│   └── tests/          unit/ (node:test) e integracion/ (supertest)
-├── frontend/           Vue 3 + Vite + Pinia + PWA (sin conexión)
-├── render.yaml         despliegue del backend en Render
-└── .github/workflows/  CI/CD con GitHub Actions
-```
-
-## Ejecutar en local
-
-Requisitos: Node.js 20+.
-
-```bash
-# 1) Backend
-cd backend
-cp .env.example .env
-npm install
-
-# Si hay problemas con scripts de instalación, ejecutar:
-# npm install-scripts approve
-
-npx prisma db push        # crea dev.db (SQLite)
-npm run db:seed           # carga datos ficticios (incluye clientes con consentimiento WhatsApp)
-npm run dev               # http://localhost:3000  ·  Swagger: /api/docs
-
-# 2) Frontend (otra terminal)
-cd frontend
-npm install
-npm run dev               # http://localhost:5173
-```
-
-**Usuarios de prueba** (clave `Agro2026!`):
-- `propietario@finca.test` - Rol PROPIETARIO (acceso total)
-- `encargado@finca.test` - Rol ENCARGADO (gestión operativa)
-- `trabajador@finca.test` - Rol TRABAJADOR (registro de labores)
-
-**Rutas actualizadas**:
-- `/api/parcelas` → `/api/lotes` (gestión de campos/parcelas)
-- Siembras ahora se llaman "campañas" en la BD
-
-## Pruebas
-
-```bash
-cd backend && npm run test:cov     # 91 pruebas unitarias + cobertura
-cd backend && npm run test:int     # integración (requiere BD con seed)
-cd frontend && npm test            # Vitest
+│   │   ├── agente/          agente.js (orquestador SI/NO) · parser.js (reglas) · llm.js (Claude/Groq)
+│   │   │                    guardrails.js (no dosis) · politicas.js (perfiles) · repositorio.js
+│   │   ├── routes/          un archivo por módulo + webhooks + alertas
+│   │   ├── services/        whatsapp (Twilio/Meta/simulado) · alertas · trazabilidad (SQL) · finanzas · inventario
+│   │   ├── utils/           carencia · tareas · vivero · permisos (RBAC puro) · códigos
+│   │   ├── middleware/      JWT, roles, módulos activos, validación Zod, errores
+│   │   └── docs/openapi.js  Swagger (100 % de las rutas, verificado por prueba)
+│   ├── tests/               unit/ · integracion/ (supertest) · setup/ (BD de prueba)
+│   └── vitest.config.js
+├── frontend/                Vue 3 + Vite + Pinia + Vue Router + PWA (cola sin conexión), Leaflet, Chart.js
+├── docs/                    WHATSAPP_TWILIO.md · WHATSAPP_META.md · DESPLIEGUE.md
+├── render.yaml              Blueprint del backend en Render
+└── (en la raíz del repositorio) .github/workflows/ci.yml   CI/CD con GitHub Actions
 ```
 
 ## Despliegue
 
-- **Backend → Render**: *New → Blueprint* apuntando al repositorio (usa `render.yaml`). Health check: `/api/salud`.
-- **Frontend → Vercel**: importar la carpeta `frontend`, variable `VITE_API_URL` = URL de Render. `vercel.json` ya resuelve las rutas de la SPA.
-- Ajustar en Render `CORS_ORIGIN` y `FRONTEND_URL` con la URL de Vercel.
+Frontend en **Vercel**, backend + SQLite en **Render**. Guía: [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
-## WhatsApp
+## Decisiones técnicas
 
-1. Crear app en Meta for Developers → WhatsApp → número de prueba.
-2. Webhook: `https://<render>/api/webhooks/whatsapp`, token de verificación = `WHATSAPP_VERIFY_TOKEN`, suscribir `messages`.
-3. Cargar `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` y `WHATSAPP_APP_SECRET` en Render.
-4. El teléfono de cada usuario (Configuración → Usuarios) identifica quién escribe.
+Ver `../DECISIONES.md` (ADR-001 a ADR-020) y `../PENDIENTES.md`.
 
-Sin credenciales, el sistema funciona en **modo simulado** (pantalla *Agente y WhatsApp → Simular WhatsApp*).
+## Seguridad y ética
 
-## Agente de IA
-
-`AI_PROVIDER=claude` (requiere `ANTHROPIC_API_KEY`), `groq` (requiere `GROQ_API_KEY`) o `reglas` (sin internet ni costo). Si el LLM falla o responde algo inválido, se usa automáticamente el intérprete por reglas.
+JWT con expiración, RBAC en la API, Helmet, límite de intentos de login, validación Zod en cada entrada, auditoría, secretos solo en `.env`. Consentimiento de WhatsApp con fecha (ALTA/BAJA) para trabajadores, usuarios y clientes. Bloqueo de cosecha y venta en período de carencia. El agente no reemplaza al agrónomo: no recomienda productos, dosis ni mezclas, y siempre pide confirmación.
