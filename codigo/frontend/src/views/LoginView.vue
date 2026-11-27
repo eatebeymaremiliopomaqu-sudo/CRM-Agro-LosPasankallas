@@ -13,10 +13,9 @@ const error = ref('');
 const cargando = ref(false);
 
 const demo = [
-  ['admin@finca.test', 'Administrador'],
-  ['tecnico@finca.test', 'Técnico'],
-  ['supervisor@finca.test', 'Capataz'],
-  ['consulta@finca.test', 'Consulta'],
+  ['propietario@finca.test', 'Propietario'],
+  ['encargado@finca.test', 'Encargado'],
+  ['trabajador@finca.test', 'Trabajador'],
 ];
 
 async function entrar() {

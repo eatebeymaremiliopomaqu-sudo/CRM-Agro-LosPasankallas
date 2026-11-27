@@ -24,7 +24,12 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Al publicar una versión nueva, el SW nuevo toma el control enseguida y borra la caché anterior.
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             // Lecturas de la API: red primero, caché si no hay conexión
