@@ -17,6 +17,7 @@ import { privado as trazaPrivado, publico as trazaPublico } from './routes/traza
 import trabajadores from './routes/trabajadores.js';
 import tareas from './routes/tareas.js';
 import { agenteRouter, webhookRouter, twilioRouter } from './routes/agente.js';
+import { legalRouter } from './routes/legal.js';
 import alertas from './routes/alertas.js';
 import vivero from './routes/vivero.js';
 import reportes from './routes/reportes.js';
@@ -57,6 +58,7 @@ export function crearApp() {
   app.use('/api/publico/lotes', trazaPublico);
   app.use('/api/webhooks/whatsapp', webhookRouter); // Meta Cloud API
   app.use('/api/webhooks/twilio', twilioRouter); // Twilio (form-urlencoded + X-Twilio-Signature)
+  app.use(legalRouter); // /privacidad y /eliminacion-datos (requisito de Meta para el modo Live)
 
   // Rutas protegidas (JWT + módulo activo)
   app.use('/api', autenticar);

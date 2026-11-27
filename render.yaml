@@ -55,7 +55,7 @@ services:
       - key: WHATSAPP_APP_SECRET
         sync: false
       - key: WHATSAPP_GRAPH_VERSION
-        value: v24.0
+        value: v25.0
       - key: ALERTAS_ACTIVAS
         value: "true"
       - key: ZONA_HORARIA_MIN

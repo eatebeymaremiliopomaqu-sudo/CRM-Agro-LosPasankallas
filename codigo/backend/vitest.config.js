@@ -14,6 +14,10 @@ export const ENV_PRUEBAS = {
   TWILIO_WEBHOOK_URL: 'http://localhost/api/webhooks/twilio',
   TWILIO_VALIDAR_FIRMA: 'true',
   WHATSAPP_APP_SECRET: 'secreto-meta-de-prueba',
+  // Valores fijos: el .env local (con credenciales reales de Meta) no debe influir en las pruebas.
+  WHATSAPP_VERIFY_TOKEN: 'crm-agro-verify',
+  WHATSAPP_TOKEN: '',
+  WHATSAPP_PHONE_NUMBER_ID: '',
 };
 
 export default defineConfig({

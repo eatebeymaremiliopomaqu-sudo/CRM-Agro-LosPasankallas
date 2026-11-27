@@ -5,6 +5,7 @@ import request from 'supertest';
 import { crearApp } from '../../src/app.js';
 import { prisma } from '../../src/db.js';
 import { firmaTwilio } from '../../src/services/whatsapp.js';
+import { config } from '../../src/config.js';
 
 const app = crearApp();
 const tokens = {};
@@ -215,8 +216,17 @@ describe('Webhooks de WhatsApp (CP-WA-05)', () => {
     expect(buena.status).toBe(200);
   });
   it('Meta: verificación del webhook', async () => {
-    const r = await request(app).get('/api/webhooks/whatsapp').query({ 'hub.mode': 'subscribe', 'hub.verify_token': 'crm-agro-verify', 'hub.challenge': '123' });
+    const r = await request(app).get('/api/webhooks/whatsapp').query({ 'hub.mode': 'subscribe', 'hub.verify_token': config.whatsapp.verifyToken, 'hub.challenge': '123' });
     expect(r.text).toBe('123');
+  });
+  it('páginas públicas de privacidad y eliminación de datos (requisito de Meta)', async () => {
+    const p = await request(app).get('/privacidad');
+    expect(p.status).toBe(200);
+    expect(p.type).toBe('text/html');
+    expect(p.text).toContain('Política de privacidad');
+    const e = await request(app).get('/eliminacion-datos');
+    expect(e.status).toBe(200);
+    expect(e.text).toContain('eliminación');
   });
 });
 

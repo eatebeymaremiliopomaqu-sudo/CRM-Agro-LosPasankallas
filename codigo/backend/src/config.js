@@ -34,7 +34,7 @@ export const config = {
     phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
     verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'crm-agro-verify',
     appSecret: process.env.WHATSAPP_APP_SECRET || '',
-    graphVersion: process.env.WHATSAPP_GRAPH_VERSION || 'v24.0',
+    graphVersion: process.env.WHATSAPP_GRAPH_VERSION || 'v25.0',
     // Twilio (Sandbox o número aprobado)
     twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || '',
     twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || '',

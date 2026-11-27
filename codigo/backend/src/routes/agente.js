@@ -76,8 +76,22 @@ webhookRouter.get('/', (req, res) => {
   res.sendStatus(403);
 });
 
+// Resumen sin secretos de un POST de Meta: campos, mensajes y estados (con sus errores).
+function resumenWebhook(body) {
+  const cambios = (body?.entry || []).flatMap((e) => e.changes || []);
+  const campos = [...new Set(cambios.map((c) => c.field))].join(',') || '-';
+  const mensajes = cambios.reduce((n, c) => n + (c.value?.messages?.length || 0), 0);
+  const estados = cambios.flatMap((c) => c.value?.statuses || [])
+    .map((s) => `${s.status}${s.errors?.length ? ` (error ${s.errors.map((x) => `${x.code}: ${x.title || x.message}`).join('; ')})` : ''}`);
+  return `objeto=${body?.object || '-'} campos=${campos} mensajes=${mensajes}${estados.length ? ` estados=${estados.join(', ')}` : ''}`;
+}
+
 webhookRouter.post('/', limiteWebhook, asyncH(async (req, res) => {
-  if (!verificarFirma(req.rawBody || Buffer.from(''), req.get('x-hub-signature-256'), config.whatsapp.appSecret, { exigir: config.esProduccion })) {
+  const cabecera = req.get('x-hub-signature-256');
+  const firmaOk = verificarFirma(req.rawBody || Buffer.from(''), cabecera, config.whatsapp.appSecret, { exigir: config.esProduccion });
+  const estadoFirma = !cabecera ? 'ausente' : !config.whatsapp.appSecret ? 'sin comprobar (falta WHATSAPP_APP_SECRET)' : firmaOk ? 'válida' : 'INVÁLIDA';
+  console.log(`[whatsapp:meta] POST webhook · firma ${estadoFirma} · ${resumenWebhook(req.body)}`);
+  if (!firmaOk) {
     console.warn('[whatsapp:meta] firma X-Hub-Signature-256 inválida: revisa WHATSAPP_APP_SECRET');
     return res.sendStatus(401);
   }

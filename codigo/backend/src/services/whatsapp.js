@@ -7,7 +7,7 @@ import { config } from '../config.js';
 import { mensajeTareaAsignada } from '../utils/tareas.js';
 
 /** URL base de la Graph API de Meta (versión configurable con WHATSAPP_GRAPH_VERSION; las versiones viejas se retiran). */
-export const urlGraph = (version = config.whatsapp.graphVersion) => `https://graph.facebook.com/${version || 'v24.0'}`;
+export const urlGraph = (version = config.whatsapp.graphVersion) => `https://graph.facebook.com/${version || 'v25.0'}`;
 const TWILIO_API = 'https://api.twilio.com/2010-04-01';
 
 // ───────────── Números ─────────────

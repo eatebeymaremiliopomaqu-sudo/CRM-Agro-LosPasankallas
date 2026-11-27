@@ -626,7 +626,7 @@ Usar **Meta WhatsApp Cloud API** (`WHATSAPP_PROVIDER=meta`) para la demo y la pr
 |---|---|---|
 | 22.1 | Proveedor `meta` con el **número de prueba** de Meta y el celular del autor como destinatario verificado. | Meta envía el código de verificación **por WhatsApp**, no por SMS; funciona desde Bolivia y es gratis para pruebas (hasta 5 destinatarios). |
 | 22.2 | Webhook `GET/POST /api/webhooks/whatsapp` con `WHATSAPP_VERIFY_TOKEN` y firma `X-Hub-Signature-256` (HMAC-SHA256 del cuerpo crudo). En producción la firma es **obligatoria**: sin `WHATSAPP_APP_SECRET` el webhook responde 401. | Antes, sin App Secret se aceptaba cualquier petición también en producción. |
-| 22.3 | Versión de la Graph API configurable (`WHATSAPP_GRAPH_VERSION`, por defecto `v24.0`) en lugar de `v21.0` fija. | Meta retira las versiones de la Graph API unos dos años después de publicarlas. |
+| 22.3 | Versión de la Graph API configurable (`WHATSAPP_GRAPH_VERSION`, por defecto `v25.0`) en lugar de `v21.0` fija. | Meta retira las versiones de la Graph API unos dos años después de publicarlas. |
 | 22.4 | Registro en consola de cada mensaje entrante y saliente, de la verificación del webhook y de las firmas inválidas. | Diagnosticar la conexión real sin depurador. |
 | 22.5 | El código y las pruebas de Twilio se conservan; `WHATSAPP_TWILIO.md` queda como guía alternativa. | Quien sí pueda registrarse en Twilio puede cambiar de proveedor con una variable de entorno. |
 
