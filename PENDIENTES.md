@@ -137,7 +137,8 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] PASO 1 · Celular real del encargado solo en `.env` (`DEMO_WHATSAPP_ENCARGADO`, ADR-021)
 - [x] PASO 2 · Verificación local: `db push --force-reset` + seed con el celular del encargado, /api/salud y /api/docs OK, build OK, 249 + 14 pruebas en verde, flujo de la demo por API OK (labor con SI → cosecha → QR → inventario → venta → ficha con la venta), servidor detenido por PID
 - [x] PASO 3 · Cambio a Meta WhatsApp Cloud API (Twilio no envía SMS de verificación a Bolivia, ADR-022): firma obligatoria en producción, Graph API configurable (v25.0), registro en consola, documentación actualizada
-- [ ] PASO 3 · Conectar el celular de Beymar al número de prueba de Meta y probar "ayuda", cosecha + SI y una alerta
+- [x] PASO 3 · Celular de Beymar conectado al número de prueba de Meta (26/11/2026, túnel cloudflared): "ayuda" respondido, cosecha de 40 kg de tomate del L-02 + SI → lote FLM-2026-0007, alerta manual entregada al encargado (10 avisos). La app se suscribió a la WABA con POST /subscribed_apps. Los destinatarios ficticios fallan con #131030 (número no verificado), como se espera
+- [ ] PASO 3 · Antes de la exposición: renovar el token temporal (24 h) o crear un token permanente de usuario del sistema
 - [ ] PASO 4 · GitHub, Render y Vercel; URLs públicas en los documentos
 - [ ] PASO 5 · Capturas reales, tablero Trello/Jira, registro SCRUM
 - [ ] PASO 6 · ZIP final `CRM_Agro_Grupo_LosPasankallas.zip`
