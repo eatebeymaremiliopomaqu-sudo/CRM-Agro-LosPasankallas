@@ -38,7 +38,7 @@ function arquitectura() {
   s += caja(30, 180, 220, 70, 'WhatsApp', ['Personal de la finca y clientes'], { fondo: C.gris, borde: C.linea });
   s += caja(30, 280, 220, 70, 'Consumidor', ['Escanea el QR del producto'], { fondo: C.gris, borde: C.linea });
   s += caja(300, 70, 230, 80, 'Frontend · Vercel', ['Vue 3 + Vite + Pinia + Router', 'PWA · Leaflet · Chart.js · HTTPS + JWT'], { fondo: C.azulSuave, borde: C.azul });
-  s += caja(300, 180, 230, 70, 'Twilio / Meta Cloud API', ['Webhook firmado (HMAC)'], { fondo: C.azulSuave, borde: C.azul });
+  s += caja(300, 180, 230, 70, 'Meta WhatsApp Cloud API', ['Webhook firmado (HMAC)'], { fondo: C.azulSuave, borde: C.azul });
   // API
   s += `<rect x="580" y="60" width="560" height="470" rx="14" fill="#FFFFFF" stroke="${C.bosque}" stroke-width="2"/>`;
   s += `<text x="860" y="86" text-anchor="middle" font-size="16" font-weight="700" fill="${C.bosque}">Backend · Render (Node.js + Express)</text>`;
@@ -108,7 +108,7 @@ function modeloER() {
 function flujoAgente() {
   let s = '';
   const pasos = [
-    ['Mensaje entrante', 'WhatsApp (Twilio/Meta) · simulador · chat web', C.gris, C.linea],
+    ['Mensaje entrante', 'WhatsApp (Meta) · simulador · chat web', C.gris, C.linea],
     ['¿Quién escribe?', 'usuario (rol) · trabajador · cliente · desconocido', C.azulSuave, C.azul],
     ['ALTA / BAJA', 'consentimiento con fecha (si corresponde)', C.azulSuave, C.azul],
     ['Interpretar', 'reglas en español de campo + LLM opcional (solo extrae JSON)', C.brote, C.hoja],

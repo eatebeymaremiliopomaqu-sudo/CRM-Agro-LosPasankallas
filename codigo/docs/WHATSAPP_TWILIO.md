@@ -1,4 +1,6 @@
-# Conectar tu WhatsApp con Twilio (Sandbox)
+# Conectar tu WhatsApp con Twilio (Sandbox) · alternativa
+
+> **En este proyecto se usó Meta WhatsApp Cloud API** (`WHATSAPP_META.md`). Twilio exige verificar la cuenta con un SMS que no llega a números de Bolivia, así que esta guía queda como alternativa para quien sí pueda registrarse (ADR-022). El código de Twilio sigue soportado y probado.
 
 Esta guía conecta **tu celular** con el agente de CRM-Agro usando el **Sandbox de WhatsApp de Twilio** (gratis, para pruebas y la demo).
 Al terminar podrás escribirle al número del Sandbox desde tu WhatsApp, registrar labores y cosechas con confirmación SI/NO, hacer consultas, recibir alertas y probar pedidos de clientes.

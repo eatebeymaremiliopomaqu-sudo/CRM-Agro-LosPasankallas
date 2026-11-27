@@ -6,7 +6,8 @@ import { prisma } from '../db.js';
 import { config } from '../config.js';
 import { mensajeTareaAsignada } from '../utils/tareas.js';
 
-const GRAPH = 'https://graph.facebook.com/v21.0';
+/** URL base de la Graph API de Meta (versión configurable con WHATSAPP_GRAPH_VERSION; las versiones viejas se retiran). */
+export const urlGraph = (version = config.whatsapp.graphVersion) => `https://graph.facebook.com/${version || 'v24.0'}`;
 const TWILIO_API = 'https://api.twilio.com/2010-04-01';
 
 // ───────────── Números ─────────────
@@ -23,9 +24,12 @@ export const aDireccionTwilio = (numero) => `whatsapp:+${normalizarNumeroWhatsAp
 
 // ───────────── Meta Cloud API ─────────────
 
-/** Verifica la firma X-Hub-Signature-256 del webhook de Meta con el App Secret. */
-export function verificarFirma(cuerpoCrudo, firmaCabecera, appSecret) {
-  if (!appSecret) return true; // sin secreto configurado (modo desarrollo)
+/**
+ * Verifica la firma X-Hub-Signature-256 del webhook de Meta con el App Secret.
+ * Sin secreto configurado se acepta solo si no se exige (desarrollo); en producción se exige siempre.
+ */
+export function verificarFirma(cuerpoCrudo, firmaCabecera, appSecret, { exigir = false } = {}) {
+  if (!appSecret) return !exigir;
   if (!firmaCabecera || !firmaCabecera.startsWith('sha256=')) return false;
   const esperado = crypto.createHmac('sha256', appSecret).update(cuerpoCrudo).digest('hex');
   const recibido = firmaCabecera.slice(7);
@@ -123,7 +127,7 @@ export function crearProveedor(cfg = config.whatsapp, fetchFn = globalThis.fetch
       nombre: 'meta',
       simulado: false,
       async enviarTexto(para, texto) {
-        const res = await fetchFn(`${GRAPH}/${cfg.phoneNumberId}/messages`, {
+        const res = await fetchFn(`${urlGraph(cfg.graphVersion)}/${cfg.phoneNumberId}/messages`, {
           method: 'POST',
           signal: AbortSignal.timeout(10000),
           headers: { authorization: `Bearer ${cfg.token}`, 'content-type': 'application/json' },

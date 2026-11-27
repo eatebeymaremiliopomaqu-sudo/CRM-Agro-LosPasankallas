@@ -102,7 +102,7 @@
   <tr><td>Disponibilidad sin conexión</td><td>Cola local de escrituras (labores, observaciones, asistencia, tareas, cosechas) y caché de lecturas.</td></tr>
   <tr><td>Seguridad</td><td>JWT, RBAC en la API, Helmet, límite de intentos, validación Zod, firmas de webhooks, auditoría, secretos solo en variables de entorno.</td></tr>
   <tr><td>Privacidad</td><td>Consentimiento con fecha; ficha QR sin datos personales.</td></tr>
-  <tr><td>Costo</td><td>Plan gratuito posible (Vercel Hobby, Render Free, Twilio Sandbox, agente por reglas); producción &lt; US$ 15/mes.</td></tr>
+  <tr><td>Costo</td><td>Plan gratuito posible (Vercel Hobby, Render Free, número de prueba de Meta WhatsApp Cloud API, agente por reglas); producción &lt; US$ 15/mes.</td></tr>
   <tr><td>Mantenibilidad</td><td>Un archivo de rutas por módulo, reglas de negocio puras y probadas, 20 ADR documentados, Swagger al 100 %.</td></tr>
   <tr><td>Calidad</td><td>249 pruebas automatizadas, 96 % de cobertura de líneas, CI en cada push.</td></tr>
 </table>
@@ -123,14 +123,14 @@
 </table>
 
 <h2 class="salto">4. Arquitectura modular</h2>
-<figure><img src="../../evidencias/diagramas/arquitectura.png" alt="Arquitectura" /><figcaption>Figura 1. Arquitectura: PWA en Vercel, API en Render, SQLite, WhatsApp por Twilio/Meta y LLM opcional.</figcaption></figure>
+<figure><img src="../../evidencias/diagramas/arquitectura.png" alt="Arquitectura" /><figcaption>Figura 1. Arquitectura: PWA en Vercel, API en Render, SQLite, WhatsApp por Meta Cloud API y LLM opcional.</figcaption></figure>
 <p>El sistema es un <strong>monolito modular</strong>: un solo backend (fácil y barato de desplegar) con un router por módulo. Cada router se monta detrás de <code>requiereModulo('Mx')</code>, que consulta la tabla <code>ModuloFinca</code>; si el módulo está apagado la API responde 403 y la interfaz oculta el menú. Las dependencias (M2→M1, M5→M4, M7→M1+M4) se validan al activar. WhatsApp y el agente son una <strong>capacidad transversal</strong> (campo <code>Finca.whatsappActivo</code>), porque sirven a varios módulos.</p>
 <table>
   <tr><th>Capa</th><th>Tecnología</th><th>Motivo</th></tr>
   <tr><td>Frontend</td><td>Vue 3, Vite, Pinia, Vue Router, vite-plugin-pwa, Leaflet, Chart.js</td><td>Liviano, PWA instalable, mapa sin costo (OSM)</td></tr>
   <tr><td>Backend</td><td>Node.js, Express, Zod, Helmet, JWT, Prisma</td><td>Un lenguaje en todo el proyecto; validación declarativa</td></tr>
   <tr><td>Datos</td><td>SQLite</td><td>Sin servidor de BD que pagar; suficiente para una finca</td></tr>
-  <tr><td>Mensajería</td><td>Twilio WhatsApp (Sandbox) o Meta Cloud API</td><td>Abstracción <code>WHATSAPP_PROVIDER</code> (ADR-009)</td></tr>
+  <tr><td>Mensajería</td><td><strong>Meta WhatsApp Cloud API</strong> (usado); Twilio como alternativa</td><td>Abstracción <code>WHATSAPP_PROVIDER</code> (ADR-009). Se eligió Meta porque Twilio exige verificación por SMS y no envía SMS a Bolivia (ADR-022)</td></tr>
   <tr><td>IA</td><td>Intérprete por reglas + LLM opcional (Claude o Groq)</td><td>Funciona gratis y sin internet; el LLM solo mejora la extracción</td></tr>
 </table>
 
@@ -250,13 +250,14 @@ if (hoy &lt; fin) {
   return '📝 Voy a registrar: … ¿Confirmas? SI / NO';
 }</pre>
 <p>El orquestador no conoce la base de datos: recibe el intérprete, el almacén de acciones pendientes y el ejecutor por inyección de dependencias. Por eso sus pruebas son rápidas y deterministas.</p>
-<h3>6.5 Firma del webhook de Twilio</h3>
-<pre>export function firmaTwilio(authToken, url, params) {
-  const datos = Object.keys(params).sort().reduce((acc, k) => acc + k + params[k], url);
-  return crypto.createHmac('sha1', authToken).update(datos).digest('base64');
-}
-// comparación en tiempo constante con crypto.timingSafeEqual; 403 si no coincide</pre>
-<p>La prueba usa el vector oficial de la documentación de Twilio. Meta usa HMAC-SHA256 del cuerpo crudo (<code>X-Hub-Signature-256</code>).</p>
+<h3>6.5 Firma del webhook de WhatsApp (Meta)</h3>
+<pre>export function verificarFirma(cuerpoCrudo, firmaCabecera, appSecret, { exigir = false } = {}) {
+  if (!appSecret) return !exigir;                  // en producción se exige siempre
+  if (!firmaCabecera?.startsWith('sha256=')) return false;
+  const esperado = crypto.createHmac('sha256', appSecret).update(cuerpoCrudo).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(firmaCabecera.slice(7), 'hex'), Buffer.from(esperado, 'hex'));
+}</pre>
+<p>Meta firma el <strong>cuerpo crudo</strong> de cada petición con HMAC-SHA256 y el App Secret (<code>X-Hub-Signature-256</code>); por eso Express guarda <code>req.rawBody</code> antes de interpretar el JSON. La comparación es en tiempo constante. El proveedor alternativo, Twilio, usa HMAC-SHA1 en Base64 de la URL más los parámetros ordenados; ambos tienen pruebas con firma válida e inválida.</p>
 <h3>6.6 Costos por lote</h3>
 <p><code>calcularCostosPorLote()</code> en <code>services/finanzas.js</code> es una función pura que suma por lote: <strong>labores</strong> (<code>costoBs</code>, gastos directos), <strong>jornales</strong> (horas ÷ 8 × jornal, solo asistencias con lote) e <strong>insumos</strong> (cantidad usada × costo unitario). Ingresos = ventas de los lotes de cosecha de ese lote. <strong>Margen = ingresos − costos</strong>; <strong>margen % = margen ÷ ingresos × 100</strong> (no se calcula si no hubo ventas); <strong>costo/kg = costo ÷ kg cosechados</strong>. Las asistencias sin lote y el vivero se informan aparte para no inventar prorrateos.</p>
 
@@ -318,7 +319,7 @@ if (hoy &lt; fin) {
 <ul>
   <li><strong>Autenticación y autorización:</strong> JWT de 8 h, contraseñas con bcrypt, máx. 10 intentos de login cada 15 min, RBAC en cada ruta, auditoría.</li>
   <li><strong>Entradas:</strong> validación Zod; consultas parametrizadas (Prisma y SQL con <code>?</code>); escape de HTML en el mapa y la etiqueta imprimible.</li>
-  <li><strong>Webhooks:</strong> firma <code>X-Twilio-Signature</code> y <code>X-Hub-Signature-256</code>; en producción la validación es obligatoria.</li>
+  <li><strong>Webhooks:</strong> firma <code>X-Hub-Signature-256</code> de Meta (y <code>X-Twilio-Signature</code> para el proveedor alternativo); en producción la validación es obligatoria.</li>
   <li><strong>Secretos:</strong> solo en <code>.env</code> (no se sube) y variables de Render/Vercel; <code>.env.example</code> con valores vacíos.</li>
   <li><strong>Consentimiento de WhatsApp</strong> para trabajadores, usuarios y clientes, con fecha y comandos ALTA/BAJA; nunca se envían avisos sin consentimiento (probado).</li>
   <li><strong>Privacidad del QR:</strong> la ficha pública no muestra nombres, teléfonos, precios ni responsables; el token es aleatorio.</li>
@@ -337,7 +338,7 @@ if (hoy &lt; fin) {
   <tr><td>Vercel (frontend)</td><td>US$ 0 (Hobby)</td><td>US$ 0</td><td>Sitio estático + PWA; tráfico bajo</td></tr>
   <tr><td>Render (API)</td><td>US$ 0 (Free: duerme tras 15 min, disco efímero)</td><td>US$ 7 (Starter) + ~US$ 0,25 (disco 1 GB)</td><td>Siempre encendido y SQLite persistente</td></tr>
   <tr><td>Base de datos</td><td>Incluida (SQLite)</td><td>Incluida</td><td>No se paga un servidor de BD</td></tr>
-  <tr><td>WhatsApp</td><td>US$ 0 (Twilio Sandbox)</td><td>~US$ 3–6 (≈ 500 mensajes al mes)</td><td>Tarifa por mensaje de Twilio + conversación de Meta; verificar tarifas vigentes</td></tr>
+  <tr><td>WhatsApp</td><td>US$ 0 (número de prueba de Meta)</td><td>~US$ 3–6 al mes</td><td>Meta Cloud API: las respuestas a mensajes iniciados por el cliente son gratuitas; las alertas fuera de la ventana de 24 h usan plantillas que se cobran por mensaje. Verificar tarifas vigentes</td></tr>
   <tr><td>LLM</td><td>US$ 0 (modo reglas)</td><td>US$ 0–2</td><td>Mensajes cortos; Groq tiene plan gratuito; el modo reglas funciona sin LLM</td></tr>
   <tr><td>Dominio (opcional)</td><td>—</td><td>~US$ 1</td><td>Anual prorrateado</td></tr>
   <tr><th>Total</th><th>US$ 0</th><th>≈ US$ 11–16 / mes (≈ Bs 77–112)</th><th>Menos que el jornal de un día de un trabajador (Bs 110)</th></tr>

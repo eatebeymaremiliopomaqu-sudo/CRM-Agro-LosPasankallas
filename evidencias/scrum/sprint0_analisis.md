@@ -51,7 +51,7 @@ Ver `../diagramas/modelo_er.png` (versión final, 30 tablas en 3FN) y la secció
 - WhatsApp por **Twilio Sandbox** para la demo; Meta Cloud API como alternativa.
 - Agente con **reglas + LLM opcional**: el LLM solo extrae datos; las decisiones y validaciones las hace el código.
 - Estimación con puntos de historia (Fibonacci), comparando cada historia con una de referencia (HU-01 = 3 puntos). Velocidad esperada: ~45 puntos por sprint.
-- Ver `../../DECISIONES.md` (ADR-001 a ADR-021).
+- Ver `../../DECISIONES.md` (ADR-001 a ADR-022).
 
 ## 5. Definition of Done (acordada)
 

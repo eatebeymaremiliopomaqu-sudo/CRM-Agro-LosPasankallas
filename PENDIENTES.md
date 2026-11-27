@@ -136,14 +136,15 @@ Este archivo registra las tareas pendientes organizadas por bloques según el or
 - [x] PASO 1 · Archivos renombrados: `Informe_Grupo_LosPasankallas.pdf`, `Diapositivas_Grupo_LosPasankallas.pptx`
 - [x] PASO 1 · Celular real del encargado solo en `.env` (`DEMO_WHATSAPP_ENCARGADO`, ADR-021)
 - [x] PASO 2 · Verificación local: `db push --force-reset` + seed con el celular del encargado, /api/salud y /api/docs OK, build OK, 249 + 14 pruebas en verde, flujo de la demo por API OK (labor con SI → cosecha → QR → inventario → venta → ficha con la venta), servidor detenido por PID
-- [ ] PASO 3 · WhatsApp con Twilio y el celular de Beymar
+- [x] PASO 3 · Cambio a Meta WhatsApp Cloud API (Twilio no envía SMS de verificación a Bolivia, ADR-022): firma obligatoria en producción, Graph API configurable (v24.0), registro en consola, documentación actualizada
+- [ ] PASO 3 · Conectar el celular de Beymar al número de prueba de Meta y probar "ayuda", cosecha + SI y una alerta
 - [ ] PASO 4 · GitHub, Render y Vercel; URLs públicas en los documentos
 - [ ] PASO 5 · Capturas reales, tablero Trello/Jira, registro SCRUM
 - [ ] PASO 6 · ZIP final `CRM_Agro_Grupo_LosPasankallas.zip`
 
 ## 📋 PENDIENTE (requiere cuentas o datos de Beymar)
 
-- [ ] Conectar el celular al Sandbox de Twilio y ejecutar CP-MAN-03 / UAT-01 a 06 con el celular real
+- [ ] Conectar el celular al número de prueba de Meta (`codigo/docs/WHATSAPP_META.md`) y ejecutar CP-MAN-03 / UAT-01 a 06 con el celular real
 - [ ] Subir a GitHub y desplegar en Render y Vercel; anotar las URL públicas
 - [ ] Importar `evidencias/scrum/product_backlog.csv` en Trello o Jira y guardar una captura del tablero
 - [ ] ✏️ Completar las fechas del registro diario, las horas de los sprint backlogs, las observaciones del PO y el avance diario real de los burndowns (`evidencias/scrum/fuente/generar_scrum.mjs`)

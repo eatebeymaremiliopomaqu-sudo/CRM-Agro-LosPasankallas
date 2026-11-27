@@ -18,7 +18,7 @@ CRM web **modular y de bajo costo** para fincas pequeñas (frutas, hortalizas y 
 | M5 | Ventas y clientes | Clientes (consentimiento WhatsApp), pedidos, ventas, precios, cobros y **cuentas por cobrar** | M4 |
 | M6 | Vivero | Lotes de plantines: siembra, germinación (%), merma, stock y venta por M5 | — |
 | M7 | Reportes y finanzas | **Costo por lote**, ingresos, **margen**, gráficos y exportación CSV | M1, M4 |
-| — | WhatsApp + agente IA | Capacidad transversal (`Finca.whatsappActivo`): Twilio, Meta o simulado; alertas diarias | — |
+| — | WhatsApp + agente IA | Capacidad transversal (`Finca.whatsappActivo`): Meta Cloud API (usado), Twilio o simulado; alertas diarias | — |
 
 Si un módulo está apagado, su menú desaparece y la API responde **403**.
 
@@ -74,7 +74,7 @@ npm run dev
 
 **Labor por WhatsApp → cosecha → QR → inventario → venta.** Paso a paso en `../evidencias/guion_exposicion.md`.
 
-1. *Agente y WhatsApp → Simular WhatsApp* (o tu celular con Twilio): `regué el lote 2 por 2 horas` → `SI`.
+1. *Agente y WhatsApp → Simular WhatsApp* (o tu celular con Meta Cloud API): `regué el lote 2 por 2 horas` → `SI`.
 2. `hoy cosechamos 40 kg de tomate del lote 2` → `SI` → código del lote de cosecha y enlace del QR.
 3. Abrir el QR: labores, aplicaciones con carencia respetada, cosecha.
 4. *Inventarios → Productos cosechados*: el tomate subió 40 kg.
@@ -84,8 +84,8 @@ npm run dev
 ## WhatsApp
 
 - Sin credenciales funciona en modo **simulado** (bitácora en *Agente y WhatsApp*).
-- **Twilio Sandbox (recomendado):** [`docs/WHATSAPP_TWILIO.md`](docs/WHATSAPP_TWILIO.md) — webhook `POST /api/webhooks/twilio`.
-- **Meta Cloud API:** [`docs/WHATSAPP_META.md`](docs/WHATSAPP_META.md) — webhook `/api/webhooks/whatsapp`.
+- **Meta Cloud API (el usado en este proyecto):** [`docs/WHATSAPP_META.md`](docs/WHATSAPP_META.md) — webhook `/api/webhooks/whatsapp`.
+- **Twilio Sandbox (alternativa):** [`docs/WHATSAPP_TWILIO.md`](docs/WHATSAPP_TWILIO.md) — webhook `POST /api/webhooks/twilio`. No se usó porque Twilio no envía el SMS de verificación a Bolivia (ADR-022).
 - Comandos `ALTA` / `BAJA` para el consentimiento. Alertas diarias a la hora configurada (solo a quien aceptó).
 
 ## Pruebas
@@ -108,14 +108,14 @@ codigo/
 │   │   ├── agente/          agente.js (orquestador SI/NO) · parser.js (reglas) · llm.js (Claude/Groq)
 │   │   │                    guardrails.js (no dosis) · politicas.js (perfiles) · repositorio.js
 │   │   ├── routes/          un archivo por módulo + webhooks + alertas
-│   │   ├── services/        whatsapp (Twilio/Meta/simulado) · alertas · trazabilidad (SQL) · finanzas · inventario
+│   │   ├── services/        whatsapp (Meta/Twilio/simulado) · alertas · trazabilidad (SQL) · finanzas · inventario
 │   │   ├── utils/           carencia · tareas · vivero · permisos (RBAC puro) · códigos
 │   │   ├── middleware/      JWT, roles, módulos activos, validación Zod, errores
 │   │   └── docs/openapi.js  Swagger (100 % de las rutas, verificado por prueba)
 │   ├── tests/               unit/ · integracion/ (supertest) · setup/ (BD de prueba)
 │   └── vitest.config.js
 ├── frontend/                Vue 3 + Vite + Pinia + Vue Router + PWA (cola sin conexión), Leaflet, Chart.js
-├── docs/                    WHATSAPP_TWILIO.md · WHATSAPP_META.md · DESPLIEGUE.md
+├── docs/                    WHATSAPP_META.md · WHATSAPP_TWILIO.md · DESPLIEGUE.md
 └── (raíz del repositorio)    render.yaml (Blueprint de Render) · .github/workflows/ci.yml (CI/CD)
 ```
 
@@ -125,7 +125,7 @@ Frontend en **Vercel**, backend + SQLite en **Render**. Guía: [`docs/DESPLIEGUE
 
 ## Decisiones técnicas
 
-Ver `../DECISIONES.md` (ADR-001 a ADR-021) y `../PENDIENTES.md`.
+Ver `../DECISIONES.md` (ADR-001 a ADR-022) y `../PENDIENTES.md`.
 
 ## Seguridad y ética
 

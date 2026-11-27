@@ -69,21 +69,26 @@ export const webhookRouter = Router();
 // Verificación inicial (Meta hace GET con hub.challenge)
 webhookRouter.get('/', (req, res) => {
   if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.whatsapp.verifyToken) {
+    console.log('[whatsapp:meta] webhook verificado por Meta');
     return res.status(200).send(req.query['hub.challenge']);
   }
+  console.warn('[whatsapp:meta] verificación rechazada: el token no coincide con WHATSAPP_VERIFY_TOKEN');
   res.sendStatus(403);
 });
 
 webhookRouter.post('/', limiteWebhook, asyncH(async (req, res) => {
-  if (!verificarFirma(req.rawBody || Buffer.from(''), req.get('x-hub-signature-256'), config.whatsapp.appSecret)) {
+  if (!verificarFirma(req.rawBody || Buffer.from(''), req.get('x-hub-signature-256'), config.whatsapp.appSecret, { exigir: config.esProduccion })) {
+    console.warn('[whatsapp:meta] firma X-Hub-Signature-256 inválida: revisa WHATSAPP_APP_SECRET');
     return res.sendStatus(401);
   }
   // Meta espera 200 rápido; procesamos después y respondemos por la API REST.
   res.sendStatus(200);
   for (const m of extraerMensajes(req.body)) {
     try {
+      console.log(`[whatsapp:meta] ← ${m.de}: ${m.texto.slice(0, 80)}`);
       const r = await atenderMensajeEntrante({ de: m.de, texto: m.texto });
       await proveedorWhatsApp().enviarTexto(m.de, r.respuesta);
+      console.log(`[whatsapp:meta] → ${m.de}: ${String(r.respuesta).slice(0, 80).replace(/\n/g, ' ')}`);
     } catch (e) {
       console.error('[whatsapp:meta] error procesando mensaje', e.message);
     }

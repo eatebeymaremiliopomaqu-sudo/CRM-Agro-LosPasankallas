@@ -5,7 +5,7 @@ Tiempo estimado: 30–40 minutos. Necesitas una cuenta de **GitHub**, **Render**
 ```
 GitHub (repositorio) ──► Render: API Node.js + SQLite   https://<servicio>.onrender.com  (Swagger en /api/docs)
                     └──► Vercel: frontend PWA          https://<proyecto>.vercel.app
-WhatsApp (Twilio) ─────► https://<servicio>.onrender.com/api/webhooks/twilio
+WhatsApp (Meta) ───────► https://<servicio>.onrender.com/api/webhooks/whatsapp
 ```
 
 ## 0. Subir el repositorio a GitHub
@@ -23,7 +23,7 @@ WhatsApp (Twilio) ─────► https://<servicio>.onrender.com/api/webhook
 
 1. En <https://dashboard.render.com> → **New → Blueprint** → conecta el repositorio. Render lee `render.yaml` de la raíz.
 2. Revisa el servicio `crm-agro-api` (rootDir `codigo/backend`, plan **free**) y pulsa **Apply**.
-3. Render pedirá las variables marcadas `sync: false`. Para la primera vez deja vacías las de Twilio/Meta/LLM y completa:
+3. Render pedirá las variables marcadas `sync: false`. Para la primera vez deja vacías las de Meta/Twilio/LLM y completa:
    | Variable | Valor |
    |---|---|
    | `CORS_ORIGIN` | por ahora `https://<proyecto>.vercel.app` (la ajustas en el paso 3) |
@@ -48,17 +48,21 @@ WhatsApp (Twilio) ─────► https://<servicio>.onrender.com/api/webhook
 2. Prueba la ficha pública: en *Trazabilidad* abre un lote de cosecha → el QR debe apuntar a `https://<proyecto>.vercel.app/t/…`.
 3. En el celular, abre la URL de Vercel y elige **Agregar a pantalla de inicio** (PWA).
 
-## 4. WhatsApp (Twilio) en producción
+## 4. WhatsApp (Meta Cloud API) en producción
 
-Sigue `WHATSAPP_TWILIO.md`. En Render:
+Sigue `WHATSAPP_META.md`. En Render → *Environment*:
 
 | Variable | Valor |
 |---|---|
-| `WHATSAPP_PROVIDER` | `twilio` |
-| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | de la consola de Twilio |
-| `TWILIO_WEBHOOK_URL` | `https://<servicio>.onrender.com/api/webhooks/twilio` (igual a la de Twilio) |
+| `WHATSAPP_PROVIDER` | `meta` |
+| `WHATSAPP_TOKEN` | token de acceso (temporal de 24 h o permanente de un usuario del sistema) |
+| `WHATSAPP_PHONE_NUMBER_ID` | identificador del número de teléfono |
+| `WHATSAPP_APP_SECRET` | Configuración de la app → Básica → Clave secreta |
+| `WHATSAPP_VERIFY_TOKEN` | el mismo que pongas en el webhook de Meta |
 
-En producción la firma `X-Twilio-Signature` **siempre** se valida.
+En Meta → **WhatsApp → Configuración → Webhook → Editar**: `https://<servicio>.onrender.com/api/webhooks/whatsapp` con el token de verificación, y suscribir **messages**. En producción la firma `X-Hub-Signature-256` **siempre** se valida (sin `WHATSAPP_APP_SECRET` el webhook rechaza todo).
+
+El celular del encargado se carga en la app (*Configuración → Usuarios*), o con `DEMO_WHATSAPP_ENCARGADO` en Render (lo usa la carga inicial de la demo).
 
 ## 5. Agente con LLM (opcional)
 
@@ -86,7 +90,7 @@ En producción la firma `X-Twilio-Signature` **siempre** se valida.
 |---|---|---|
 | Vercel Hobby | US$ 0 | US$ 0 |
 | Render | US$ 0 (free) | ≈ US$ 7 (starter) + ≈ US$ 0,25 (1 GB de disco) |
-| Twilio WhatsApp | US$ 0 (Sandbox) | ≈ US$ 3–6 (~500 mensajes) |
+| WhatsApp (Meta Cloud API) | US$ 0 (número de prueba) | ≈ US$ 3–6 (plantillas de alertas; las respuestas a mensajes del cliente son gratuitas) |
 | LLM | US$ 0 (reglas) | US$ 0–2 |
 | **Total** | **US$ 0** | **≈ US$ 11–16 / mes** |
 

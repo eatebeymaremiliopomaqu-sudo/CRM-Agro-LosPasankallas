@@ -25,7 +25,7 @@
 | 10 | Informe explica tablas, claves, normalización y consultas clave | ✅ | Informe §5; `prisma/consultas_clave.sql` (verificadas) |
 | 11 | Backend Node.js + Express, REST, JWT, roles, validaciones | ✅ | `src/`; Zod en cada entrada; CP-SEG-01/02 |
 | 12 | Frontend Vue 3 (Vite, Router, Pinia), responsivo, PWA | ✅ | `codigo/frontend`; `vite-plugin-pwa`; barra inferior por rol |
-| 13 | WhatsApp (Cloud API o Twilio): registrar labores y cosechas | ✅ código · ⏳ celular real | `routes/agente.js`, `services/whatsapp.js`; CP-WA-05 (webhook firmado en pruebas). Falta: conectar el celular de Beymar (`docs/WHATSAPP_TWILIO.md`) |
+| 13 | WhatsApp (Cloud API o Twilio): registrar labores y cosechas — se usa **Meta Cloud API** (ADR-022) | ✅ código · ⏳ celular real | `routes/agente.js`, `services/whatsapp.js`; CP-WA-05 (webhook firmado en pruebas). Falta: conectar el celular de Beymar (`docs/WHATSAPP_META.md`) |
 | 14 | Enviar alertas (riego, aplicaciones, stock mínimo) | ✅ | `services/alertas.js`; botón "Enviar ahora"; CP-WA-04 |
 | 15 | Recibir pedidos de clientes | ✅ | Intención PEDIDO_CLIENTE; CP-AG-20 |
 | 16 | Agente IA interpreta mensajes con confirmación previa | ✅ | `agente/agente.js`; CP-AG-05 |

@@ -23,7 +23,7 @@ INTEGRANTE Y ROLES (trabajo individual)
 URL PÚBLICAS (guía: codigo/docs/DESPLIEGUE.md)
   Aplicación (Vercel):     pendiente de despliegue
   API + Swagger (Render):  pendiente de despliegue
-  Webhook de Twilio:       pendiente de despliegue
+  Webhook de WhatsApp:     pendiente de despliegue
   Nota: el plan gratuito de Render "duerme" tras 15 min; la primera carga tarda ~1 min.
 
 USUARIOS DE DEMOSTRACIÓN (clave: Agro2026!)
@@ -37,7 +37,7 @@ USUARIOS DE DEMOSTRACIÓN (clave: Agro2026!)
 MÓDULOS (activables por finca; apagado = menú oculto y API 403)
   M0 Núcleo · M1 Control técnico de campo · M2 Trazabilidad (QR) · M3 Trabajadores
   M4 Inventarios · M5 Ventas y clientes · M6 Vivero · M7 Reportes y finanzas
-  WhatsApp + agente IA: capacidad transversal (Twilio, Meta o simulado)
+  WhatsApp + agente IA: capacidad transversal (Meta Cloud API; también Twilio o simulado)
   "Lote" = campo de la finca. "Lote de cosecha" = producto cosechado con QR.
 
 CÓMO ARRANCAR EN LOCAL (Windows, PowerShell, Node.js 20 o superior)
@@ -60,16 +60,20 @@ CÓMO ARRANCAR EN LOCAL (Windows, PowerShell, Node.js 20 o superior)
     npm run dev
   Liberar un puerto: netstat -ano | findstr :3000   y luego   taskkill /PID <número> /F
 
-CÓMO CONECTAR WHATSAPP (detalle: codigo/docs/WHATSAPP_TWILIO.md)
-  1. Crear cuenta en twilio.com y abrir Messaging > Try it out > Send a WhatsApp message.
-  2. Desde el celular enviar "join <palabra-palabra>" al +1 415 523 8886.
-  3. Poner el número del celular en DEMO_WHATSAPP_ENCARGADO (.env) y ejecutar npm run db:seed,
-     o cargarlo en Configuración > Usuarios con "Alertas WhatsApp" activado.
+CÓMO CONECTAR WHATSAPP · META CLOUD API (detalle: codigo/docs/WHATSAPP_META.md)
+  Se usa Meta y no Twilio porque Twilio exige verificar la cuenta por SMS y no envía SMS a
+  Bolivia; Meta envía el código de verificación por WhatsApp (DECISIONES.md, ADR-022).
+  1. developers.facebook.com/apps > Crear app > caso de uso "Conectarte con los clientes a
+     través de WhatsApp" (tipo Empresa/Business).
+  2. WhatsApp > Configuración de la API > "Para" > agregar el celular (+591) y verificarlo con
+     el código que llega por WhatsApp. Pulsar "Enviar mensaje" y responder "hola".
+  3. En codigo/backend/.env: WHATSAPP_PROVIDER=meta, WHATSAPP_TOKEN (token temporal),
+     WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET (Configuración de la app > Básica),
+     WHATSAPP_VERIFY_TOKEN (inventado) y DEMO_WHATSAPP_ENCARGADO (el celular); npm run db:seed.
   4. Publicar el backend: cloudflared tunnel --url http://localhost:3000  (o usar Render).
-  5. En Twilio, "When a message comes in": https://<url>/api/webhooks/twilio (POST).
-  6. En codigo/backend/.env: WHATSAPP_PROVIDER=twilio, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
-     TWILIO_WHATSAPP_FROM=whatsapp:+14155238886, TWILIO_WEBHOOK_URL=<la misma URL>. Reiniciar.
-  7. Escribir "ayuda" al Sandbox. Sin credenciales todo funciona en modo simulado.
+  5. WhatsApp > Configuración > Webhook: https://<url>/api/webhooks/whatsapp + el token de
+     verificación; en "Campos del webhook" suscribir "messages".
+  6. Escribir "ayuda" al número de prueba de Meta. Sin credenciales todo funciona en modo simulado.
 
 PRUEBAS
   cd codigo\backend  ; npm test         (Vitest: pruebas unitarias + API; crea su BD de prueba)

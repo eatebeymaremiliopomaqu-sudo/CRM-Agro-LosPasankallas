@@ -608,6 +608,37 @@ La guía pide WhatsApp real (Twilio Sandbox o Meta), registrar labores y cosecha
 
 ---
 
+## ADR-022: WhatsApp con Meta Cloud API en lugar de Twilio
+
+**Fecha**: 2026-11-26
+**Estado**: Aceptada (reemplaza la recomendación de Twilio Sandbox de ADR-018)
+**Decisión tomada por**: Beymar Emilio Poma Queso
+
+### Contexto
+
+ADR-018 recomendaba el Sandbox de Twilio para la demo. Al crear la cuenta, Twilio exige verificar el celular del titular con un **SMS**, y ese SMS **no llega a números de Bolivia**, así que no se pudo registrar la cuenta. El sistema ya soportaba tres proveedores detrás de `WHATSAPP_PROVIDER` (ADR-009): `twilio`, `meta` y `simulado`.
+
+### Decisión
+
+Usar **Meta WhatsApp Cloud API** (`WHATSAPP_PROVIDER=meta`) para la demo y la producción:
+
+| # | Decisión | Motivo |
+|---|---|---|
+| 22.1 | Proveedor `meta` con el **número de prueba** de Meta y el celular del autor como destinatario verificado. | Meta envía el código de verificación **por WhatsApp**, no por SMS; funciona desde Bolivia y es gratis para pruebas (hasta 5 destinatarios). |
+| 22.2 | Webhook `GET/POST /api/webhooks/whatsapp` con `WHATSAPP_VERIFY_TOKEN` y firma `X-Hub-Signature-256` (HMAC-SHA256 del cuerpo crudo). En producción la firma es **obligatoria**: sin `WHATSAPP_APP_SECRET` el webhook responde 401. | Antes, sin App Secret se aceptaba cualquier petición también en producción. |
+| 22.3 | Versión de la Graph API configurable (`WHATSAPP_GRAPH_VERSION`, por defecto `v24.0`) en lugar de `v21.0` fija. | Meta retira las versiones de la Graph API unos dos años después de publicarlas. |
+| 22.4 | Registro en consola de cada mensaje entrante y saliente, de la verificación del webhook y de las firmas inválidas. | Diagnosticar la conexión real sin depurador. |
+| 22.5 | El código y las pruebas de Twilio se conservan; `WHATSAPP_TWILIO.md` queda como guía alternativa. | Quien sí pueda registrarse en Twilio puede cambiar de proveedor con una variable de entorno. |
+
+### Consecuencias
+
+- ✅ La demo funciona con el celular real del autor desde Bolivia, sin costo.
+- ⚠️ El token temporal de Meta dura 24 h: hay que renovarlo el día de la exposición o crear un token permanente de usuario del sistema.
+- ⚠️ Fuera de la ventana de 24 h, Meta solo permite enviar plantillas aprobadas: las alertas automáticas llegan si el destinatario escribió en las últimas 24 h (para producción, registrar una plantilla de alerta).
+- ❌ El número de prueba de Meta solo puede escribir a 5 números verificados (suficiente para la demo).
+
+---
+
 ## Plantilla para nuevas decisiones
 
 ```markdown

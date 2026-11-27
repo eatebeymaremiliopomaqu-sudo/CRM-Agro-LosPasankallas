@@ -28,7 +28,7 @@
 
 1. Despertar Render: abrir la URL de Render terminada en `/api/salud` (el plan gratuito duerme).
 2. Reiniciar los datos de la demo si se usó antes: en local `npm run db:seed`; en Render, *Manual Deploy* o borrar el disco efímero (se recarga solo).
-3. Celular de Beymar unido al Sandbox de Twilio (`join <palabra>`) y su número cargado en el usuario **encargado** (`DEMO_WHATSAPP_ENCARGADO` en `.env` o *Configuración → Usuarios*). Enviar "hola" para abrir la ventana de 24 h.
+3. Celular de Beymar verificado como destinatario del número de prueba de Meta (WhatsApp Cloud API), **token de acceso renovado ese día** (el temporal dura 24 h) y su número cargado en el usuario **encargado** (`DEMO_WHATSAPP_ENCARGADO` en `.env` o *Configuración → Usuarios*). Enviar "hola" al número de prueba para abrir la ventana de 24 h.
 4. En el navegador, pestañas abiertas: app como `encargado@finca.test`, *Inventarios → Productos cosechados*, *Ventas*, y la ficha QR vacía.
 5. **Plan B sin internet:** backend y frontend en local, *Agente y WhatsApp → Simular WhatsApp* con el remitente "Usuario · Ing. Bruno Rojas (Encargado)".
 

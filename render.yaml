@@ -35,7 +35,7 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
-      # WhatsApp: simulado | twilio | meta (ver codigo/docs/WHATSAPP_TWILIO.md)
+      # WhatsApp: simulado | meta | twilio (se usa Meta Cloud API: codigo/docs/WHATSAPP_META.md)
       - key: WHATSAPP_PROVIDER
         value: simulado
       - key: TWILIO_ACCOUNT_SID
@@ -54,6 +54,8 @@ services:
         value: crm-agro-verify
       - key: WHATSAPP_APP_SECRET
         sync: false
+      - key: WHATSAPP_GRAPH_VERSION
+        value: v24.0
       - key: ALERTAS_ACTIVAS
         value: "true"
       - key: ZONA_HORARIA_MIN

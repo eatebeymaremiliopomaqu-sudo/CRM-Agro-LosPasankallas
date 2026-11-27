@@ -117,7 +117,7 @@ const ejeGrafico = { catAxisLabelColor: HEX.gris, valAxisLabelColor: HEX.gris, c
 
 // 4 · Arquitectura
 {
-  const s = lamina('Arquitectura', 'CONTENIDO', 'Arquitectura modular de bajo costo', 'Beymar (1 min): El frontend es Vue 3 como PWA en Vercel; el backend es Node.js con Express y Prisma en Render, con SQLite para no pagar un servidor de base de datos. Cada módulo es un router protegido por JWT, roles y el middleware requiereModulo. WhatsApp entra por Twilio o Meta con firma verificada. El agente y las alertas son transversales.');
+  const s = lamina('Arquitectura', 'CONTENIDO', 'Arquitectura modular de bajo costo', 'Beymar (1 min): El frontend es Vue 3 como PWA en Vercel; el backend es Node.js con Express y Prisma en Render, con SQLite para no pagar un servidor de base de datos. Cada módulo es un router protegido por JWT, roles y el middleware requiereModulo. WhatsApp entra por la API oficial de Meta (WhatsApp Cloud API) con firma verificada; Twilio queda como alternativa porque no envía el SMS de registro a Bolivia. El agente y las alertas son transversales.');
   imagen(s, 'evidencias/diagramas/arquitectura.png', 0.5, 1.05, 9, 3.95, 'Diagrama de arquitectura');
 }
 
@@ -153,13 +153,13 @@ const ejeGrafico = { catAxisLabelColor: HEX.gris, valAxisLabelColor: HEX.gris, c
 
 // 8 · Seguridad y ética
 {
-  const s = lamina('Agente y WhatsApp', 'CONTENIDO', 'Seguridad y ética desde el diseño', 'Beymar (1 min): La carencia se respeta en la web, en WhatsApp y al vender; solo el propietario puede forzar, con justificación que queda en auditoría. El QR es público, por eso no muestra nombres, teléfonos ni precios. Nadie recibe mensajes automáticos sin haber aceptado con ALTA. Y los webhooks verifican la firma de Twilio y de Meta.');
+  const s = lamina('Agente y WhatsApp', 'CONTENIDO', 'Seguridad y ética desde el diseño', 'Beymar (1 min): La carencia se respeta en la web, en WhatsApp y al vender; solo el propietario puede forzar, con justificación que queda en auditoría. El QR es público, por eso no muestra nombres, teléfonos ni precios. Nadie recibe mensajes automáticos sin haber aceptado con ALTA. Y los webhooks verifican la firma de Meta.');
   const filas = [
     ['Carencia', 'Bloqueo 409 al cosechar o vender; forzado auditado del propietario'],
     ['Consentimiento', 'ALTA / BAJA con fecha para trabajadores, usuarios y clientes'],
     ['Privacidad del QR', 'Solo tipo de cliente, fecha y cantidad; token aleatorio'],
     ['Acceso', 'JWT, roles en la API, límite de intentos, auditoría'],
-    ['Webhooks', 'Firma X-Twilio-Signature y X-Hub-Signature-256'],
+    ['Webhooks', 'Firma X-Hub-Signature-256 (Meta), obligatoria en producción'],
   ];
   s.addTable(filas.map(([a, b]) => [{ text: a, options: { bold: true, color: HEX.bosque } }, { text: b }]), { x: 0.5, y: 1.2, w: 9, colW: [2.4, 6.6], fontSize: 15, rowH: 0.6, border: { type: 'solid', pt: 0.75, color: HEX.grilla }, fill: { color: 'FFFFFF' }, valign: 'middle', objectName: 'Tabla seguridad' });
 }
@@ -204,7 +204,7 @@ const ejeGrafico = { catAxisLabelColor: HEX.gris, valAxisLabelColor: HEX.gris, c
 // 12 · Despliegue y costos
 {
   const s = lamina('Proceso y calidad', 'CONTENIDO', 'Despliegue y costo mensual', 'Beymar (1 min): El frontend está en Vercel y la API con SQLite en Render, con CI en GitHub Actions. Para la demo todo es gratis. En producción para una finca estimo entre 11 y 16 dólares al mes, menos que un jornal: Render Starter con disco, WhatsApp por mensaje y el LLM es opcional porque el agente funciona con reglas.');
-  const filas = [['Servicio', 'Demo', 'Producción'], ['Vercel (frontend PWA)', 'US$ 0', 'US$ 0'], ['Render (API + SQLite)', 'US$ 0', '≈ US$ 7,25'], ['WhatsApp (Twilio)', 'Sandbox US$ 0', '≈ US$ 3–6'], ['LLM (opcional)', 'US$ 0 (reglas)', 'US$ 0–2'], ['Total', 'US$ 0', '≈ US$ 11–16 / mes']];
+  const filas = [['Servicio', 'Demo', 'Producción'], ['Vercel (frontend PWA)', 'US$ 0', 'US$ 0'], ['Render (API + SQLite)', 'US$ 0', '≈ US$ 7,25'], ['WhatsApp (Meta Cloud API)', 'Prueba US$ 0', '≈ US$ 3–6'], ['LLM (opcional)', 'US$ 0 (reglas)', 'US$ 0–2'], ['Total', 'US$ 0', '≈ US$ 11–16 / mes']];
   s.addTable(filas.map((f, i) => f.map((t) => ({ text: t, options: i === 0 || i === filas.length - 1 ? { bold: true, color: HEX.bosque, fill: { color: HEX.claro } } : {} }))), { x: 0.5, y: 1.2, w: 5.8, colW: [2.5, 1.5, 1.8], fontSize: 14, rowH: 0.52, border: { type: 'solid', pt: 0.75, color: HEX.grilla }, valign: 'middle', objectName: 'Tabla costos' });
   cifra(s, 6.7, 1.3, 2.8, '< 1 jornal', 'al mes en producción (≈ Bs 77–112)');
   s.addText('Guía paso a paso: codigo/docs/DESPLIEGUE.md', { x: 6.7, y: 3.0, w: 2.8, h: 0.9, fontSize: 13, color: C.text1, isTextBox: true, margin: 0, objectName: 'Guía despliegue' });

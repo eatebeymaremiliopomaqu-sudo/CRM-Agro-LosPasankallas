@@ -115,6 +115,7 @@ describe('WhatsApp Cloud API (CP-M5-01)', () => {
     assert.equal(verificarFirma(cuerpo, undefined, 'secreto'), false);
     assert.equal(verificarFirma(cuerpo, 'sha256=abc', 'secreto'), false);
     assert.equal(verificarFirma(cuerpo, undefined, ''), true);
+    assert.equal(verificarFirma(cuerpo, undefined, '', { exigir: true }), false); // producción sin App Secret
   });
   it('sin credenciales el envío es simulado', async () => {
     const c = crearClienteWhatsApp({ token: '', phoneNumberId: '' });
