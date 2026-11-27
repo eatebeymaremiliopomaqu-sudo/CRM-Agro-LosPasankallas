@@ -37,7 +37,7 @@ services:
         sync: false
       # WhatsApp: simulado | meta | twilio (se usa Meta Cloud API: codigo/docs/WHATSAPP_META.md)
       - key: WHATSAPP_PROVIDER
-        value: simulado
+        value: meta                      # sin WHATSAPP_TOKEN / PHONE_NUMBER_ID funciona en modo simulado
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN
@@ -51,11 +51,14 @@ services:
       - key: WHATSAPP_PHONE_NUMBER_ID
         sync: false
       - key: WHATSAPP_VERIFY_TOKEN
-        value: crm-agro-verify
+        sync: false                      # el mismo que se pega en Meta > Webhook
       - key: WHATSAPP_APP_SECRET
         sync: false
       - key: WHATSAPP_GRAPH_VERSION
         value: v25.0
+      # Celular real del usuario encargado (591 + 8 dígitos); el seed lo usa. No se guarda en el repositorio
+      - key: DEMO_WHATSAPP_ENCARGADO
+        sync: false
       - key: ALERTAS_ACTIVAS
         value: "true"
       - key: ZONA_HORARIA_MIN
